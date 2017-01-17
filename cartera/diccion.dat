@@ -1,0 +1,222 @@
+Las solicitudes de los clientes se modificaron, ahora estan divididas
+en cuatro tablas que contienen los siguientes datos:
+
+solicit2: 	Contiene las claves de los clientes y lo datos generales de las
+		solicitudes.
+misdatsol:	Contiene las claves de los clientes, un numero de dato que
+		indica a que informacion corresponde, y es como sigue:
+		005 - Ocupacion del Cliente
+		010 - Trabajo del Cliente
+		015 - Telefono del Trabajo del Cliente
+		020 - Direccion del Trabajo del Cliente
+		025 - Conyuge del Cliente
+		030 - Ocupacion del Conyuge del Cliente
+		035 - Trabajo del Conyuge del Cliente
+		040 - Telefono del Trabajo del Conyuge del Cliente
+		045 - Direccion del Trabajo del Conyuge del Cliente
+		050 - Datos del Aval del Cliente
+		055 - Ocupacion del Aval del Cliente
+		060 - Trabajo del Aval del Cliente
+		065 - Teltefono del Trabajo del Aval
+		070 - Direccion del Trabajo del Aval
+		075 - Conocido del Cliente
+		080 - Direccion del Conocido del Cliente
+		085 - Telefono del Conocido del Cliente
+		090 - Un familiar del Cliente
+		095 - Direccion del Familiar del Cliente
+		100 - Telefono del Familiar del Cliente
+		105 - Conyuge del Aval del Cliente
+		110 - Ocupacion del Conyuge del Aval del Cliente
+		115 - Trabajo del Conyuge del Aval del Cliente
+		120 - Telefono de Trabajo del Conyuge del Aval
+		125 - Direccion del Trabajo del Conyuge del Aval
+		130 - Continuacion de la Direccion del Cliente
+		
+		--- Los datos de Observaciones y referencias tienen numeros
+		    del 500 en adelante
+		    
+		500 - Referencias 1 de la Solicitud
+		505 - Referencias 1a de la Solicitud
+		510 - Referencias 2 de la Solicitud
+		515 - Observaciones de la Solicitud
+		--- Los datos de Poliza Extensa tienen numeros 600
+		600 - Poliza Extensa
+                --- Se agrega un nuevo campo llamado Tarjeta Credito Feliz TCF
+		610 - Numero de Veces que se ha impreso una Factura
+                620 - Tarjeta Credito Feliz TCF
+                      El dato que se graba es un String que contiene
+                      posiciones 1-6 el numero de la TCF
+                630 - Clave de Tarjeta Bancaria cuando cliente es TC
+                      El dato que se graba es un String que contiene
+                      posiciones 1-6 el dato car_termitarjetas.IDTERMITARJETA
+                      posiciones 8-28 el dato car_termitarjetas.CLAVE
+		--- Datos de Direcciones 
+		640 - Calle
+		641 - Num. Predio
+		642 - Colonia
+		643 - Cod.Post
+		--- Datos de Nuevas Series de facturas y sus consecutivos ---
+                650 -- Numero de Factura. Consecutivo Interno
+                651 -- UUID de Internet CFDI
+		--- Datos para marcar clientes listos
+		655 -- LISTO Fecha y Hora Listo LISTO:yyyymmdd hh.mm.ss
+		700 -- Impresion de Letras N. de Veces
+		790 -- Se imprimio sin UUID ?
+		--- Datos de Calculo de Fechas de Vencimiento
+		810 -- Numero de dias que se corren los vencimientos
+
+		
+datsol:		Contiene los datos de la solicitud, concepto y numero, asi si
+		ya existe el concepto solo se duplica un numero y no todo el
+		concepto pudiendo ahorrar mucho espacio (hay muchas solicitudes
+		con pocos datos, o mejor dicho, pocos datos repetidas muchas
+		veces).
+		
+refsol:		Contiene los conceptos de las observaciones y referencias.
+
+En la tabla car_relreport se encuentran los datos de reportes de acuerdo a:
+Tipo:
+1	- Direccion
+2	- Sintoma 1
+3	- Sintoma 2
+4	- Observaciones
+
+----- Estas son las relaciones existentes entre las tablas ----
+tabla			tabla	campos
+clientes 	->	mvcli2  idcli		
+Descripcion: Id del cliente, todos los movimientos de este cliente
+
+clientes	->	car_relclis	idcli
+Descripcion: Id del cliente, todos los datos del cliente estan determinados
+en funcion del tiporel donde:
+(REL_NOMCLI)=(1);	-> Nombre del cliente
+(REL_NOMAVA)=(11);	-> Nombre del Aval
+(REL_DIRCLI)=(21);      -> Direccion del Cliente
+
+car_relclis	->	car_nombres	iddato -> idnombre (tiporel = 1 o 2)
+Descripcion: Contiene las relaciones de los clientes con sus nombres 
+y nombres de avales
+
+car_nombres	->	car_apellidos	idappat -> idapellido
+car_nombres	->	car_apellidos	idapmat -> idapellido
+car_nombres	->	car_nompil	idnom1 -> idnompil
+car_nombres	->	car_nompil	idnom2 -> idnompil
+Contiene todos los nombres seccionado en appat, apmat, nompil1, nompil2
+y nombre completo para una busqueda mas agil
+
+/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+En car_obsercli se agrega:
+idcli: -201, 3900 es el dato del precio Asi
+idcli: -202,  400 es el dato de destruccion de asi
+--- Se agrega el 9-Oct-2012 que ahora se separan
+    la destruccion  y el Transporte y queda:
+idcli: -203,  250.00 es el dato de Solo destruccion de Asi
+idcli: -204,  150.00 es el dato de Solo Transporte  de Asi
+
+
+/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+-- Se agrega tipo de observaciones
+1 -- Observacion normal de clientes
+2 -- Obsevacion normal de reportes
+3 -- Observacion Urgente de clientes
+4 -- Cancelacion de una observacion Urgente de cliente
+5 -- Serie larga de articulo
+6 -- Dias de Visita
+7 -- Reportes Telefonos
+8 -- Observaciones de los plazos
+
+
+/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+Existe una tabla que define que cambios se realizan en cartera
+car_accionmodifctes ( idaccionmodif, descri, cia)
+values ( 1, '01 - Nombre', 1);
+values ( 2, '02 - Direccion', 1);
+values ( 3, '03 - Poblacion', 1);
+values ( 4, '04 - Nombre de Aval', 1);
+values ( 5, '05 - Direccion del Aval', 1);
+values ( 6, '06 - Punto de Venta', 1);
+values ( 7, '07 - Tipo Quincenal / Mensual /Contado', 1);
+values ( 8, '08 - Tipo de Cliente', 1);
+values ( 9, '09 - Num de Factura', 1);
+values ( 10, '10 - Jefe Grupo', 1);
+values ( 11, '11 - Comision Jefe de Grupo', 1);
+values ( 12, '12 - Fecha Pago Comision Jefe Grupo', 1);
+values ( 13, '13 - Opcion Carta', 1);
+values ( 14, '14 - Cumplea#os', 1);
+values ( 15, '15 - Servicio', 1);
+values ( 16, '16 - Enganche', 1);
+values ( 17, '17 - Saldo Enganche', 1);
+values ( 18, '18 - Numero de Letras');
+values ( 19, '19 - Importe de cada letra', 1);
+values ( 20, '20 - Importe de Bonificacion', 1);
+values ( 21, '21 - Precio de Contado', 1);
+values ( 22, '22 - Cambio de Codigo', 1);
+values ( 23, '23 - Porcentaje Descuento', 1);
+values ( 24, '24 - Status del Cliente', 1);
+values ( 25, '25 - Datos de Solicitud', 1);
+values ( 26, '26 - Datos de Poliza Xtensa', 1);
+values ( 27, '27 - Comisiones', 1);
+values ( 28, '28 - Articulos', 1);
+values ( 29, '29 - Cancelacion x Cambio', 1);
+values ( 30, '30 - Numero de Tarjeta Credito Feliz', 1);
+
+/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+Se crean dos tablas car_estados que contiene los estados y los paises
+tipo1 = POBLACION
+tipo2 = ESTADO DE LA REPUBLICA
+tipo3 = PAIS
+
+y car_relpob que contiene la relación que existe entre las poblaciones
+y los estados, la tabla de poblaciones por compatibilidad sigue siendo poblacs
+tipo 2 iddato1=numero_poblacion pertenece a iddato2=Estado
+tipo 3 iddato1=Estado pertenece a iddato2=Pais
+
+____________________________________________________________
+/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+En car_permiusuario se graban las permisiones de los usuarios
+11  - Manto de Polizas
+401 - Grabar UUID y/o Generar CFDI en Consupol
+
+____________________________________________________________
+/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+2013-03-14 -- Se crea una tabla nueva que contiene las tarjetas que
+están permitidas por sucursal
+
+car_termitc -- Terminales de Tarjetas de Credito, BBVA, BANAMEX, MULTIVA
+
+car_termitarjetas -- Contiene las tarjetas que acepta cada terminal y
+las tasas de comisiones que se aplican x el banco
+
+car_tcxsuc -- Contiene la relación de las tarjetas que se permiten en
+una sucursal dada, de acuerdo a la ubicacion de venta
+
+---------- Registro de Midificaciones de programas --------------
+2014-04-12 Se modifica el programa cajati para que grabe y despues timbre
+	Se modifica el programa envvtas2 para que se manden las ventas de 
+	los clientes que hayan pagado en una caja que no sea la suya
+	Se modifica el programa recivtasn para que actualice los movimientos
+	de los clientes que hayan pagado en una poliza diferente a la suya
+	el car_cambiostmp se agrega un registro con tipo M para que solo reciba
+	los movimientos de ese cliente y asi se actualice
+
+____________________________________________________________
+/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+2016-12-14 En Renpol2, ace obtiene los valores:
+A - A cuenta
+C - Completo
+S - Saldo de Letra
+D - Devolucion de Recojas
+E - Enganche
+R - Recoja
+L - Litigio
+J - Juridico
+U - Sacar de Juridico
+I - Irrecuperable
+B - Sale de Irrecuperable
+
+____________________________________________________________
+/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
+2016-12-15 En car_juridico hay un campo llamado tipo
+Tipo 1 = Clientes en Juridico
+Tipo 2 = Clientes en Litigio Irrecuperable
+

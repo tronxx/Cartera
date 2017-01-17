@@ -1,0 +1,750 @@
+* Programa que sirve para imprimir la Poliza del Dia
+  DRBR 06-Dic-2007
+  Modificado para agregar separacion de 2007 y 2008  
+  -------------------------------------------------------------------------
+  DRBR 18-Dic-1992
+  Modificado para que imprima solo los clientes que corresponda la tienda
+  con el codigo del cliente para hacer la separacion de Clientes de Ricardo
+  Castro con clientes de Alfonso Castro
+  DRBR 01-Feb-1992
+  -------------------------------------------------------------------------
+  Modificado para que imprima todos los codigos de los clientes y que
+  haga otra hoja automaticamente para los pesos nuevos y pesos antiguos
+  DRBR 22-May-1993
+  --------------------------------------------------------------------------
+  Modificado para incluir un analisis de las fechas de vencimientos de las
+  letras vencidas a fin de determinar los vencimientos de las letras pagadas
+  y sacar un subtotal de 10 o menos, 12 a 30 dias, 31 o mas dias.
+  DRBR 24-May-1993
+  --------------------------------------------------------------------------
+  Modificado para que solo haga una poliza de nuevos y antiguos pesos
+  DRBR 01-Nov-1993
+  --------------------------------------------------------------------------
+  Modificado para dividir el 10% y 15% en Analisis de Estado de Pagos
+  DRBR 19-Jul-1995
+  --------------------------------------------------------------------------
+  Modificado para agregar un estado de corto-largo plazo 2004-2005
+  DRBR 19-Jul-1995
+  --------------------------------------------------------------------------
+  Modificado para que las ventas de 2014 las defina como Corto Plazo
+  Sin importar los meses de la venta
+  DRBR 23-Dic-2013
+*
+
+#dMIS2  %2d~;  #dMDS10 %,10.2f~; #dMDS12 %,12.2f~;  #dMLS10 %10ld~;
+#dMIS02 %02d~; #dMDS13 %,13.2f~; #dMFS %6.2f~;      #dMDS2 %2.0f~;
+#dMIS4 %4d~;   #dMLS6 %6ld~;     #dMDS9 %,9.2f~;    #dMDS7 %7.0f~;
+#dMDS3 %3.0f~; #dMDS6 %,6.0f~;   #dMIS3 %3d~;
+
+
+f0; M
+        version_z		s21,
+	impre_z			i,
+	font_z			i,
+	micar_z			s3,
+	carac_z			i,
+        idcli_z			l,
+        ncon_z			l,
+        maxcol_z		i,
+        maxrow_z		i,
+        renst_z			i,
+        anu_z			l,
+        sff_z			s2,
+        tiplazo_z		s2,
+        msg_z			s100,
+	nemp_z          s80,
+	direc_z         s80,
+	modul_z         s30,
+	modul2_z        s10,
+	ter_z            s3,
+	fech8_z           D,
+	fech9_z     {
+	  fecd_z        s16,
+	  hora_z         s5,
+	  resto_z        s5,
+	            }
+	fecpol_z	{
+	  fecpolaa_z		i,
+	  fecpolmm_z		i,
+	  fecpoldd_z		i,
+	  		}
+	tien_z			s3,
+	tda_z      {
+	  tda1_z         s1,
+	  tda2_z         s1,
+	           }
+	codcli_z   {
+	  ctda1_z        s1,
+	  ctda2_z        s1,
+	  aacli_z        s2,
+	  mmcli_z        s2,
+	  ddcli_z        s2,
+	  conse_z        s3,
+	           }
+	concep_z        C30,
+	fech3_z    {
+	  dd_z           s3,
+	  mm_z           s3,
+	  aa_z           s2,
+	           }
+	fech4_z    {
+	  aaa_z          s2,
+	  mmm_z          s2,
+	  ddd_z          s2,
+	           }
+	antm_z           s2,
+	letra_z           i,
+	lta_z             i,
+	dias_z            i,
+        bandimp_z	  s2,
+	fechb_z           D,
+	fechc_z           D,
+	nletra_z   {
+	  nlta1_z        s1,
+	  nlta2_z        s1,
+	           }
+	cmds_z       {
+	  cmd1_z         s7,
+	  cmd2_z        s12,
+	  cmd3_z        s20,
+	            }
+	arch_z   	s13,
+	mibd_z		s50,
+	letras_z          l,
+	qin_z            s1,
+	fech1_z         s26,
+	mone_z           s1,
+	haynp_z          s1,
+	hayap_z          s1,
+	band_z           s1,
+	mistat_z	i,
+	
+	boncorresp_z		d,
+	netact_z          d,
+	neteng_z          d,
+	netdoc_z          d,
+	docbon_z          d,
+	docrec_z          d,
+	docnet_z          d,
+	bonif_z           d,
+	recar_z           d,
+	impor_z           d,
+	neto_z            d,
+	totdoc11_z        d,
+	totdoc30_z        d,
+	totdoc31_z        d,
+        impdoc31_z		d,
+        facmcia_z		d,
+        impmcia_z		d,
+        impfint_z		d,
+        totfmto_z		d,
+        totmcia_z		d,
+        totbcorr_z		d,
+        boncorr_z		d,
+	porc1_z           d,
+	porc2_z           d,
+        efectivo_z		d,
+	nulet_z           i,
+	col_z            s1,
+	conanalisis_z           s2,
+        piva_z			d,
+        anuini_z		i,
+        anufin_z		i,
+        mesini_z		i,
+        mesfin_z		i,
+        idfac_z			l,
+        iduuid_z		l,
+        impdoccaj_z		d,
+        impboncaj_z		d,
+        impreccaj_z		d,
+        masdeunacaj_z		s2,
+        antusr_z		s5,
+        
+	impcp_z           d,
+	boncp_z           d,
+	reccp_z           d,
+	implp_z           d,
+	bonlp_z           d,
+	reclp_z           d,
+	fecha_z           D,
+	ind1_z            i,
+	ind2_z            i,
+	ntda_z            i,
+	termi_z           i,
+	esp_z             i,
+	exten_z           i,
+	ii_z		  i,
+	tam0             s0,;
+mtam0&;
+q+,version_z,"V:2.31 EA",;
+* ----> Versiones <----- 
+  2.2 --> Se modifica para que se separe por cajera <--  12/May/2014
+  2.3 15-Ene-2015
+  Se modifica para que tenga un calculo de financiamiento diferente
+  Cuando sea Saldo:
+  ( ( nulet1 x ( canle1 - b.bonifi) ) - ( precon x (piva / 100 + 1) - enganc ) ) / nulet1
+  Cuando sea Completo es el mismo dato anterior pero proporcional a las letras pagadas
+  ( ( nulet1 x ( canle1 - b.bonifi) ) - ( precon x (piva / 100 + 1) - enganc ) ) / nulet1 x ( impor / canle1)
+  2.31 27-Ene-2015
+  Se modifica para que tenga un calculo de financiamiento diferente
+  Cuando sea Saldo:
+  ( ( nulet1 x ( canle1 - b.bonifi) ) - ( precon x (piva / 100 + 1) - enganc ) ) / nulet1
+  Cuando sea Completo es el mismo dato anterior pero proporcional a las letras pagadas
+  ( ( nulet1 x ( canle1 - b.bonifi) ) - ( precon x (piva / 100 + 1) - enganc ) ) / nulet1 x ( impor / canle1)
+  
+*
+z0,conanalisis_z,#; z0,nemp_z,#;
+x crea_param.bat .impripol.ini ~;
+Ff5; FO.impripol.ini~,r~; FG|; | Fknemp_z,l; (conanalisis_z)=(nemp_z,1); . FC;
+z0,nemp_z,#; Ff5; FO.impri.ini~,r~; FG|; | Fknemp_z,l; >sinemp_z,#,impre_z; . FC;
+z0,nemp_z,#; Ff3; FOdatos.ini~,r~; FGNodatos; Fknemp_z,l; &f0; tu1; ts0; tr;
+(arch_z)=($impolti2.tex,12);
+GPAN; GABRE_TABLA;
+
+[fec; t@5,3; \Teclee la Fecha : \; t0Fin; &a; &cfecha_z; ifecha_z,+10;
+!(fecha_z)0($-1)>fec; &bfecha_z; &p3fech1_z; qD,2,fecpol_z,fecha_z,;
+[tda; t@6,3; \Teclee la Tienda : \; t0fec; itien_z,2;
+f2; k1; P; n|; GST; `7; \Tienda Inexistente ... Intente de Nuevo ...\; gtda; .
+s1; pnombre_tda,0; t0Fin;
+[mon; t@7,3; \Imprime la Poliza de `N`uevos Pesos o `P`esos Antiguos ? : \;
+* t0tda; imone_z,#; !(mone_z)5($P,1)&(mone_z)5($N,1)>mon; *
+f3; k1; P; n|; GST; `7; \No Existe esa Poliza!!...\; Z2; .
+GST; \Estan Correctos los datos ? <S/N> : \; y|; | gfec; .
+
+(mone_z)=($N,1);
+tS1,0,0,23,80; tv0; tc;
+f3; QNOPDMODPOL; k2; P$; k1; P; nR;
+Ff4; FO(arch_z),w~; FP66,60,Enc,Pie;
+GIMPRI1;
+Ff4; FC; Ff1; tf; tr; tS0; GMANDA_IMP;
+gFin;
+
+[IMPRI1;
+f10; k2; P; z0,ii_z,#; (masdeunacaj_z)=($N,1); (antusr_z)=($-1,2);
+{ n+; 
+  Ff1; \Cajera:\; piniciales_ind10,0; s1; pnombre_ind10,0; l;
+  (ii_z)=(ii_z)(1)+; !(ii_z)1($1)>|; (masdeunacaj_z)=($S,1);  g+; .
+  f10; a;
+)
+Ff1; \Mas de una cajera:\; pmasdeunacaj_z,0; l;
+f4; k1; P;
+{ n+;
+  Ff1; \Leyendo : \; pidcli_rpo,MLS10; s1; pmoneda_rpo,0; l;
+  GIMPRINP;
+  f4; a;
+)
+!(masdeunacaj_z)0($S,1)>|;
+  GSUBTUSR; (antusr_z)=(usuario_rpo,#);
+.
+
+GSUBTOT2;
+GTABLA_PLAZOIVA;
+R;
+
+[NOPDMODPOL; GST; `7; \No pude modificar la poliza...\; Z1; R;
+
+[Enc;
+Ff3; FT; FGNodatos; Ff4; GFONT14; GFONT11; Fc80,3; l; Ff3; FGNodatos; Ff4;
+GFONT13; \impolti2 \; GFONT14; &a; &cfech8_z; &p3fech9_z; pfech8_z,+10; 
+s1; phora_z,#; s1; FW3; l;
+\Poliza Suc. \; pcodigo_tda,0; s1; pnombre_tda,0; \ Del dia : \; pfech1_z,16; 
+\ Pagina : \; Fp%d~; l; (band_z)=($S,1);
+\Importe de Cobranzas en Pesos Antiguos y Nuevos\; l;
+GFONT13; c_130; l; GFONT19;
+\CODIGO    |\; \NOMBRE                   |CONCEPTO          \; 
+\| VENCE|\;
+\Dias|\;
+\TM|\;
+\C|\;
+\BON|\;
+\REC|\;
+\  IMPORTE|\;
+\    SALDO|\;
+\ Hora|\;
+\Factura       |\;
+\Mercia|\;
+\Finmto|\;
+GFONT20; l;
+*1234567890 1234567890123456 1234567890 12345678 12 1234567890 1234567890 1234567890 123456789012*
+Ft;
+
+[Pie; Fe;
+
+[IMPRINP;
+(idcli_z)=(idcli_rpo); f1; k2; P; n|; GNOCLI; . z0,impfint_z,#;
+GCHECAVENC;
+z0,boncorresp_z,#;
+!(ace_rpo)0($S,1)(ace_rpo)0($C,1)|>|;
+  (impfint_z)=(canle1_cli)(bonifi_cli)-(nulet1_cli)*;
+  (impfint_z)=(impfint_z)(precon_cli)(piva_cli)(100)/(1)+*(enganc_cli)--;
+  (impfint_z)=(impfint_z)(nulet1_cli)/;
+  (boncorresp_z)=(bonifi_cli);
+  (ii_z)=(impor_rpo)(canle1_cli)/;
+  (porc1_z)=(canle1_cli)(ii_z)*; 
+  !(porc1_z)2(impor_rpo)>|; (ii_z)=(ii_z)(1)+; .
+  (impfint_z)=(ii_z)(impfint_z)*; 
+  (boncorresp_z)=(ii_z)(boncorresp_z)*; 
+.
+(neto_z)=(impor_rpo);
+(impmcia_z)=(impor_rpo)(boncorresp_z)-(impfint_z)-;
+!(tipo_rpo)0($AB,2)>|; 
+  (neto_z)=(impor_rpo)(rob_rpo)-; 
+.
+!(masdeunacaj_z)0($S,1)>|;
+   !(antusr_z)0($-1,2)>|; (antusr_z)=(usuario_rpo,#); GSUBENCUSR; .
+   !(antusr_z)5(usuario_rpo,#)>|;
+     GSUBTUSR; (antusr_z)=(usuario_rpo,#); GSUBENCUSR;
+   .
+.
+(impdoccaj_z)=(impdoccaj_z)(impor_rpo)+;
+!(tipo_rpo)0($AB,2)>|;
+  (impboncaj_z)=(impboncaj_z)(rob_rpo)+;
+|
+  (impreccaj_z)=(impreccaj_z)(rob_rpo)+;
+.
+Ff4; 
+pnumcli_cli,10; \|\; 
+pnombre_cli,24;
+!(status_cli)5($*,1)>|; z32,status_cli,1; . pstatus_cli,1;
+\|\; 
+pconcepto_cpm,18; \|\;
+(ii_z)=(fecvenYear_rpo)(2000)-; 
+pii_z,MIS02; pfecvenMon_rpo,MIS02; pfecvenDay_rpo,MIS02; \|\; 
+pdias_z,MIS4; \|\; 
+ptipo_rpo,2; \|\;
+!(moneda_rpo)0($C,1)>|; \C\; | \ \; . \|\;
+!(tipo_rpo)0($AB,2)>|;
+  prob_rpo,MDS3; \|\; s3; (bonif_z)=(bonif_z)(rob_rpo)+; 
+|
+  s3; \|\; prob_rpo,MDS3; (recar_z)=(recar_z)(rob_rpo)+; 
+.
+\|\; 
+pimpor_rpo,MDS9; \|\; 
+psalcli_rpo,MDS9; \|\; 
+pfeccapHour_rpo,MIS02; \:\; pfeccapMin_rpo,MIS02; \|\;
+z0,idcli_faf,l; (idfac_z)=(idfacfon_rpo); f8; k1; P; n|;. pserie_faf,4;
+pnfac_faf,MLS6; s1; z0,mistat_z,#;
+(iduuid_z)=(iduuid_rpo); z0,refyobs_rfsol,#; f9; k1; P; n|;.
+Fslexten_z,refyobs_rfsol; !(exten_z)5($36)>|; (mistat_z)=(-1); .
+z0,idcli_faf,l;  f8; k2; P; n|;. 
+(iduuid_z)=(iduuid_faf); f9; k1; P; n|;.
+Fslexten_z,refyobs_rfsol; !(exten_z)5($36)>|; (mistat_z)=(mistat_z)(20)-; .
+!(mistat_z)5($0)>|; pmistat_z,MIS3; | s3; . \|\; 
+pimpmcia_z,MDS6; \|\; 
+pimpfint_z,MDS6; \|\;
+l;
+(totmcia_z)=(totmcia_z)(impmcia_z)+;
+(totfmto_z)=(totfmto_z)(impfint_z)+;
+(nulet_z)=(nulet1_cli)(nulet2_cli)+;
+z0,piva_ind6,l; f6; k2; P; n|;.
+!(tiplazo_ind6)0($C,1)>|;
+  (impcp_z)=(impcp_z)(impor_rpo)+;
+  !(tipo_rpo)0($AB,2)>|; 
+    (boncp_z)=(boncp_z)(rob_rpo)+; 
+  |
+    (reccp_z)=(reccp_z)(rob_rpo)+; 
+  .
+|
+  (implp_z)=(implp_z)(impor_rpo)+;
+  !(tipo_rpo)0($AB,2)>|; 
+    (bonlp_z)=(bonlp_z)(rob_rpo)+; 
+  |
+    (reclp_z)=(reclp_z)(rob_rpo)+; 
+  .
+.
+!(tipo_rpo)0($AB,2)>|;
+  !(rob_rpo)0($0)>|;
+    (docnet_z)=(docnet_z)(impor_rpo)+;
+    !(ace_rpo)0($A,1)>|; 
+      (netact_z)=(netact_z)(impor_rpo)+;
+    |
+      !(ace_rpo)0($E,1)>|; 
+        (neteng_z)=(neteng_z)(impor_rpo)+; 
+      |
+        (netdoc_z)=(netdoc_z)(impor_rpo)+; 
+      .
+    .
+  |
+    (docbon_z)=(docbon_z)(impor_rpo)+;
+  .
+|
+  (docrec_z)=(docrec_z)(impor_rpo)+;
+.
+!(dias_z)2($12)>|;
+  (totdoc11_z)=(totdoc11_z)(impor_rpo)+;
+.
+!(dias_z)3($12)(dias_z)4($30)&>|;
+  (totdoc30_z)=(totdoc30_z)(impor_rpo)+;
+.
+!(dias_z)1($30)>|;
+  (totdoc31_z)=(totdoc31_z)(impor_rpo)+;
+.
+R;
+
+[SUBTUSR;
+(efectivo_z)=(impdoccaj_z)(impboncaj_z)-(impreccaj_z)+;
+Ff4; GFONT19; \Totales Esta Cajera: \; 
+\ Efectivo: \;      pefectivo_z,MDS13;   \|\; 
+\ Bonificaciones:\; pimpboncaj_z,MDS13;  \|\; z0,impboncaj_z,#;
+\ Recargos:\;       pimpreccaj_z,MDS13;  \|\; z0,impreccaj_z,#;
+\ Documentos:\;     pimpdoccaj_z,MDS13;  \|\; z0,impdoccaj_z,#;
+GFONT20;
+l;
+R;
+
+[SUBENCUSR;
+Ff4;
+f10; k1; P; n|;.
+\Cobranza de:\; pantusr_z,0; s1; pnombre_ind10,0; l;
+R;
+
+[CHECAVENC;
+z0,dias_z,#; (ncon_z)=(concep_rpo); z0,concepto_cpm,l; f5; k1; P; n|;.
+qD,1,fecven_rpo,fechb_z,;
+(dias_z)=(fecha_z)(fechb_z)-(86400)/;
+pnumcli_cli,0; \ Vencimiento : \; pfechb_z,+10; 
+\ Dias Vencidos : \; pdias_z,MIS2;
+s1; pnletra_z,#; s1; plta_z,MIS2; l;
+R;
+
+[SUBTOT2;
+Ff4;
+c-130; l;
+s6; GFONT19; s29;
+\     Efectivo|\;
+\     Bonifica|\;
+\     Recargos|\;
+\   Documentos|\; 
+GFONT20; l;
+(efectivo_z)=(impcp_z)(boncp_z)-(reccp_z)+;
+s6; \ Totales Corto Plazo       : \; 
+pefectivo_z,MDS13; \|\; 
+pboncp_z,MDS13;    \|\;
+preccp_z,MDS13;    \|\; 
+pimpcp_z,MDS13;    \|\; 
+l;
+
+(efectivo_z)=(implp_z)(bonlp_z)-(reclp_z)+;
+s6; GFONT19; \ Totales Largo Plazo       : \; 
+pefectivo_z,MDS13; \|\; 
+pbonlp_z,MDS13;    \|\;
+preclp_z,MDS13;    \|\; 
+pimplp_z,MDS13;    \|\; 
+GFONT20;
+l;
+
+(bonif_z)=(boncp_z)(bonlp_z)+;
+(recar_z)=(reccp_z)(reclp_z)+;
+(impor_z)=(impcp_z)(implp_z)+;
+(efectivo_z)=(impor_z)(bonif_z)-(recar_z)+;
+s6; GFONT19; \ Totales                   : \; 
+pefectivo_z,MDS13; \|\; 
+pbonif_z,MDS13;    \|\;
+precar_z,MDS13;    \|\; 
+pimpor_z,MDS13;    \|\; 
+ptotmcia_z,MDS13;  \|\;
+ptotfmto_z,MDS13;  \|\;
+GFONT20;
+l; l; l;
+
+s27; \Total de Cobranza Efectivo : \; GFONT15; pefectivo_z,MDS12; 
+GFONT16; GFONT12; l; l;
+GFONT14; GFONT15; \ANALISIS DE BONIFICACIONES Y RECARGOS\; GFONT16; l;
+
+z0,porc1_z,#; z0,porc2_z,#;
+!(docbon_z)5($0)>|; (porc1_z)=(bonif_z)(docbon_z)/(100)*; .
+!(docrec_z)5($0)>|; (porc2_z)=(recar_z)(docrec_z)/(100)*; .
+\Bon:\; GFONT19; pbonif_z,MDS13; GFONT20; s1; pporc1_z,MFS; \%  Rec:\;
+GFONT19; precar_z,MDS13; GFONT20; s1; pporc2_z,MFS; \%\; l;
+s4; pdocbon_z,MDS13; s14; pdocrec_z,MDS13; s6; 
+\   Neto:\; pdocnet_z,MDS13; \ = \; pimpor_z,MDS13; l;
+\Acuenta Netos: \; pnetact_z,MDS12; \ Enganches Netos: \; pneteng_z,MDS12;
+\ Documentos Netos: \; pnetdoc_z,MDS12; l; l;
+GANLISXVEN;
+R;
+
+[ANLISXVEN;
+Ff4; GFONT15; s6; \ANALISIS DE PAGO\; GFONT16; l;
+!(conanalisis_z)0($S,1)>|; 
+  \Documentos Vencidos a  Menos_de_12_Dias   De_12_a_30_Dias Mas_de_30_Dias\; l;
+  s26; ptotdoc11_z,MDS13; s5; ptotdoc30_z,MDS13;
+  s2; ptotdoc31_z,MDS13; l; l;
+.
+z0,porc1_z,#; z0,porc2_z,#; (impdoc31_z)=(totdoc31_z)(totdoc30_z)+;
+!(totdoc11_z)5($0)>|; (porc1_z)=(docbon_z)(totdoc11_z)/(100)*; .
+!(impdoc31_z)5($0)>|; (porc2_z)=(docrec_z)(impdoc31_z)/(100)*; .
+\ Docs.Bonifica.: \; GFONT19; pdocbon_z,MDS13; GFONT20; s1; 
+pporc1_z,MFS; \%\;
+\   Doctos.Recargos: \; GFONT19; pdocrec_z,MDS13; GFONT20; s1; 
+pporc2_z,MFS; \%\; l;
+!(conanalisis_z)0($S,1)>|; \Menos de 12 Dias:\; | s16; . ptotdoc11_z,MDS13; 
+s12; 
+!(conanalisis_z)0($S,1)>|; \Mas de 12 Dias  :\; | s16; .
+pimpdoc31_z,MDS13; l; l;
+R;
+
+[TABLA_PLAZOIVA;
+z0,impor_z,#; z0,recar_z,#; z0,bonif_z,#;
+z0,totmcia_z,#;
+z0,totfmto_z,#;
+
+Ff4; GFONT12; GFONT13;
+s8; \ __________________________________________________________________________\; 
+c_28; l;
+s8; GFONT19; \|\;
+\                      |\;
+\Importe Docs|\;
+\Bonificacion|\;
+\   Recargos |\;
+\   Efectivo |\; 
+\  Mercancias|\;
+\Bonif.Corres|\;
+\Financiamien|\;
+GFONT20; l;
+*   Imp: 123456789012 123456789012 123456789012 123456789012 123456789012 123456789012 123456789012 123456789012 123456789012 *
+f7; k1; P;
+{ n+;
+  (piva_z)=(piva_ind7); (tiplazo_z)=(tiplazo_ind7,#); (anu_z)=(anu_ind7);
+  GIMPRIRENTABLA;
+  f7; a;
+)
+s8; \|______________________|\;
+\____________|\;
+\____________|\;
+\____________|\;
+\____________|\;
+\____________|\;
+\____________|\;
+\____________|\; l;
+s8; GFONT19; \| Total General        |\; 
+pimpor_z,MDS12;   \|\;
+pbonif_z,MDS12;   \|\; 
+precar_z,MDS12;   \|\; 
+(efectivo_z)=(impor_z)(bonif_z)-(recar_z)+;
+pefectivo_z,MDS12; \|\; 
+ptotmcia_z,MDS12;  \|\;
+ptotbcorr_z,MDS12; \|\;
+ptotfmto_z,MDS12;  \|\;
+GFONT20; l;
+R;
+
+[IMPRIRENTABLA;
+(impfint_z)=(finmto_ind7);
+(boncorr_z)=(boncorr_ind7);
+(impmcia_z)=(impor_ind7)(boncorr_ind7)-(impfint_z)-;
+s8; \|\;
+!(tiplazo_z)0($C,1)>|; \C.P. \; .
+!(tiplazo_z)0($L,1)>|; \L.P. \; .
+ppiva_z,MDS2; \% \; pdescri_ind7,13; \|\; 
+pimpor_ind7,MDS12; \|\; 
+pbonif_ind7,MDS12; \|\; 
+precar_ind7,MDS12; \|\; 
+(efectivo_z)=(impor_ind7)(bonif_ind7)-(recar_ind7)+;
+pefectivo_z,MDS12; \|\;
+pimpmcia_z,MDS12;  \|\;
+pboncorr_z,MDS12;  \|\;
+pimpfint_z,MDS12;  \|\;
+l;
+(impor_z)=(impor_z)(impor_ind7)+;        z0,impcp_z,#;
+(bonif_z)=(bonif_z)(bonif_ind7)+;        z0,boncp_z,#;
+(recar_z)=(recar_z)(recar_ind7)+;        z0,reccp_z,#;
+(totmcia_z)=(totmcia_z)(impmcia_z)+;
+(totfmto_z)=(totfmto_z)(impfint_z)+;
+(totbcorr_z)=(totbcorr_z)(boncorr_z)+;
+R;
+
+#isacaf.i;
+#iimpri.i;
+#imandaimp.i;
+
+[MANDAELFNT; f13; k1; P; nR; GSACAF; R;
+
+[ABRE_TABLA; 
+Ff5; FObasedato.ini~,r~; FGNOBD; Fkmibd_z,l; FC; Ff1;
+fd1; O@,mibd_z,"sa","lux",1,ERRCNB,;  * con conexion autocommit    *
+f1; #iclientes.i;
+k0; ot,"clientes",;
+k1; kp,"numcli = ?",codcli_z,#,1,;
+k2; kp,"idcli = ?",idcli_z,;
+
+f2; #itiendas.i;
+k0; ot,"tiendas",;
+k1; kp,"codigo=?",tien_z,#,1,;
+
+f3; #ipolizas.i;
+k0; ot,"polizas",;
+k1; kp,"tda=? and fecha=?",tien_z,#,1,fecpol_z,#,3,;
+k2; kq,"update polizas set status='C' where tda=? and fecha=?",
+	tien_z,#,1,fecpol_z,#,3,;
+
+f4; #irenpol2.i;
+k0; ot,"renpol2",;
+k1; kp,"tda=? and fecha=? order by usuario,conse",tien_z,#,1,fecpol_z,#,3,;
+
+f5; #iconceps.i;
+k0; ot,"conceps",;
+k1; kp,"ncon=?",ncon_z,;
+
+f6; M
+	piva_ind6		d,
+	tiplazo_ind6		s2,
+        anu_ind6		l,
+        tipo_ind6		s3,
+        impor_ind6		d,
+        rob_ind6		d,
+        mfin_ind6		d,
+        tam_ind6		s0,;
+k0; ot,"renpol2",;
+k1; kq,"select piva, tiplazo, anucartera, tipo, sum(impor), sum(rob),
+        sum(
+          (case ace
+           when 'S' then
+            ( ( nulet1 * ( canle1 - b.bonifi) ) - ( precon * (piva / 100 + 1) - enganc ) ) / nulet1 * celing ( impor / canle1 )
+            when 'C' then
+            ( ( nulet1 * ( canle1 - b.bonifi) ) - ( precon * (piva / 100 + 1) - enganc ) ) / nulet1 * celing ( impor / canle1 )
+             else 0 end
+          )
+        ) as finmto
+        from renpol2 a join clientes b on a.idcli = b.idcli
+        join car_corlarpzodet d on b.qom = d.qom and b.nulet1 = d.nulets
+        join car_corlarpzo c on d.idcorlarpzo = c.idcorlarpzo
+        join car_anuscartera e on
+        d.idanucartera = e.idanucartera and
+        ( year(b.fechavta) >= e.anuini and year(b.fechavta) <= e.anufin)
+        where a.fecha = ? and tda = ? and status='*' and piva=? and tiplazo=?
+        and anucartera=?
+        group by piva, tiplazo, anucartera, tipo",
+        fecpol_z,#,3,tien_z,#,1,piva_z,tiplazo_z,#,1,anu_z,;
+k2; kq,"select piva, tiplazo, anucartera, tipo, sum(impor), sum(rob)
+        from renpol2 a join clientes b on a.idcli = b.idcli
+        join car_corlarpzodet d on b.qom = d.qom and b.nulet1 = d.nulets
+        join car_corlarpzo c on d.idcorlarpzo = c.idcorlarpzo
+        join car_anuscartera e on
+        d.idanucartera = e.idanucartera and
+        ( year(b.fechavta) >= e.anuini and year(b.fechavta) <= e.anufin)
+        where a.fecha = ? and tda = ? and status='*' and a.idcli=?
+        group by piva, tiplazo, anucartera, tipo",
+        fecpol_z,#,3,tien_z,#,1,idcli_z,;
+
+f7; M
+	piva_ind7		d,
+	tiplazo_ind7		s2,
+	anu_ind7		l,
+	descri_ind7		s31,
+        impor_ind7		d,
+        bonif_ind7		d,
+        recar_ind7		d,
+        finmto_ind7		d,
+        boncorr_ind7		d,
+        tam_ind7		s0,;
+k0; ot,"renpol2",;
+k2; kq,"select piva, tiplazo, anucartera, e.descri, sum(impor), 
+        sum( case tipo when 'AR' 0 else rob),
+        sum( case tipo when 'AR' rob else 0),
+        sum(
+          (case ace
+           when 'S' then
+            ( ( nulet1 * ( canle1 - b.bonifi) ) - ( precon * (piva / 100 + 1) - enganc ) ) / nulet1 * celing ( impor / canle1)
+            when 'C' then
+            ( ( nulet1 * ( canle1 - b.bonifi) ) - ( precon * (piva / 100 + 1) - enganc ) ) / nulet1 * celing ( impor / canle1)
+             else 0 end
+          )
+        ) as finmto,
+        sum(
+          (case ace
+           when 'S' then
+            ( b.bonifi * celing (  impor / canle1) ) 
+            when 'C' then
+            ( b.bonifi *  * celing (  impor / canle1))
+             else 0 end
+          )
+        ) as boncorr
+        from renpol2 a join clientes b on a.idcli = b.idcli
+        join car_corlarpzodet d on b.qom = d.qom and b.nulet1 = d.nulets
+        join car_corlarpzo c on d.idcorlarpzo = c.idcorlarpzo
+        join car_anuscartera e on
+        d.idanucartera = e.idanucartera and
+        ( year(b.fechavta) >= e.anuini and year(b.fechavta) <= e.anufin)
+        where a.fecha = ? and tda = ? and status='*'
+        group by piva, tiplazo, anucartera,e.descri",
+        fecpol_z,#,3,tien_z,#,1,;
+k1; kq,"select piva, tiplazo, anucartera, e.descri, sum(impor), 
+        sum( case tipo when 'AR' then 0   else rob end) as bonif,
+        sum( case tipo when 'AR' then rob else 0   end) as recar,
+        sum(
+          (case ace
+           when 'S' then
+            ( ( nulet1 * ( canle1 - b.bonifi) ) - ( precon * (piva / 100 + 1) - enganc ) ) / nulet1 * ceiling(impor / canle1)
+            when 'C' then
+            ( ( nulet1 * ( canle1 - b.bonifi) ) - ( precon * (piva / 100 + 1) - enganc ) ) / nulet1 * ceiling(impor / canle1)
+             else 0 end
+          )
+        ) as finmto,
+        sum(
+          (case ace
+           when 'S' then
+            ( b.bonifi *  ceiling(impor / canle1) )
+            when 'C' then
+            ( b.bonifi *  ceiling(impor / canle1) )
+             else 0 end
+          )
+        ) as boncorr
+        from renpol2 a join clientes b on a.idcli = b.idcli
+        join car_corlarpzodet d on b.qom = d.qom and b.nulet1 = d.nulets
+        join car_corlarpzo c on d.idcorlarpzo = c.idcorlarpzo
+        join car_anuscartera e on
+        d.idanucartera = e.idanucartera and
+        ( year(b.fechavta) >= e.anuini and year(b.fechavta) <= e.anufin)
+        where a.fecha = ? and tda = ? and status='*'
+        group by piva, tiplazo, anucartera,e.descri",
+        fecpol_z,#,3,tien_z,#,1,;
+
+f8; #ifacfon2.i;
+k0; ot,"facfon2",;
+k1; kp,"idfac=?",idfac_z,;
+k2; kp,"idcli=? and tipo=1",idcli_z,;
+
+f9; #irefsol.i;
+k0; ot,"refsol",;
+k1; kp,"nref=?",iduuid_z,;
+
+f10; M
+        iniciales_ind10		s5,
+        nombre_ind10		s201,
+        tam_ind10		s0,;
+k0; ot,"car_usuarios",;
+k1; kq,"select a.iniciales, b.nomcomp 
+        from car_usuarios a join car_nombres b on a.idnombre = b.idnombre
+        where a.iniciales = ?",antusr_z,#,1,;
+k2; kq,"select unique a.iniciales, b.nomcomp 
+        from renpol2 c join car_usuarios a on ltrim(rtrim(c.cobr2)) = ltrim(rtrim(a.iniciales))
+        join car_nombres b on a.idnombre = b.idnombre
+        where c.fecha = ? and c.tda=?",
+        fecpol_z,#,3,tien_z,#,1,;
+
+f13; #itablefnt.i;
+k0; ot,"fonts",;
+k1; kp,"impre=? and numero=?",impre_z,font_z,;
+
+R;
+
+#i/programas/lib/colores.i;
+#i/programas/lib/tomamaxrc.i;
+#i/programas/lib/status.i;
+
+[PAN; 
+Ff1; Gdefine_colores; Gtomamaxrc; tf; tn; Gamarillo_negro;
+ta0; #iprog1.i; ^=direc_z,#); Fslexten_z,nemp_z; ta1; t@0,1; pdirec_z,0;
+(esp_z)=(80)(exten_z)-(2)/; Ff1; t@1,esp_z; pnemp_z,0;
+(modul_z)=($Impresion de Poliza,19); (modul2_z)=($CAR-MDS,7);
+GBANNER; Gblanco_azul;
+R;
+
+[R; R; [E; ];
+[NOBD; Ff1; GST; `7; \No existe el archivo basedato.ini ...\; gFin1;
+[ERRCNB; GST; `6; \No pude conectarme a la base de datos...\; gFin1;
+[NOCLI; z0,nombre_cli,#; (nombre_cli)=($I N E X I S T E N T E,21); R;
+[Nodatos; Ff1; GST; `7; \archivo datos incompleto o inexistente...\; gFin1;
+
+[Fin1; y|;.
+[Fin; t@23,0; te; };

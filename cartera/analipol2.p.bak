@@ -1,0 +1,566 @@
+* Programa que sirve para Imprimir el analitico de Polizas
+  DRBR 12 de Febrero de 1998
+*
+
+#dMIS02 %02d~; #dMLE6 %-6ld~; #dMFE %-5.2f~; #dMDS12 %,12.2f~;
+#dMIS2 %2d~;   #dMLS6 %6ld~;  #dMFS5 %5.2f~; #dMDS9 %,9.2f~;   #dMLS10 %10ld~;
+#i/programas/lib/funkey.i;
+
+f0; M
+      version_z			s20,
+	impre_z			i,
+	font_z			i,
+	micar_z			s3,
+	carac_z			i,
+	html_z			s2,
+        sff_z			s2,
+        enc_z			i,
+	ter_z            s2,
+	fech9_z     {
+	  dias2_z       s16,
+	  hora_z         s6,
+	  resto_z        s5,
+	            }
+	bandman_z        s3,
+	cmds_z		{
+	  cmd1_z		s7,
+	  cmd2_z		s13,
+	  cmd3_z		s30,
+			}
+	arch_z			s13,
+	band_z           s3,
+	bandh_z          s3,
+	nemp_z		s80,
+	direc_z		s50,
+	modul_z		s30,
+	modul2_z	s10,
+	usuarios_z      s80,
+	teruser_z       s80,
+	mibd_z          s80,
+	nombuse_z       s15,
+	clause_z        s10,
+	bandf1_z	 s3,
+	bandrp_z		s3,
+	interactivo_z         s2,
+	sinplazos_z         s2,
+	
+	saldo_z		d,
+	milinea_z          s100,
+
+	fech8_z           	D,
+	fecha_z			D,
+	fechb_z			D,
+	fechc_z			D,
+	fechd_z			D,
+	bandimp_z		s3,
+	prtda_z			s3,
+	ultda_z			s3,
+	fecstr_z	{
+	  fecstraa_z        s4,
+	  fecstrmm_z        s2,
+	  fecstrdd_z        s2,
+	          }
+	
+	fecini_z	{
+	  feciniaa_z		i,
+	  fecinimm_z		i,
+	  fecinidd_z		i,
+	  		}
+	fecult_z	{
+	  fecultaa_z		i,
+	  fecultmm_z		i,
+	  fecultdd_z		i,
+	  		}
+	fecsig_z	{
+	  fecsigaa_z		i,
+	  fecsigmm_z		i,
+	  fecsigdd_z		i,
+	  		}
+        fvtaini_z		s11,
+        fvtafin_z		s11,
+        fecvt_z			s11,
+        ranf_z			s2,
+        feche_z			D,
+        fechf_z			D,
+        fechg_z			D,
+	abonos_z		d,
+	base_z			i,
+	tope_z			i,
+	rena_z			i,
+        maxcol_z		i,
+        maxrow_z		i,
+        renst_z			i,
+	bndf3_z			s3,
+        prcod_z			s3,
+        ulcod_z			s3,
+        codcli_z		s3,
+        sincli_z		s2,
+        sinuid_z		s2,
+        uuid_z			s65,
+        idfac_z			l,
+        iduuid_z		l,
+        idcli_z			l,
+        nconcep_z		l,
+	col01_z			i,
+	col02_z			i,
+	col03_z			i,
+	col04_z			i,
+	col05_z			i,
+	col06_z			i,
+	col07_z			i,
+	col08_z			i,
+	col09_z			i,
+	col10_z			i,
+	fecpol_z	{
+	  fecpolaa_z		i,
+	  fecpolmm_z		i,
+	  fecpoldd_z		i,
+	  		}
+	tda_z			s3,
+	fech1_z			s8,
+	fech2_z			s8,
+	numcli_z		s11,
+	promo_z			s4,
+	conse_z			i,
+	consmvc_z		i,
+	concep_z		s21,
+	rprtsp_z		s2,
+        ncon_z			l,
+	importe_z		d,
+	bonif_z			d,
+	recar_z			d,
+	neto_z			d,
+	
+	ind1_z            i,
+	ind2_z            i,
+	ii_z              i,
+	termi_z           i,
+	esp_z             i,
+	exten_z           i,
+	nargs_z			i,
+	tam0             s0,;
+
+mtam0&; 
+q+,version_z,"V:EK01",;
+Ff5; FO.impri2.ini~,r~;
+FG|; |
+  Fknemp_z,l;
+  !(nemp_z)0($html,4)>|;
+    (html_z)=($S,1);
+  |
+    >sinemp_z,#,impre_z;
+  .
+.
+FC; z0,nemp_z,#;
+
+Ff3; FOdatos.ini~,r~; FGNodatos; Fknemp_z,l; &f0; tu1; ts0;
+GABRE_TABLA; 
+!(html_z)0($S,1)>|;
+  (arch_z)=($analipo.html,12); 
+|
+  (arch_z)=($analipol.tex,12); 
+.
+(base_z)=(7); (tope_z)=(22); (col01_z)=(0); (col02_z)=(11); (col03_z)=(32);
+(col04_z)=(53); (col05_z)=(56); (col06_z)=(66); (ulcod_z)=($99,2);
+(rprtsp_z)=($N,1);
+GLEE_ARGUMENTOS;
+
+!(interactivo_z)5($N,1)>|; 
+  tr; GPAN; 
+  GPIDATS;
+|
+  Ff1; \Fecha Inicial:\; pfecha_z,+10; 
+  \ Fecha Final:\; pfechb_z,+10;
+  \ Del Codigo(Poliza):\; pprtda_z,0;
+  \ Al Codigo(Poliza) :\; pultda_z,0;
+  \ Del Codigo(Cliente):\; pprcod_z,0;
+  \ Al Codigo(Cliente) :\; pulcod_z,0;
+.
+
+(enc_z)=(1); 
+!(interactivo_z)5($N,1)>|; 
+  tS1,0,0,23,80; tc;
+.
+f3; k3; P;
+{ n+;
+  qD,1,fecha_rpo,fechd_z,; &bfechd_z; &p4fech1_z;
+  GIMPRI;
+  Ff1; GDESPREN;
+  f3; a;
+)
+!(band_z)5($S,1)>|;
+    (tda_z)=(tda_rpo,#); &bfechd_z; &p4fech2_z; Ff4; FO(arch_z),w~;
+    !(html_z)5($S,1)>|; FP66,60,Enc,Pie; . (band_z)=($S,1);
+.
+
+!(interactivo_z)5($N,1)>|; 
+  !(band_z)5($S,1)>|;
+    tr; Ff1; GST; \No tengo nada.....\; Z2; gFin;
+  .
+.
+GSUBTPOL; 
+!(sinplazos_z)0($S,1)>|; GANALI_PLAZOS; .
+Ff4; FC; Ff1; 
+!(interactivo_z)5($N,1)>|; 
+  tf; tr; tS0; GSalir;
+.
+gFin;
+
+[LEE_ARGUMENTOS;
+$inargs_z; (ii_z)=(1); (tope_z)=(nargs_z)(2)-;
+{ !(ii_z)1(tope_z)>+;
+  z0,milinea_z,#; 
+  !(ii_z)0($1)>|; $s1,milinea_z,#; . 
+  !(ii_z)0($2)>|; $s2,milinea_z,#; . 
+  !(ii_z)0($3)>|; $s3,milinea_z,#; . 
+  !(ii_z)0($4)>|; $s4,milinea_z,#; . 
+  !(ii_z)0($5)>|; $s5,milinea_z,#; . 
+  !(ii_z)0($6)>|; $s6,milinea_z,#; . 
+  !(ii_z)0($7)>|; $s7,milinea_z,#; . 
+  !(ii_z)0($8)>|; $s8,milinea_z,#; . 
+  !(ii_z)0($9)>|; $s9,milinea_z,#; . 
+  !(ii_z)0($10)>|; $s10,milinea_z,#; . 
+  !(ii_z)0($10)>|; $s11,milinea_z,#; . 
+  
+  !(milinea_z)0($AYUDA,5)>|;
+    Ff1; \Los argumentos deben ser: primer_codigo_poliza ultimo_codigo_poliza \; l;
+    \  primer_codigo_cliente ultimo_codigo_cliente \; l;
+    \  fecha inicial en formato yyyymmdd Fecha final en formato yyyymmdd \; l;
+    \  solo_movimientos_sin_uuid  S/N \; l;
+    \ solo_movimientos_clientes con fechas de venta en un rango S/N \; l;
+    gFin;
+  .
+  !(ii_z)0($1)>|; (prtda_z)=(milinea_z,2); .
+  !(ii_z)0($2)>|; (ultda_z)=(milinea_z,2); .
+  !(ii_z)0($3)>|; (prcod_z)=(milinea_z,2); .
+  !(ii_z)0($4)>|; (ulcod_z)=(milinea_z,2); .
+  !(ii_z)0($5)>|; 
+    (fecstr_z)=(milinea_z,8);  >sifecstraa_z,#,feciniaa_z; 
+    >sifecstrmm_z,#,fecinimm_z; >sifecstrdd_z,#,fecinidd_z;
+    qD,1,fecini_z,fecha_z,;
+  .
+  !(ii_z)0($6)>|; 
+    (fecstr_z)=(milinea_z,8);  >sifecstraa_z,#,fecultaa_z; 
+    >sifecstrmm_z,#,fecultmm_z; >sifecstrdd_z,#,fecultdd_z;
+    qD,1,fecult_z,#,fechb_z,;
+  .
+  !(ii_z)0($7)>|; (sinuid_z)=(milinea_z,1); .
+  !(ii_z)0($8)>|; (ranf_z)=(milinea_z,1); .
+  !(ii_z)0($9)>|;  (fvtaini_z)=(milinea_z,8);  .
+  !(ii_z)0($10)>|; (fvtafin_z)=(milinea_z,8);  .
+  !(ii_z)0($10)>|; (sinplazos_z)=(milinea_z,1);  .
+  (ii_z)=(ii_z)(1)+;
+  (interactivo_z)=($N,1);
+)  
+R;
+
+[PIDATS;
+[fei; t@5,3; \Fecha Inicial:\; t0Fin; &a; &cfecha_z; t@5,23; ifecha_z,+10;
+!(fecha_z)0($-1)>fei; qD,2,fecini_z,fecha_z,;
+[feu; t@6,3; \Fecha Final  :\; t0fei; (fechb_z)=(fecha_z);
+t@6,23; ifechb_z,+10; !(fechb_z)0($-1)>feu; qD,2,fecult_z,fechb_z,;
+[prt; t@5,40; \Del Codigo(Poliza):\; t0feu; t@5,63; iprtda_z,2;
+(ultda_z)=(prtda_z,#);
+[ult; t@6,40; \Al Codigo(Poliza) :\; t0prt; t@6,63; iultda_z,2;
+[prc; t@7,3;  \Del Codigo(Cliente):\; t0ult; t@7,23; iprcod_z,2;
+[ulc; t@8,3;  \Al Codigo(Cliente) :\; t0prc; t@8,23; iulcod_z,2;
+!(rprtsp_z)0($S,1)>|;
+  [siu; t@9,3; \Desea Solo Movimientos sin UUID? <S/N>:\; tg0ulc;
+  isinuid_z,1; !(sinuid_z)5($S,1)(sinuid_z)5($N,1)&>siu;
+  [fvt; t@10,3; \Desea Ventas de un rango de fechas? <S/N> :\; t0siu; iranf_z,1;
+  !(ranf_z)5($S,1)(ranf_z)5($N,1)&>fvt;
+  !(ranf_z)0($S,1)>|;
+    [fvi; t@11,3; \F.Vta Inicial:\; t0fvt; &a; &cfeche_z; t@11,25; ifeche_z,+10;
+    !(feche_z)0($-1)>fvi;
+    [fvf; t@11,40; \.Vta Final:\; t0fvi; (fechf_z)=(feche_z); t@11,65; ifechf_z,+10;
+    !(fechf_z)0($-1)>fvf;
+    &bfeche_z; &p1fvtaini_z; &bfechf_z; &p1fvtafin_z;
+  .
+.
+GST; \Estan correctos los datos ? <S/N> :\; y|; | gulc; .
+R;
+
+[DESPPOL;
+Ff1; \Leyendo Poliza:\; pfechd_z,+10; s1; ptda_z,0; l;
+R;
+
+[SUMAREN;
+(rena_z)=(rena_z)(1)+; !(rena_z)1(tope_z)>|; t@base_z,0; td; (rena_z)=(tope_z); .
+R;
+
+[DESPREN;
+(nconcep_z)=(concep_rpo); (idcli_z)=(idcli_rpo);
+z0,concepto_cpm,l; f4; k1; P; n|;.
+z0,numcli_cli,l; f5; k1; P; n|;.
+Ff1; pnumcli_cli,0; s1; pnombre_cli,0; s1; pconcepto_cpm,0;
+s1; ptipo_rpo,0; s1; prob_rpo,MDS9; s1; pimpor_rpo,MDS12; l;
+R;
+
+[Enc;
+GENCAB;
+Ft;
+
+[ENCAB;
+Ff3; FT; FGNodatos;
+!(html_z)0($S,1)>|; 
+  Ff4; 
+  \<Title>Analitico de Polizas del \; pfecha_z,+10; \ Al \;
+  pfechb_z,+10; \</Title>\; l;
+.
+Ff4; GFINTXTCONDENSADO; GINICENTRADO; Fc80,3; GSALTO_LINEA;
+Ff3; FGNodatos; Ff4; GINITXTCONDENSADO; (ii_z)=(-2); GINIFONTSIZE;
+\analipol \; GINITXTCONDENSADO; GFINFONT; &a; &cfech8_z; &p3fech9_z; pfech8_z,+10; s1;
+phora_z,#; s1; FW3; GSALTO_LINEA;
+\Analitico de Polizas del \; pfecha_z,+10; \ Al \; pfechb_z,+10;
+\ De \; pprtda_z,0; \ A \; pultda_z,0; 
+\ De Cod.Cliente: \; pprcod_z,0; \ A: \; pulcod_z,0;
+\ Pag:\; Fp%d~; GSALTO_LINEA; GFINCENTRADO; 
+!(enc_z)0($1)>|; GSUBENC1; .
+!(enc_z)0($2)>|; GSUBENC2; .
+R;
+
+[Pie; Fe;
+
+[SUBENC1;
+Ff4; 
+GINITABLA; GINIREN; (ii_z)=(3); GINICOLSPAN; GFINTXTCONDENSADO;
+\Fecha :\; pfechd_z,+10; \ Codigo:\; ptda_z,#; s1;
+f1; k1; P; N|; GNOTDA; .
+pnombre_tda,0; GINITXTCONDENSADO; (ii_z)=(-2); GINIFONTSIZE; GFINCOL; GFINREN; l;
+GINITXTSUBRAYADO;
+GINITXTREN; GINIREN;
+GINICOL; \Codigo    \; GFINCOL;
+GINICOL; \Nombre                           \; GFINCOL;
+GINICOL; s2; GFINCOL;
+GINICOL; \Concepto            \; GFINCOL;
+!(sinuid_z)0($S,1)>|;
+  GINICOL; \TP\; GINICOL; 
+  GINICOL; \Rec/Bonif\; GFINCOL;
+  GINICOL; \     Importe\; GFINCOL; 
+  GINICOL; \Factura    \; GFINCOL; 
+|
+  GINICOL; \Vencimient\; GFINCOL;
+  GINICOL; \ Bonifica\; GFINCOL;
+  GINICOL; \ Folio\; GFINCOL;
+  GINICOL; \  Recargo\; GFINCOL;
+  GINICOLDER; \     Importe\; GFINCOL;
+  GINICOL; \     Liquido\;  GFINCOL;
+.
+GFINREN; GFINTXTSUBRAYADO; l;
+R;
+
+[SUBENC2;
+GINITABLA;
+Ff4; GINITXTDOBLEANCHO; \ Plazos:\; GINITXTDOBLEANCHO; GINITXTCONDENSADO; GSALTO_LINEA; l;
+GINITXTREN; 
+GINICOL; \Codigo    \; GFINCOL; 
+GINICOL; \--Fecha---\; GFINCOL; 
+GINICOL; \--Vence---\; GFINCOL; 
+GINICOL; \Inic\;  GFINCOL; 
+GINICOL; \Observaciones\;  GFINCOL; GSALTO_LINEA; l;
+R;
+
+[IMPRI;
+(idcli_z)=(idcli_rpo);
+f5; k1; P;
+n|;
+  (sincli_z)=($S,1); 
+|
+  (sincli_z)=($N,1); (codcli_z)=(numcli_cli,2);
+.
+!(codcli_z)2(prcod_z,#)(codcli_z)1(ulcod_z,#)|>R;
+!(ranf_z)0($S,1)>|;
+  qD,1,fechavta_cli,fechf_z,; &bfechf_z; &p1fecvt_z;
+  !(fecvt_z)2(fvtaini_z,#)(fecvt_z)1(fvtafin_z,#)|>R;
+.
+!(sinuid_z)0($S,1)>|;
+  (iduuid_z)=(iduuid_rpo); (idfac_z)=(idfacfon_rpo);
+  z0,refyobs_rfsol,l; f9; k1; P; n|;.  Fslexten_z,refyobs_rfsol;  
+  !(exten_z)1($30)>R;
+  z0,idcli_faf,l; f10; k1; P; n|;.
+.
+!(tda_z)5(tda_rpo,#)(fech1_z)5(fech2_z,#)|>|;
+  !(band_z)5($S,1)>|;
+    (tda_z)=(tda_rpo,#); &bfechd_z; &p4fech2_z; Ff4; FO(arch_z),w~;
+    FP66,60,Enc,Pie; (band_z)=($S,1);
+    GDESPPOL;
+  |
+    GSUBTPOL; (tda_z)=(tda_rpo,#); &bfechd_z; &p4fech2_z; GSUBENC1; GDESPPOL;
+  .
+.
+
+qD,1,fecven_rpo,fechc_z,; (nconcep_z)=(concep_rpo); (idcli_z)=(idcli_rpo);
+z0,concepto_cpm,l; f4; k1; P; n|;.
+Ff4;
+GINITXTREN; GINIREN;
+!(sincli_z)0($S,1)>|;
+  GINICOL; pidcli_z,MLS10; GFINCOL;
+  GINICOL; s34; GFINCOL;
+|
+   GINICOL; pnumcli_cli,10; GFINCOL;
+   GINICOL; pnombre_cli,34; GFINCOL; 
+.
+GINICOL; psino_rpo,1;  GFINCOL; 
+GINICOL; pconcepto_cpm,20;  GFINCOL; 
+!(sinuid_z)0($S,1)>|;
+  GINICOL; ptipo_rpo,2; GFINCOL; 
+  GINICOLDER; prob_rpo,MDS9; GFINCOL; 
+  GINICOLDER; pimpor_rpo,MDS12; GFINCOL; 
+  GINICOL; pserie_faf,5; s1; pnfac_faf,MLS6; s1; prefyobs_rfsol,0;  GFINCOL;
+|  
+  GINICOL; pfechc_z,+10;  GFINCOL; 
+  !(tipo_rpo)0($AR,2)>|;
+    (neto_z)=(impor_rpo)(rob_rpo)+; (recar_z)=(recar_z)(rob_rpo)+; 
+     GINICOL; s9;  GFINCOL; 
+     GINICOL; s6;  GFINCOL; 
+     GINICOLDER; prob_rpo,MDS9; GFINCOL;
+  |
+    (neto_z)=(impor_rpo)(rob_rpo)-; (bonif_z)=(bonif_z)(rob_rpo)+; 
+     GINICOLDER; prob_rpo,MDS9;  GFINCOL; 
+    GINICOL; !(rob_rpo)5($0)>|; pfoliobon_rpo,MLS6; | s6; . GFINCOL;
+    GINICOL; s9; GFINCOL; 
+  .
+  GINICOLDER; pimpor_rpo,MDS12;  GFINCOL; 
+  GINICOLDER; pneto_z,MDS12;  GFINCOL; 
+.
+(importe_z)=(importe_z)(impor_rpo)+; GFINREN; l;
+R;
+
+[SUBTPOL;
+(neto_z)=(importe_z)(bonif_z)-(recar_z)+;
+Ff4;  s29; GINIREN; GINITXTREN; 
+GINICOL; s10; GFINCOL; 
+GINICOL; \Totales de Esta Poliza\; GFINCOL; 
+GINICOL; s2; GFINCOL;
+GINICOL; s20; GFINCOL;
+GINICOL; s10; GFINCOL;
+GINICOLDER; pbonif_z,MDS9; GFINCOL; 
+GINICOL; s6; GFINCOL;
+GINICOLDER; precar_z,MDS9; GFINCOL;
+GINICOLDER; pimporte_z,MDS12; GFINCOL; 
+GINICOLDER; pneto_z,MDS12; GFINCOL; GFINREN; l;
+GFINTABLA;
+z0,importe_z,#; z0,bonif_z,#; z0,recar_z,#;
+R;
+
+[ANALI_PLAZOS;
+GSUBENC2;
+f6; k1; P;
+{ n+;
+  qD,1,fecha_ind6,fechc_z,;
+  qD,1,vence_ind6,fechd_z,;
+  Ff4; 
+  GINITXTREN; GINIREN; 
+  GINICOL; pnumcli_ind6,10; GFINCOL;
+  GINICOL; pfechc_z,+10; GFINCOL;
+  GINICOL; pfechd_z,+10; GFINCOL;
+  GINICOL; piniciales_ind6,4;  GFINCOL;
+  GINICOL; pobserv_ind6,0; GFINCOL; GFINREN; l;
+  f6; a;
+)
+GFINTABLA;
+R;
+
+*1234567890 12345678901234567890123456789012345 12345678901234567890 1234567890 123456789012 123456789012 123456789012 123456789012*
+
+[MANDAELFNT; f8; k1; P; nR; GSACAF; R;
+
+#isacaf.i;
+#iimpri.i;
+
+
+[ABRE_TABLA; 
+Ff5; FObasedato.ini~,r~; FGNOBD; Fkmibd_z,l; FC; Ff1;
+fd1; O@,mibd_z,"sa","lux",1,ERRCNB,;  * con conexion autocommit    *
+f1; #itiendas.i;
+k0; ot,"tiendas",;
+k1; kp,"codigo = ?",tda_z,#,1,;
+
+f2; #ipolizas.i;
+k0; ot,"polizas",;
+k1; kp,"fecha=? and tda=?",fecpol_z,#,3,tda_z,#,1,;
+k2; kp,"fecha=?",fecpol_z,#,3,;
+k3; kp,"fecha between ? and ? and tda between ? and ? order by fecha,tda",
+    fecini_z,#,3,fecult_z,#,3,prtda_z,#,1,ultda_z,#,1,;
+
+f3; #irenpol2.i;
+k0; ot,"renpol2",;
+k1; kp,"fecha=? and tda=? order by conse",fecpol_z,#,3,tda_z,#,1,;
+k2; kp,"fecha=? and tda=? and conse=?",fecpol_z,#,3,tda_z,#,1,conse_z,;
+k3; kp,"fecha between ? and ? and tda between ? and ? order by fecha,tda,conse",
+    fecini_z,#,3,fecult_z,#,3,prtda_z,#,1,ultda_z,#,1,;
+
+f4; #iconceps.i;
+k0; ot,"conceps",;
+k1; kp,"ncon=?",nconcep_z,;
+
+f5; #iclientes.i;
+k0; ot,"clientes",;
+k1; kp,"idcli=?",idcli_z,;
+
+f6; M
+	numcli_ind6		s11,
+        fecha_ind6	{
+          fechaaa_ind6		i,
+          fechamm_ind6		i,
+          fechadd_ind6		i,
+          		}
+        vence_ind6	{
+          venceaa_ind6		i,
+          vencemm_ind6		i,
+          vencedd_ind6		i,
+        		}
+        idusuario_ind6		l,
+        iniciales_ind6		s5,
+        observ_ind6		s201,
+        tam_ind6		s0,;
+k0; ot,"car_plazos",;
+k1; kq,"select b.numcli, a.fecha, a.vence, a.idusuario, c.iniciales,
+	d.observ from car_plazos a join clientes b on a.idcli = b.idcli
+        join car_usuarios c on a.idusuario = c.idusuario
+        join car_observs d on a.idconcep = d.idobserv
+        where a.fecha between ? and ? and a.poliza between ? and ?
+        and substring(b.numcli, 1, 2) between ? and ?
+        order by b.numcli",
+        fecini_z,#,3,fecult_z,#,3,prtda_z,#,1,ultda_z,#,1,
+        prcod_z,#,1,ulcod_z,#,1,;
+
+f7; #iusuarios.i;
+k0; ot,"usuarios",;
+k1; kp,"nombre =?",nombuse_z,#,1,;
+
+f8; #itablefnt.i;
+k0; ot,"fonts",;
+k1; kp,"impre=? and numero=?",impre_z,font_z,;
+
+f9; #irefsol.i;
+k0; ot,"refsol",;
+k1; kp,"nref=?",iduuid_z,;
+
+f10; #ifacfon2.i;
+k0; ot,"facfon2",;
+k1; kp,"idfac=?",idfac_z,;
+R;
+
+#i/programas/lib/colores.i;
+#i/programas/lib/tomamaxrc.i;
+#i/programas/lib/status.i;
+#i/programas/lib/htmlotxt.i;
+
+[PAN; 
+Ff1; Gdefine_colores; Gtomamaxrc; Gamarillo_negro; 
+tf; #iprog1.i; ^=direc_z,#); z0,modul_z,#;
+q+,modul_z,"Analitico Polizas Caja",; (modul2_z)=($CAR-MDS,7);
+GBANNER; Gblanco_azul;
+R;
+
+[R; R; [E; ];
+
+[NOBD; Ff1; GST; `7; \No existe el archivo basedato.ini ...\; gFin1;
+[ERRCNB; GST; `6; \No pude conectarme a la base de datos...\; gFin1;
+[NOTDA; z0,nombre_tda,#; (nombre_tda)=($INEXISTENTE,11); R;
+[Nodatos; Ff1; GST; `7; \archivo datos incompleto o inexistente...\; gFin1;
+
+[Fin1; y|;.
+[Fin; t@23,0; te; };
+

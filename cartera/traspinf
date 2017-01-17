@@ -1,0 +1,18 @@
+user tron master
+bin
+cd /programas/fuentes/cartera
+lcd /programas/fuentes/cartera
+put repmor.p
+put traspinf
+put traspinf.bat
+cd /programas/vps/cartera
+lcd /programas/vps/cartera
+put repmor.vp
+cd /programas/lib
+lcd /programas/lib
+put fechas.i
+put dlg_msg.i
+put ventananom.i
+put htmlotxt.i
+put passw.i
+bye

@@ -1,0 +1,717 @@
+drop table clientes;
+create table clientes (
+	numcli		char(10),
+	tienda		    smallint,
+	fechavta			date,
+	conse		   smallint,
+	status		  char(1),
+	nombre		char(34),
+	direc		char(25),
+	poblac		char(25),
+	qom		  char(1),
+	ticte		  char(2),
+	letra1		  float,
+	enganc		  float,
+	nulet1		  smallint,
+	canle1		  float,
+	nulet2		  smallint,
+	canle2		  float,
+	bonifi		  float,
+	servic		  float,
+	precon		  float,
+	agente		  char(3),
+	fac		  integer,
+	comisi		  float,
+	agent2		 char(3),
+	operac		char(1),
+	comis2		float,
+	cargos		float,
+	abonos		float,
+	jefgpo		char(3),
+	moneda		char(1),
+	solici		char(1),
+	pgocom		char(6),
+	ubiage		char(2),
+	jefpas		char(6),
+	cojepa		float,
+	pdsc		float,
+	fechal		date,
+	ultmod		date,
+	fecsal		date,
+	piva		float,
+	diacum		smallint,
+	mescum		smallint
+		);
+
+create index clientes on clientes (numcli);
+create index clixnom on clientes(nombre);
+create index clixfvta on clientes (fechavta);
+create index clixpob on clientes(poblac,nombre);
+create index clixulcam on clientes(ultmod);
+
+drop table clitmp;
+create table clitmp (
+	numcli		char(10),
+	tienda		    smallint,
+	fechavta			date,
+	conse		   smallint,
+	status		  char(1),
+	nombre		char(34),
+	direc		char(25),
+	poblac		char(25),
+	qom		  char(1),
+	ticte		  char(2),
+	letra1		  float,
+	enganc		  float,
+	nulet1		  smallint,
+	xnulet1		  float,
+	canle1		  float,
+	nulet2		  smallint,
+	xnulet2		  float,
+	canle2		  float,
+	bonifi		  float,
+	servic		  float,
+	precon		  float,
+	agente		  char(3),
+	fac		  integer,
+	comisi		  float,
+	agent2		 char(3),
+	operac		char(1),
+	comis2		float,
+	cargos		float,
+	abonos		float,
+	jefgpo		char(3),
+	moneda		char(1),
+	solici		char(1),
+	pgocom		char(6),
+	ubiage		char(2),
+	jefpas		char(6),
+	cojepa		float,
+	pdsc		float,
+	fechal		date,
+	ultmod		date,
+	fecsal		date,
+	piva		float,
+	diacum		smallint,
+	mescum		smallint
+		);
+select * from clitmp;
+delete from clientes;
+delete from clitmp;
+
+update clitmp set tienda = convert_smallint(substring(numcli,1,2)) where numcli <> '';
+update clitmp set fechavta = convert_date('19'+substring(numcli,7,2)+'-'+substring(numcli,5,2)+'-'+substring(numcli,3,2)) where numcli <> '';
+update clitmp set conse = convert_smallint(substring(numcli,9,2)) where numcli <> '';
+update clitmp set nulet1 = convert_smallint(xnulet1) where numcli <> '';
+update clitmp set nulet2 = convert_integer(xnulet2) where numcli <> '';
+update clitmp set numcli = substring(numcli,1,2)+substring(numcli,7,2)+substring(numcli,5,2)+substring(numcli,3,2)+substring(numcli,9,2) where numcli <> '';
+
+INSERT INTO clientes (
+	numcli,tienda,fechavta,conse,status,nombre,direc,poblac,qom,
+	ticte,letra1,enganc,nulet1,canle1,nulet2,canle2,bonifi,servic,precon,
+	agente,fac,comisi,agent2,operac,comis2,cargos,abonos,jefgpo,
+	moneda,solici,pgocom,ubiage,jefpas,cojepa,pdsc,fechal,ultmod,
+	fecsal,piva,diacum,mescum
+	)
+                SELECT
+	numcli,tienda,fechavta,conse,status,nombre,direc,poblac,qom,
+	ticte,letra1,enganc,nulet1,canle1,nulet2,canle2,bonifi,servic,precon,
+	agente,fac,comisi,agent2,operac,comis2,cargos,abonos,jefgpo,
+	moneda,solici,pgocom,ubiage,jefpas,cojepa,pdsc,fechal,ultmod,
+	fecsal,piva,diacum,mescum
+
+ FROM clitmp;	
+select tienda,fechavta,conse,nombre from clientes where fechavta='1996-02-01';
+delete from clitmp;
+
+
+drop table mvcli;
+create table mvcli (
+	llave		char(10),
+	fechamov		date,
+	coa		char(1),
+	concep1		char(20),
+	poliza		char(2),
+	tipag		char(2),
+	recobon		float,
+	import		float,
+	oper		char(3),
+	ace		char(1),
+	usuario		char(2),
+	conse		smallint
+		);
+update mvcli set conse=0;
+create index mvcli on mvcli(llave);
+create index mvclixfec on mvcli(fechamov);
+
+drop table mvclitmp;
+create table mvclitmp (
+	llave		char(10),
+	xfechamov	char(6),	
+	fechamov		date,
+	coa		char(1),
+	concep1		char(20),
+	poliza		char(2),
+	tipag		char(2),
+	recobon		float,
+	import		float,
+	oper		char(3),
+	ace		char(1),
+	usuario		char(2)
+		);
+
+update mvclitmp set fechamov = convert_date('19'+substring(xfechamov,1,2)+'-'+substring(xfechamov,3,2)+'-'+substring(xfechamov,5,2)) where llave <> '';
+update mvclitmp set llave = substring(llave,1,2)+substring(llave,7,2)+substring(llave,5,2)+substring(llave,3,2)+substring(llave,9,2) where llave <> '';
+insert into mvcli (
+	llave,fechamov,coa,concep1,	poliza,tipag,recobon,import,oper,ace,usuario
+	)
+	select llave,fechamov,coa,concep1,	poliza,tipag,recobon,import,oper,ace,usuario
+	from mvclitmp;
+delete from mvclitmp;
+delete from mvcli;
+ 
+create table dircli (
+	codcli		char(10),
+	direc2		char(30),
+	nomav		char(35),
+	dirav1		char(25),
+	dirav2		char(25),
+	compra		char(70),
+	linea		char(4)
+		);
+create unique index dircli on dircli(codcli);
+create index avalcli on dircli(nomav);
+update dircli set codcli = substring(codcli,1,2)+substring(codcli,7,2)+substring(codcli,5,2)+substring(codcli,3,2)+substring(codcli,9,2) where codcli <> '';
+create table dirclitmp (
+	codcli		char(10),
+	direc2		char(30),
+	nomav		char(35),
+	dirav1		char(25),
+	dirav2		char(25),
+	compra		char(70),
+	linea		char(4)
+		);
+
+drop table promotor;
+create table promotor (
+	tienda		char(2),
+	clave		char(3),
+	nombre		char(30),
+	ubi		char(1),
+	numzon		char(2),
+	cvezon		char(2),
+	poc		char(1),
+	comlet		float,
+	comrec		float
+		);
+
+drop table usuarios;
+create table usuarios (
+	nombre		char(15),
+	clave		char(10),
+	maestro		char(1),
+	numpol		char(2),
+	iniciales		char(4),
+	permi01		char(1),
+	permi02		char(1),
+	permi03		char(1),
+	permi04		char(1),
+	permi05		char(1),
+	permi06		char(1),
+	permi07		char(1),
+	permi08		char(1),
+	permi09		char(1),
+	permi10		char(1),
+	permi11		char(1),
+	permi12		char(1),
+	permi13		char(1),
+	permi14		char(1),
+	permi15		char(1),
+	permi16		char(1),
+	permi17		char(1),
+	permi18		char(1),
+	permi19		char(1),
+	permi20		char(1),
+	permi21		char(1),
+	permi22		char(1),
+	permi23		char(1),
+	permi24		char(1),
+	permi25		char(1),
+	permi26		char(1),
+	permi27		char(1),
+	permi28		char(1),
+	permi29		char(1),
+	permi30		char(1)
+		);
+
+create unique index usuarios on usuarios(nombre);
+
+
+drop table vendedor;
+create table vendedor (
+	codigo		char(3),
+	nombre		char(20)
+		);
+create unique index vendedor on vendedor(codigo);
+
+drop table cartapro;
+create table cartapro (
+	clave		char(1),
+	descri		char(20),
+	acum1		char(1),
+	impea		char(1)
+		);
+create unique index cartapro on cartapro(clave);
+
+drop table lineas;
+create table lineas (
+	numero		char(4),
+	descri		char(30),
+	orden		char(2),
+	region		char(1)
+		);
+create unique index lineas on lineas(numero);
+
+drop table tiendas;
+create table tiendas (
+	codigo		char(2),
+	nombre		char(20),
+	numrom		char(5),
+	orden		char(2),
+	zoncar		char(2),
+	acum		char(1),
+	ticul		char(1),
+	caja		char(2),
+	muerta		char(2),
+	fecfin		date
+		);
+create unique index tiendas on tiendas(codigo);
+create table polizas (
+	fecha		date,
+	tda		char(2),
+	status		char(1),
+	bonif		float,
+	recar		float,
+	impor		float
+		);
+
+create index polizas on polizas(fecha,tda);
+
+create table renpol (
+	fecha		date,
+	tda		char(2),
+	cod		char(10),
+	nomcli		char(34),
+	sino		char(1),
+	concep		char(30),
+	tipo		char(2),
+	rob		float,
+	impor		float,
+	salcli		float,
+	moneda		char(1),
+	fecven		date,
+	comis		float,
+	dias		smallint,
+	cobr2		char(3),
+	usuario		char(2),
+	ace		char(1),
+	conse		smallint
+		);
+create index renpol on renpol(fecha,tda);
+create index renpolxcod on renpol(cod);
+
+
+create table renpoltmp (
+	fecha		date,
+	tda		char(2),
+	cod		char(10),
+	nomcli		char(34),
+	sino		char(1),
+	concep		char(30),
+	tipo		char(2),
+	rob		float,
+	impor		float,
+	salcli		float,
+	moneda		char(1),
+	fecven		date,
+	comis		float,
+	dias		smallint,
+	cobr2		char(3),
+	usuario		char(2),
+	ace		char(1)
+		);
+
+create table recojas (
+	codcli		char(10),
+	fecha		date,
+	adeudo		float,
+	devuel		char(1),
+	fecdev		date
+		);
+
+create index recojas on recojas(codcli);
+
+create table comiscob (
+	fecha		date,
+	promo		char(3),
+	poliza		char(2),
+	eng		float,
+	imp		float,
+	bon		float,
+	rec		float,
+	com		float,
+	rel		float,
+	recib		float,
+	cambi		float
+		);
+create index comiscob on comiscob(fecha,promo,poliza);
+
+create table litigio	(
+	codigo		char(10),
+	fecha		date,
+	status		char(1),
+	adeud		float,
+	saldo		float,
+	litigante		char(30)
+		);
+create index litigio on litigio(codigo);
+create index litxfec on litigio(fecha);
+delete from polizas;
+
+create table poblacs (
+	nombre		char(25)
+	                  );
+create unique index poblacs on poblacs(nombre);	
+explain plan for select * from poblacs order by nombre;
+select * from poblacs order by nombre;
+
+CREATE TABLE SOLICIT (
+	CODIGO CHAR(10),
+	SEXO CHAR(1),
+	EDAD SMALLINT,
+	EDOCIV CHAR(1),
+	DEPEND SMALLINT,
+	OCUPAC CHAR(20),
+	INGRES FLOAT(15,0),
+	TRABAJ CHAR(40),
+	TELTRA CHAR(14),
+	DIRTRA CHAR(40),
+	ANUANT SMALLINT,
+	MESANT SMALLINT,
+	CONYUG CHAR(25),
+	OCUCON CHAR(20),
+	TRACON CHAR(40),
+	TELTRC CHAR(14),
+	DIRTRC CHAR(40),
+	INGCON FLOAT(15,0),
+	ANUANC SMALLINT,
+	MESANC SMALLINT,
+	AVAL CHAR(25),
+	OCUAVA CHAR(20),
+	TRAAVA CHAR(40),
+	TELTAV CHAR(14),
+	DIRTAV CHAR(40),
+	INGAVA FLOAT(15,0),
+	ANUANA SMALLINT,
+	MESANA SMALLINT,
+	CONOCI CHAR(30),
+	DIRCONO CHAR(30),
+	TELCONO CHAR(14),
+	FAMILI CHAR(30),
+	DIRFAMI CHAR(30),
+	TELFAMI CHAR(14),
+	CONYAVA CHAR(25),
+	OCUCONA CHAR(20),
+	TRACONA CHAR(40),
+	TELTRCA CHAR(14),
+	DIRTRCA CHAR(40),
+	INGCONA FLOAT(15,0),
+	ANUANCA SMALLINT,
+	MESANCA SMALLINT,
+	CASA1 CHAR(4),
+	REF1 CHAR(65),
+	REF1A CHAR(65),
+	CASA2 CHAR(4),
+	REF2 CHAR(65),
+	OBSERV CHAR(60),
+	DIRCLI2 CHAR(30)
+);
+
+CREATE INDEX SOLICIT ON SOLICIT (CODIGO);
+
+CREATE TABLE SOLICTMP (
+	CODIGO CHAR(10),
+	SEXO CHAR(1),
+	EDAD SMALLINT,
+	EDOCIV CHAR(1),
+	DEPEND SMALLINT,
+	OCUPAC CHAR(20),
+	INGRES FLOAT(15,0),
+	TRABAJ CHAR(40),
+	TELTRA CHAR(14),
+	DIRTRA CHAR(40),
+	ANUANT SMALLINT,
+	MESANT SMALLINT,
+	CONYUG CHAR(25),
+	OCUCON CHAR(20),
+	TRACON CHAR(40),
+	TELTRC CHAR(14),
+	DIRTRC CHAR(40),
+	INGCON FLOAT(15,0),
+	ANUANC SMALLINT,
+	MESANC SMALLINT,
+	AVAL CHAR(25),
+	OCUAVA CHAR(20),
+	TRAAVA CHAR(40),
+	TELTAV CHAR(14),
+	DIRTAV CHAR(40),
+	INGAVA FLOAT(15,0),
+	ANUANA SMALLINT,
+	MESANA SMALLINT,
+	CONOCI CHAR(30),
+	DIRCONO CHAR(30),
+	TELCONO CHAR(14),
+	FAMILI CHAR(30),
+	DIRFAMI CHAR(30),
+	TELFAMI CHAR(14),
+	CONYAVA CHAR(25),
+	OCUCONA CHAR(20),
+	TRACONA CHAR(40),
+	TELTRCA CHAR(14),
+	DIRTRCA CHAR(40),
+	INGCONA FLOAT(15,0),
+	ANUANCA SMALLINT,
+	MESANCA SMALLINT,
+	CASA1 CHAR(4),
+	REF1 CHAR(65),
+	REF1A CHAR(65),
+	CASA2 CHAR(4),
+	REF2 CHAR(65),
+	OBSERV CHAR(60),
+	DIRCLI2 CHAR(30)
+);
+
+drop table flujoefe;
+create table flujoefe (
+	cod		char(2),
+	dias		integer,
+	signo		char(1),
+	importe		float
+		);
+
+
+create table reportes	(
+	ubica		smallint,
+	numero		integer,
+	codcli		char(10),
+	cliente		char(35),
+	fecha		date,
+	artic		char(30),
+	serie		char(10),
+	sintom1		char(60),
+	sintom2		char(60),
+	dircli		char(35),
+	pobla		char(25),
+	cargo		char(1),
+	importe		float,
+	status		char(1),
+	fecres		date,
+	ccarmds		char(1),
+	carmds		float,
+	obser1		char(60),
+	clialm		char(1),
+	taller		char(1),
+	fectal		date,
+	visit1		char(1),
+	fevis1		date,
+	resvi1		char(20),
+	visit2		char(1),
+	fevis2		date,
+	resvi2		char(20),
+	visit3		char(1),
+	fevis3		date,
+	resvi3		char(20),
+	situac		char(1),
+	devolt		char(1),
+	fecdvt		date,
+	recogi		char(1),
+	fecrec		date,
+	obsrec		char(20),
+	artser		char(1),
+	desars		char(30),
+	linea		char(4),
+	diiase		char(1),
+	obsolu		char(20),
+	talser		char(2),
+	prom2		char(3)
+		);
+
+create table polser	(
+	fecha		date,
+	tda		char(4),
+	status		char(1),
+	usuario		char(20)
+		);
+
+
+create table renposer	(
+	fecha		date,
+	tda		char(4),
+	conse		smallint,
+	reporte		integer,
+	cliente		char(35),
+	codcli		char(10),
+	artic		char(30),
+	falla1		char(30),
+	serie		char(10),
+	movto		char(1),
+	carcli		float,
+	cosmds		float,
+	observ		char(20),
+	top		char(1),
+	nomat		char(20),
+	atie2		char(3),
+	zona		char(2)
+		);
+create index renposer on renposer(fecha,tda);
+create index renpsercli on renposer(codcli);
+create index renpnrep on renposer(reporte);
+
+create table sitrep (
+	clave		char(1),
+	descri		char(15)
+		);
+
+
+create table tallser	(
+	clave		char(3),
+	nombre		char(50),
+	repre		char(50),
+	direc		char(50),
+	tel		char(20),
+	marca		char(50)
+		);
+
+create table reportestmp	(
+	ubica		smallint,
+	numero		integer,
+	codcli		char(10),
+	cliente		char(35),
+	fecha		date,
+	artic		char(30),
+	serie		char(10),
+	sintom1		char(60),
+	sintom2		char(60),
+	dircli		char(35),
+	pobla		char(25),
+	cargo		char(1),
+	importe		float,
+	status		char(1),
+	fecres		date,
+	ccarmds		char(1),
+	carmds		float,
+	obser1		char(60),
+	clialm		char(1),
+	taller		char(1),
+	fectal		date,
+	visit1		char(1),
+	fevis1		date,
+	resvi1		char(20),
+	visit2		char(1),
+	fevis2		date,
+	resvi2		char(20),
+	visit3		char(1),
+	fevis3		date,
+	resvi3		char(20),
+	situac		char(1),
+	devolt		char(1),
+	fecdvt		date,
+	recogi		char(1),
+	fecrec		date,
+	obsrec		char(20),
+	artser		char(1),
+	desars		char(30),
+	linea		char(4),
+	diiase		char(1),
+	obsolu		char(20),
+	talser		char(2),
+	prom2		char(3)
+		);
+create index repxcod on reportes(codcli);
+
+create table cancel (
+	fecha		date,
+	codcli		char(10),
+	impor		float,
+	devol		float,
+	adeud		float,
+	foc		char(1)
+		);
+create index cancel on cancel(fecha);
+create index canxcod on cancel(codcli);
+
+create table polsertmp	(
+	fecha		date,
+	tda		char(4),
+	status		char(1),
+	usuario		char(20)
+		);
+
+
+create table renposertmp	(
+	fecha		date,
+	tda		char(4),
+	conse		smallint,
+	reporte		integer,
+	cliente		char(35),
+	codcli		char(10),
+	artic		char(30),
+	falla1		char(30),
+	serie		char(10),
+	movto		char(1),
+	carcli		float,
+	cosmds		float,
+	observ		char(20),
+	top		char(1),
+	nomat		char(20),
+	atie2		char(3),
+	zona		char(2),
+	xfecha		char(6)
+		);
+alter table renposertmp add column xfecha char(6);
+
+create table ubivta (
+	codcar		char(2),
+	ubica		char(3),
+	nombre		char(30),
+	zona		char(2),
+	subzon		char(3)
+		);
+
+create table resanali (
+	tarea		integer,
+	cod		smallint,
+	clicon		smallint,
+	clicrd		smallint,
+	engctopl		float,
+	englarpl		float,
+	vtactopl		float,
+	vtalarpl		float
+		);
+
+delete from  mvclitmp;
+
+create table repmors (
+	clave		smallint,
+	descri		char(30),
+	zona		char(30),
+	numcods		smallint,
+	codis		char(40),
+	prdia		smallint,
+	uldia		smallint,
+	prciu		char(25),
+	ulciu		char(25),
+	excep1		char(25),
+	excep2		char(25),
+	excep3		char(25)
+		)

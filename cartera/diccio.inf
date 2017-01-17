@@ -1,0 +1,24 @@
+Este es un diccionario, por favor, cualquier asunto escribelo aqui.
+
+28 Nov 97:
+Las Permisiones de los usuarios quedan en esta forma:
+01 Captura Polizas
+02 Captura Ventas
+03 Recepcion de Ventas
+04 Recepcion de Polizas
+05 Mantenimiento de Vendedores
+06 Mantenimiento de Promotores
+07 Mantenimiento de Cartera
+08 Mantenimiento de Polizas
+09 Captura de Cancelaciones
+10 Cambios de Codigo
+11 Captura de Recojas
+12 Captura de Fonacot. Relaciones cobranza y Polizas
+13 Reservado, aun no definido
+14 Reservado, aun no definido
+15 Captura de relacion de cobranza
+
+Cuando el usuario es supervisor tiene todas las permisiones
+No Caja es la clave de la caja que toma cuando es cajera (perm polizas).
+Iniciales son las iniciales del usuario.
+

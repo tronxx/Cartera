@@ -1,0 +1,9 @@
+k1; kq,"select d.tiplazo, b.piva, Year(fechavta) as anuvta,
+         sum(impor), sum(adeud), sum(precon), sum(cargos)
+        from cancel a 
+        join clientes b on a.codcli = b.numcli
+        join car_corlarpzodet c on b.qom = c.qom and b.nulet1 = c.nulets
+        join car_corlarpzo d on c.idcorlarpzo = d.idcorlarpzo
+        where a.fecha between ? and ? 
+        group by tiplazo, piva, anuvta",
+        fecini_z,#,3,fecult_z,#,3,;

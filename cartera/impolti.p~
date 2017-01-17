@@ -1,0 +1,468 @@
+* Programa que sirve para imprimir la Poliza del Dia
+  DRBR 18-Dic-1992
+  Modificado para que imprima solo los clientes que corresponda la tienda
+  con el codigo del cliente para hacer la separacion de Clientes de Ricardo
+  Castro con clientes de Alfonso Castro
+  DRBR 01-Feb-1992
+  -------------------------------------------------------------------------
+  Modificado para que imprima todos los codigos de los clientes y que
+  haga otra hoja automaticamente para los pesos nuevos y pesos antiguos
+  DRBR 22-May-1993
+  --------------------------------------------------------------------------
+  Modificado para incluir un analisis de las fechas de vencimientos de las
+  letras vencidas a fin de determinar los vencimientos de las letras pagadas
+  y sacar un subtotal de 10 o menos, 12 a 30 dias, 31 o mas dias.
+  DRBR 24-May-1993
+  --------------------------------------------------------------------------
+  Modificado para que solo haga una poliza de nuevos y antiguos pesos
+  DRBR 01-Nov-1993
+  --------------------------------------------------------------------------
+  Modificado para dividir el 10% y 15% en Analisis de Estado de Pagos
+  DRBR 19-Jul-1995
+  --------------------------------------------------------------------------
+  Modificado para agregar un estado de corto-largo plazo 2004-2005
+  DRBR 19-Jul-1995
+*
+
+#dMIS2  %2d~;  #dMDS10 %,10.2f~; #dMDS12 %,12.2f~;  #dMLS10 %10ld~;
+#dMIS02 %02d~; #dMDS13 %,13.2f~; #dMFS %6.2f~;      #dMDS2 %2.0f~;
+#dMIS4 %4d~;   #dMLS6 %6ld~;
+
+
+f0; M
+	impre_z			i,
+	font_z			i,
+	micar_z			s3,
+	carac_z			i,
+        idcli_z			l,
+        ncon_z			l,
+        maxcol_z		i,
+        maxrow_z		i,
+        renst_z			i,
+        sff_z			s2,
+        tiplazo_z		s2,
+	nemp_z          s80,
+	direc_z         s80,
+	modul_z         s30,
+	modul2_z        s10,
+	ter_z            s3,
+	fech8_z           D,
+	fech9_z     {
+	  fecd_z        s16,
+	  hora_z         s5,
+	  resto_z        s5,
+	            }
+	fecpol_z	{
+	  fecpolaa_z		i,
+	  fecpolmm_z		i,
+	  fecpoldd_z		i,
+	  		}
+	tien_z			s3,
+	tda_z      {
+	  tda1_z         s1,
+	  tda2_z         s1,
+	           }
+	codcli_z   {
+	  ctda1_z        s1,
+	  ctda2_z        s1,
+	  aacli_z        s2,
+	  mmcli_z        s2,
+	  ddcli_z        s2,
+	  conse_z        s3,
+	           }
+	concep_z        C30,
+	fech3_z    {
+	  dd_z           s3,
+	  mm_z           s3,
+	  aa_z           s2,
+	           }
+	fech4_z    {
+	  aaa_z          s2,
+	  mmm_z          s2,
+	  ddd_z          s2,
+	           }
+	antm_z           s2,
+	letra_z           i,
+	lta_z             i,
+	dias_z            i,
+        bandimp_z	  s2,
+	fechb_z           D,
+	fechc_z           D,
+	nletra_z   {
+	  nlta1_z        s1,
+	  nlta2_z        s1,
+	           }
+	cmds_z       {
+	  cmd1_z         s7,
+	  cmd2_z        s12,
+	  cmd3_z        s20,
+	            }
+	arch_z   	s13,
+	mibd_z		s50,
+	letras_z          l,
+	qin_z            s1,
+	fech1_z         s26,
+	mone_z           s1,
+	haynp_z          s1,
+	hayap_z          s1,
+	band_z           s1,
+
+	netact_z          d,
+	neteng_z          d,
+	netdoc_z          d,
+	docbon_z          d,
+	docrec_z          d,
+	docnet_z          d,
+	bonif_z           d,
+	recar_z           d,
+	impor_z           d,
+	neto_z            d,
+	totdoc11_z        d,
+	totdoc30_z        d,
+	totdoc31_z        d,
+        impdoc31_z		d,
+	porc1_z           d,
+	porc2_z           d,
+        efectivo_z		d,
+	nulet_z           i,
+	col_z            s1,
+        piva_z			d,
+        anuini_z		i,
+        anufin_z		i,
+        mesini_z		i,
+        mesfin_z		i,
+	impcp_z           d,
+	boncp_z           d,
+	reccp_z           d,
+	implp_z           d,
+	bonlp_z           d,
+	reclp_z           d,
+	fecha_z           D,
+	ind1_z            i,
+	ind2_z            i,
+	ntda_z            i,
+	termi_z           i,
+	esp_z             i,
+	exten_z           i,
+	tam0             s0,;
+mtam0&; tr;
+Ff3; FOdatos.ini~,r~; FGNodatos; Fknemp_z,l;
+Ff5; FO.impri.ini~,r~; FG|; | Fknemp_z,l; >sinemp_z,#,impre_z; . FC;
+z0,nemp_z,#; Ff3; FOdatos.ini~,r~; FGNodatos; Fknemp_z,l; &f0; tu1; ts0;
+(arch_z)=($impolti2.tex,12);
+GPAN; GABRE_TABLA;
+
+[fec; t@5,3; \Teclee la Fecha : \; t0Fin; &a; &cfecha_z; ifecha_z,+10;
+!(fecha_z)0($-1)>fec; &bfecha_z; &p3fech1_z; qD,2,fecpol_z,fecha_z,;
+[tda; t@6,3; \Teclee la Tienda : \; t0fec; itien_z,2;
+f2; k1; P; n|; GST; `7; \Tienda Inexistente ... Intente de Nuevo ...\; gtda; .
+s1; pnombre_tda,0; t0Fin;
+[mon; t@7,3; \Imprime la Poliza de `N`uevos Pesos o `P`esos Antiguos ? : \;
+* t0tda; imone_z,#; !(mone_z)5($P,1)&(mone_z)5($N,1)>mon; *
+f3; k1; P; n|; GST; `7; \No Existe esa Poliza!!...\; Z2; .
+GST; \Estan Correctos los datos ? <S/N> : \; y|; | gfec; .
+
+(mone_z)=($N,1);
+tS1,0,0,23,80; tv0; tc;
+f3; QNOPDMODPOL; k2; P$; k1; P; nR;
+Ff4; FO(arch_z),w~; FP66,60,Enc,Pie;
+GIMPRI1;
+Ff4; FC; Ff1; tf; tr; tS0; GSalir; 
+gFin;
+
+[IMPRI1;
+f4; k1; P;
+{ n+;
+  Ff1; \Leyendo : \; pidcli_rpo,MLS10; s1; pmoneda_rpo,0; l;
+  GIMPRINP;
+  f4; a;
+)
+GSUBTOT2;
+GTABLA_PLAZOIVA;
+R;
+
+[NOPDMODPOL; GST; `7; \No pude modificar la poliza...\; Z1; R;
+
+[Enc;
+Ff3; FT; FGNodatos; Ff4; GFONT14; GFONT11; Fc80,3; l; Ff3; FGNodatos; Ff4;
+GFONT13; \impolti2 \; GFONT14; &a; &cfech8_z; &p3fech9_z; pfech8_z,+10; 
+s1; phora_z,#; s1; FW3; l;
+\Poliza Suc. \; pcodigo_tda,0; s1; pnombre_tda,0; \ Del dia : \; pfech1_z,16; 
+\ Pagina : \; Fp%d~; l; (band_z)=($S,1);
+\Importe de Cobranzas en Pesos Antiguos y Nuevos\; l;
+GFONT13; c_130; GFONT19; l;
+\CODIGO    |\; \NOMBRE                   |CONCEPTO          \; 
+\|     VENCE|Dias|TM|BONIFICAC.|  RECARGOS|\;
+\     IMPORTE|       SALDO|Hora C.\; GFONT20; l;
+*1234567890 1234567890123456 1234567890 12345678 12 1234567890 1234567890 1234567890 123456789012*
+Ft;
+
+[Pie; Fe;
+
+[IMPRINP;
+(idcli_z)=(idcli_rpo); f1; k2; P; n|; GNOCLI; .
+GCHECAVENC;
+Ff4; pnumcli_cli,10; \|\; pnombre_cli,24;
+!(status_cli)5($*,1)>|; z32,status_cli,1; . pstatus_cli,1;
+\|\; pconcepto_cpm,18; \|\;
+pfechb_z,+10; \|\; pdias_z,MIS4; \|\; ptipo_rpo,0; \|\;
+!(tipo_rpo)0($AB,2)>|;
+  prob_rpo,MDS10; \|\; pfoliobon_rpo,MLS6; s4; (bonif_z)=(bonif_z)(rob_rpo)+; 
+|
+  s10; \|\; prob_rpo,MDS10; (recar_z)=(recar_z)(rob_rpo)+; 
+.
+\|\; pimpor_rpo,MDS12; \|\; psalcli_rpo,MDS12; 
+\|\; pfeccapHour_rpo,MIS02; \:\; pfeccapMin_rpo,MIS02; 
+\:\; pfeccapSec_rpo,MIS02;
+l;
+(nulet_z)=(nulet1_cli)(nulet2_cli)+;
+!(qom_cli)0($Q,1)>|; (nulet_z)=(nulet_z)(2)/; .
+!(nulet_z)2($13)>|;
+  (impcp_z)=(impcp_z)(impor_rpo)+;
+  !(tipo_rpo)0($AB,2)>|; 
+    (boncp_z)=(boncp_z)(rob_rpo)+; 
+  |
+    (reccp_z)=(reccp_z)(rob_rpo)+; 
+  .
+|
+  (implp_z)=(implp_z)(impor_rpo)+;
+  !(tipo_rpo)0($AB,2)>|; 
+    (bonlp_z)=(bonlp_z)(rob_rpo)+; 
+  |
+    (reclp_z)=(reclp_z)(rob_rpo)+; 
+  .
+.
+!(tipo_rpo)0($AB,2)>|;
+  !(rob_rpo)0($0)>|;
+    (docnet_z)=(docnet_z)(impor_rpo)+;
+    !(ace_rpo)0($A,1)>|; 
+      (netact_z)=(netact_z)(impor_rpo)+;
+    |
+      !(ace_rpo)0($E,1)>|; 
+        (neteng_z)=(neteng_z)(impor_rpo)+; 
+      |
+        (netdoc_z)=(netdoc_z)(impor_rpo)+; 
+      .
+    .
+  |
+    (docbon_z)=(docbon_z)(impor_rpo)+;
+  .
+|
+  (docrec_z)=(docrec_z)(impor_rpo)+;
+.
+!(dias_z)2($12)>|;
+  (totdoc11_z)=(totdoc11_z)(impor_rpo)+;
+.
+!(dias_z)3($12)(dias_z)4($30)&>|;
+  (totdoc30_z)=(totdoc30_z)(impor_rpo)+;
+.
+!(dias_z)1($30)>|;
+  (totdoc31_z)=(totdoc31_z)(impor_rpo)+;
+.
+R;
+
+[CHECAVENC;
+z0,dias_z,#; (ncon_z)=(concep_rpo); z0,concepto_cpm,l; f5; k1; P; n|;.
+qD,1,fecven_rpo,fechb_z,;
+(dias_z)=(fecha_z)(fechb_z)-(86400)/;
+pnumcli_cli,0; \ Vencimiento : \; pfechb_z,+10; 
+\ Dias Vencidos : \; pdias_z,MIS2;
+s1; pnletra_z,#; s1; plta_z,MIS2; l;
+R;
+
+[SUBTOT2;
+Ff4;
+c-130; l;
+(efectivo_z)=(impcp_z)(boncp_z)-(reccp_z)+;
+s32; \ Totales Corto Plazo       : \; pefectivo_z,MDS13; \|\; pboncp_z,MDS10; \|\;
+preccp_z,MDS10; \|\; pimpcp_z,MDS13; l;
+
+(efectivo_z)=(implp_z)(bonlp_z)-(reclp_z)+;
+s32; \ Totales Largo Plazo       : \; pefectivo_z,MDS13; \|\; pbonlp_z,MDS10; \|\;
+preclp_z,MDS10; \|\; pimplp_z,MDS13; l;
+
+(bonif_z)=(boncp_z)(bonlp_z)+;
+(recar_z)=(reccp_z)(reclp_z)+;
+(impor_z)=(impcp_z)(implp_z)+;
+(efectivo_z)=(impor_z)(bonif_z)-(recar_z)+;
+s32; \ Totales                   : \; pefectivo_z,MDS13; \|\; pbonif_z,MDS10;
+\|\; precar_z,MDS10; \|\; pimpor_z,MDS13; l; l; l;
+s27; \Total de Cobranza Efectivo : \; GFONT15; pefectivo_z,MDS12; 
+GFONT16; GFONT12; l; l;
+GFONT14; GFONT15; \ANALISIS DE BONIFICACIONES Y RECARGOS\; GFONT16; l;
+
+z0,porc1_z,#; z0,porc2_z,#;
+!(docbon_z)5($0)>|; (porc1_z)=(bonif_z)(docbon_z)/(100)*; .
+!(docrec_z)5($0)>|; (porc2_z)=(recar_z)(docrec_z)/(100)*; .
+\Bon:\; GFONT19; pbonif_z,MDS13; GFONT20; s1; pporc1_z,MFS; \%  Rec:\;
+GFONT19; precar_z,MDS13; GFONT20; s1; pporc2_z,MFS; \%\; l;
+s4; pdocbon_z,MDS13; s14; pdocrec_z,MDS13; s6; 
+\   Neto:\; pdocnet_z,MDS13; \ = \; pimpor_z,MDS13; l;
+\Acuenta Netos: \; pnetact_z,MDS12; \ Enganches Netos: \; pneteng_z,MDS12;
+\ Documentos Netos: \; pnetdoc_z,MDS12; l; l;
+GANLISXVEN;
+R;
+
+[ANLISXVEN;
+Ff4; GFONT15; s6; \ANALISIS DEL ESTADO DE PAGO\; GFONT16; l;
+\Documentos Vencidos a  Menos_de_12_Dias   De_12_a_30_Dias Mas_de_30_Dias\; l;
+s26; ptotdoc11_z,MDS13; s5; ptotdoc30_z,MDS13;
+s2; ptotdoc31_z,MDS13; l; l;
+
+z0,porc1_z,#; z0,porc2_z,#; (impdoc31_z)=(totdoc31_z)(totdoc30_z)+;
+!(totdoc11_z)5($0)>|; (porc1_z)=(docbon_z)(totdoc11_z)/(100)*; .
+!(impdoc31_z)5($0)>|; (porc2_z)=(docrec_z)(impdoc31_z)/(100)*; .
+\ %Docs.Bonifica.: \; GFONT19; pdocbon_z,MDS13; GFONT20; s1; 
+pporc1_z,MFS; \%\;
+\  % Doctos.Recargos: \; GFONT19; pdocrec_z,MDS13; GFONT20; s1; 
+pporc2_z,MFS; \%\; l;
+\Menos de 12 Dias: \; ptotdoc11_z,MDS13; s12; \Mas de 12 Dias : \;
+pimpdoc31_z,MDS13; l; l;
+R;
+
+[TABLA_PLAZOIVA;
+z0,impor_z,#; z0,recar_z,#; z0,bonif_z,#;
+Ff4; GFONT12;
+s8; \ __________________________________________________________________________\; l;
+s8; GFONT19; \|                      |Importe Docs|Bonificacion|   Recargos |   Efectivo |\; GFONT20; l;
+*   Imp: 123456789012 123456789012 123456789012 123456789012 123456789012 123456789012 123456789012 123456789012 123456789012 *
+f7; k1; P;
+{ n+;
+  (piva_z)=(piva_ind7);
+  (anuini_z)=(0); (anufin_z)=(2001); (tiplazo_z)=($C,1);
+  GIMPRIRENTABLA;
+  (anuini_z)=(0); (anufin_z)=(2001); (tiplazo_z)=($L,1);
+  (mesini_z)=(13); (mesfin_z)=(99);
+  GIMPRIRENTABLA;
+  (anuini_z)=(2002); (anufin_z)=(2004); (tiplazo_z)=($C,1);
+  GIMPRIRENTABLA;
+  (anuini_z)=(2002); (anufin_z)=(2004); (tiplazo_z)=($L,1);
+  GIMPRIRENTABLA;
+  (anuini_z)=(2005); (anufin_z)=(2099); (tiplazo_z)=($C,1);
+  GIMPRIRENTABLA;
+  (anuini_z)=(2005); (anufin_z)=(2099); (tiplazo_z)=($L,1);
+  GIMPRIRENTABLA;
+  f7; a;
+)
+s8; \|______________________|____________|____________|____________|____________|\; l;
+s8; GFONT19; \| Total General        |\; pimpor_z,MDS12; \|\;
+pbonif_z,MDS12; \|\; precar_z,MDS12; \|\; 
+(efectivo_z)=(impor_z)(bonif_z)-(recar_z)+;
+pefectivo_z,MDS12; \|\; GFONT20; l;
+R;
+
+[IMPRIRENTABLA;
+z0,impcp_z,#; z0,boncp_z,#; z0,reccp_z,#;
+f6; k1; P;
+{ n+;
+  (impcp_z)=(impcp_z)(impor_ind6)+;
+  !(tipo_ind6)0($AB,2)>|;
+    (boncp_z)=(boncp_z)(rob_ind6)+;
+  |
+    (reccp_z)=(reccp_z)(rob_ind6)+;
+  .
+  f6; a;
+)
+!(impcp_z)5($0)(boncp_z)5($0)|(reccp_z)5($0)|>|;
+  s8; \|\;
+  !(tiplazo_z)0($C,1)>|; \C.P. \; .
+  !(tiplazo_z)0($L,1)>|; \L.P. \; .
+  ppiva_z,MDS2; \% \;
+  !(anuini_z)0($0)>|;    \ 2001 y Ant. \; .
+  !(anuini_z)0($2002)>|; \ 2002 - 2004 \; .
+  !(anuini_z)0($2005)>|; \ 2005 y Pos. \; .
+  \|\; pimpcp_z,MDS12; \|\; pboncp_z,MDS12; \|\; 
+  preccp_z,MDS12; \|\; 
+  (efectivo_z)=(impcp_z)(boncp_z)-(reccp_z)+;
+  pefectivo_z,MDS12; \|\; l;
+ (impor_z)=(impor_z)(impcp_z)+;        z0,impcp_z,#;
+ (bonif_z)=(bonif_z)(boncp_z)+;        z0,boncp_z,#;
+ (recar_z)=(recar_z)(reccp_z)+;        z0,reccp_z,#;
+.
+R;
+
+#isacaf.i;
+#iimpri.i;
+[MANDAELFNT; f13; k1; P; nR; GSACAF; R;
+
+[ABRE_TABLA; 
+Ff5; FObasedato.ini~,r~; FGNOBD; Fkmibd_z,l; FC; Ff1;
+fd1; O@,mibd_z,"sa","lux",1,ERRCNB,;  * con conexion autocommit    *
+f1; #iclientes.i;
+k0; ot,"clientes",;
+k1; kp,"numcli = ?",codcli_z,#,1,;
+k2; kp,"idcli = ?",idcli_z,;
+
+f2; #itiendas.i;
+k0; ot,"tiendas",;
+k1; kp,"codigo=?",tien_z,#,1,;
+
+f3; #ipolizas.i;
+k0; ot,"polizas",;
+k1; kp,"tda=? and fecha=?",tien_z,#,1,fecpol_z,#,3,;
+k2; kq,"update polizas set status='C' where tda=? and fecha=?",
+	tien_z,#,1,fecpol_z,#,3,;
+
+f4; #irenpol2.i;
+k0; ot,"renpol2",;
+k1; kp,"tda=? and fecha=? order by conse",tien_z,#,1,fecpol_z,#,3,;
+
+f5; #iconceps.i;
+k0; ot,"conceps",;
+k1; kp,"ncon=?",ncon_z,;
+
+f6; M
+	piva_ind6		d,
+        tipo_ind6		s3,
+        anu_ind6		l,
+        impor_ind6		d,
+        rob_ind6		d,
+        tam_ind6		s0,;
+k0; ot,"renpol2",;
+k1; kq,"select piva, tipo, year(b.fechavta) as anu, sum(impor), sum(rob)
+        from renpol2 a join clientes b on a.idcli = b.idcli
+        join car_corlarpzodet d on b.qom = d.qom and b.nulet1 = d.nulets
+        join car_corlarpzo c on d.idcorlarpzo = c.idcorlarpzo
+        where a.fecha = ? and tda = ? and piva = ? and status='*'
+        and  year(b.fechavta) between ? and ? and tiplazo = ?
+        group by piva, tipo, anu",
+        fecpol_z,#,3,tien_z,#,1,piva_z,anuini_z,anufin_z,
+        tiplazo_z,#,1,;
+
+f7; M
+	piva_ind7		d,
+        impor_ind7		d,
+        rob_ind7		d,
+        tam_ind7		s0,;
+k0; ot,"renpol2",;
+k1; kq,"select piva, sum(impor), sum(rob)
+        from renpol2 a join clientes b on a.idcli = b.idcli
+        where a.fecha = ? and tda = ? 
+        group by piva",fecpol_z,#,3,tien_z,#,1,;
+
+f13; #itablefnt.i;
+k0; ot,"fonts",;
+k1; kp,"impre=? and numero=?",impre_z,font_z,;
+
+R;
+
+#i/programas/lib/colores.i;
+#i/programas/lib/tomamaxrc.i;
+#i/programas/lib/status.i;
+
+[PAN; 
+Ff1; Gdefine_colores; Gtomamaxrc; tf; tn; Gamarillo_negro;
+ta0; #iprog1.i; ^=direc_z,#); Fslexten_z,nemp_z; ta1; t@0,1; pdirec_z,0;
+(esp_z)=(80)(exten_z)-(2)/; Ff1; t@1,esp_z; pnemp_z,0;
+(modul_z)=($Impresion de Poliza,19); (modul2_z)=($CAR-MDS,7);
+GBANNER; Gblanco_azul;
+R;
+
+[R; R; [E; ];
+[NOBD; Ff1; GST; `7; \No existe el archivo basedato.ini ...\; gFin1;
+[ERRCNB; GST; `6; \No pude conectarme a la base de datos...\; gFin1;
+[NOCLI; z0,nombre_cli,#; (nombre_cli)=($I N E X I S T E N T E,21); R;
+[Nodatos; Ff1; GST; `7; \archivo datos incompleto o inexistente...\; gFin1;
+
+[Fin1; y|;.
+[Fin; t@23,0; te; };

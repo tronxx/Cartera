@@ -1,0 +1,724 @@
+-- Modificaciones a Cartera
+--create table reporpro (
+--	ubica			smallint,
+--	reporte			integer,
+--	promotor		varchar(3),
+--	fecha			Date,
+--	ruta			char(1),
+--	orden			smallint
+--);
+--commit work;
+
+--create index reporpro_x01 on reporpro(ubica, reporte, promotor);
+--commit work;
+
+-- Modifico la tabla
+--alter table reporpro add column ruta char(1);
+
+--commit work;
+
+--alter table reporpro add column orden smallint;
+
+--commit work;
+
+-- Creo la tabla de Permisos 
+--create table permisos (
+--	permiso			char(1) not null unique,
+--	descri			varchar(30) not null
+--
+--);
+--commit work;
+
+-- 10/Julio/2006 -- Tabla de Polizas de Usuario
+--drop table car_polusuarios; commit work;
+
+--create table car_polusuarios (
+--	idpolusuarios	integer not null primary key,
+--	idusuario		integer not null,
+--	idcodpol		integer not null,
+--	login		varchar(15),
+--	clave		varchar(2)
+--);
+
+--commit work;
+
+--insert into car_polusuarios (idpolusuarios, idusuario, idcodpol, login,
+--clave )
+--select rownum, idusuario, b.idcodpol, login, b.clave
+--from car_usuarios a join car_codpol b on a.numpol = b.clave
+--;
+
+--commit work;
+
+--update usuarios set permi01='A'
+--where 
+--( nombre = 'LIGIA' or nombre = 'FATIMA' or nombre = 'MANUEL CHIN' )
+--;
+
+--update usuarios set permi01='N'
+--where 
+--( nombre = 'MELVIN' or nombre = 'YADIRA' or nombre = 'MANUEL' )
+--;
+
+--insert into car_polusuarios (idpolusuarios, idusuario, idcodpol, login,
+--clave )
+--select 200, a.idusuario, b.idcodpol, a.login, b.clave
+--from car_usuarios a join car_codpol b on a.login = 'FATIMA'
+--and b.clave = 'LI';
+
+--insert into car_polusuarios (idpolusuarios, idusuario, idcodpol, login,
+--clave )
+--select 201, a.idusuario, b.idcodpol, a.login, b.clave
+--from car_usuarios a join car_codpol b on a.login = 'FATIMA'
+--and b.clave = 'CO';
+
+--update car_polusuarios set idpolusuarios = rownum;
+
+--update permiusuario set permis = 'A' where idpermis = 11;
+
+--insert into car_tipocardet (idtipocardet, idtipocar, ticte, descri, cia)
+--values ( 8, 1, 'TC', 'TARJETA CREDITO', 1)
+
+------------------------ 6/Dic/2007 ----------------
+
+--create table car_periodofiscal (
+--   idperiodo		integer not null primary key,
+--   clave		varchar(10),
+--   descri		varchar(30) not null,
+--   fecini		date,
+--   fecfin		date,
+--   cia                  integer
+--);
+
+
+--commit work;
+
+--insert into car_periodofiscal ( idperiodo, clave, descri, fecini, fecfin, cia ) 
+--values ( 1, '2001 Y ANT', 'VENTAS DE 2001 Y ANTERIORES', '1990-01-01', '2001-12-31', 1);
+--insert into car_periodofiscal ( idperiodo, clave, descri, fecini, fecfin, cia ) 
+--values ( 2, '2002 - 2004', 'VENTAS DE 2002 A 2004', '2002-01-01', '2004-12-31', 1);
+--insert into car_periodofiscal ( idperiodo, clave, descri, fecini, fecfin, cia ) 
+--values ( 3, '2005 - 2007', 'VENTAS DE 2005 A 2007', '2005-01-01', '2007-12-31', 1);
+--insert into car_periodofiscal ( idperiodo, clave, descri, fecini, fecfin, cia ) 
+--values ( 4, '2008 Y POST', 'VENTAS DE 2008 Y POSTERIORES', '2008-01-01', '2020-12-31', 1);
+
+----- Modificaciones para agregar datos de Bonificaciones ---
+--    DRBR 23-Sept-2008 ---
+
+--alter table renpol2 add foliobon integer;
+--commit work;
+
+--update renpol2 set foliobon=0 where foliobon is null;
+--commit work;
+
+--alter table renpol2tmp add foliobon integer;
+--commit work;
+
+
+--create table car_blocbonif (
+--   idblockbon     integer not null primary key,
+--   codigo         varchar(10) not null unique,
+--   folioini       integer,
+--   foliofin       integer,
+--   fechaent       date,
+--   recibe         integer,
+--   fechafin       date,
+--   poliza         varchar(2),
+--   cia            integer
+--);
+
+--create index car_blocbonif_x01 on car_blocbonif(codigo);
+
+--create table car_bonifics (
+--   idbonific      integer not null primary key,
+--   idrenpol       integer not null,
+--   folio          integer not null,
+--   idcli          integer not null,
+--   fecha          date,
+--   cia            integer not null
+--);
+
+--create index car_bonifics_x01 on car_bonifics ( idrenpol);
+
+--create index car_relclistmp_x01 on car_relclistmp(idcli);
+
+--commit work;
+
+-- Modificaciones para agregar un campo de meses en los plazos ---
+--alter table car_corlarpzodet add column meses integer; commit work;
+--update car_corlarpzodet set meses = nulets / 2 where qom = 'Q';
+--update car_corlarpzodet set meses = nulets     where qom = 'M';
+--update car_corlarpzodet set meses = 0          where qom = 'C';
+
+--alter table car_corlarpzodet add column activo integer; commit work;
+--update car_corlarpzodet set activo=1 where activo is null;
+--update car_corlarpzodet set activo = 0 where
+--(
+--( qom = 'Q' and ( nulets in   (6, 12, 26, 48 )) or
+--( qom = 'M' and ( nulets in   (3, 6, 13, 24 ))
+--);
+
+--insert into car_corlarpzodet
+--( idcorlarpzodet, idcorlarpzo, qom, nulets, cia)
+--values ( 122, 1, 'Q', 10, 1);
+--insert into car_corlarpzodet
+--( idcorlarpzodet, idcorlarpzo, qom, nulets, cia)
+--values ( 123, 1, 'M', 5, 1);
+--insert into car_corlarpzodet
+--( idcorlarpzodet, idcorlarpzo, qom, nulets, cia)
+--values ( 125, 1, 'Q', 36, 1);
+--insert into car_corlarpzodet
+--( idcorlarpzodet, idcorlarpzo, qom, nulets, cia)
+--values ( 124, 1, 'M', 18, 1);
+
+-- Modificaciones del 01-Oct-2013 para agregar 12 meses y 24 Quincenas
+--update car_corlarpzodet set activo=0 where 
+--(
+--( qom = 'Q' and ( nulets = 26)  or
+--( qom = 'M' and ( nulets = 13)
+--);
+
+--insert into car_corlarpzodet
+--( idcorlarpzodet, idcorlarpzo, qom, nulets, cia, activo, meses)
+--select
+--(select max(idcorlarpzodet+1) from car_corlarpzodet ) as id,
+--(select idcorlarpzo from car_corlarpzo where tiplazo = 'C' ) as idcorlarpzo,
+--'Q', '24', 1, 1, 12
+--from car_corlarpzo where rownum = 1;
+
+--insert into car_corlarpzodet
+--( idcorlarpzodet, idcorlarpzo, qom, nulets, cia, activo, meses)
+--select
+--(select max(idcorlarpzodet+1) from car_corlarpzodet ) as id,
+--(select idcorlarpzo from car_corlarpzo where tiplazo = 'C' ) as idcorlarpzo,
+--'Q', '24', 1, 1, 12
+--from car_corlarpzo where rownum = 1;
+
+--insert into car_corlarpzodet
+--( idcorlarpzodet, idcorlarpzo, qom, nulets, cia)
+--values ( 124, 1, 'M', 18, 1);
+
+-- Modificaciones del 05-Ago-2009 ---
+--alter table infmorpo add column saldo double precision;
+--commit work;
+
+--update infmorpo set saldo=0
+-- where saldo is null;
+
+--alter table usuarios modify column nombre varchar(15);
+--commit work;
+
+--- Modificaciones para agregar folio en renfacfo y renfacfoalta
+--- DRBR 23-Dic-2009
+--alter table renfacfo add column folio integer;
+--commit work;
+
+--update renfacfo set folio = 0 where folio is null;
+--commit work;
+
+--alter table renfacfoalta add column folio integer; commit work;
+--update renfacfoalta set folio = 0 where folio is null; commit work;
+
+--alter table renfacfotmp add column folio integer; commit work;
+
+----- Modificaciones para Crear la Poliza de Correcciones de Cartera ---
+-- DRBR 24-Abril-2010
+
+--drop table polcorr; commit work;
+--drop table car_polcorrec; commit work;
+
+--create table car_polcorrec (
+--    idpolcorrec		integer not null primary key,
+--    idubica		integer,
+--    ubica		varchar(4),
+--    fecha		date,
+--    idusuario		integer,
+--    usuario		varchar(15),
+--    status		varchar(1),
+--    cia			integer
+--);
+
+--commit work;
+
+--create table car_renpolcorrec (
+--    idrenpolcorrec	integer not null primary key,
+--    idpolcorrec		integer not null,
+--    idcli		integer not null,
+--    idcampo		integer not null,
+--    idaccion		integer not null,
+--    oldvalor		double precision,
+--    nvovalor		double precision,
+--    antcod		varchar(10),
+--    nvocod		varchar(10),
+--    nombre		varchar(35),
+--    anttext		varchar(60),
+--    nvotext		varchar(60),
+--    idusuario		integer,
+--    fechora		timestamp,
+--    status		varchar(1),
+--    cia			integer
+--);
+--create index car_renpolcorrec_x01 on car_renpolcorrec (idpolcorrec);
+
+
+--create table car_cambiocod (
+--   idcambiocod		integer not null primary key,
+--   fecha		date,
+--   anttda		varchar(2),
+--   nvatda		varchar(2),
+--   antcodigo		varchar(10),
+--   nvocodigo		varchar(10),
+--   salcli		double precision,
+--   cia			integer
+--);
+
+--create index car_cambiocod_x01 on car_cambiocod (fecha);
+
+--create table car_accionmodifctes (
+--  idaccionmodif  	integer not null primary key,
+--  descri		varchar(40),
+--  cia			integer
+--);
+
+--insert into car_accionmodifctes ( idaccionmodif, descri, cia)
+--values ( 1, '01 - Nombre', 1);
+--insert into car_accionmodifctes ( idaccionmodif, descri, cia)
+--values ( 2, '02 - Direccion', 1);
+--insert into car_accionmodifctes ( idaccionmodif, descri, cia)
+--values ( 3, '03 - Poblacion', 1);
+--insert into car_accionmodifctes ( idaccionmodif, descri, cia)
+--values ( 4, '04 - Nombre de Aval', 1);
+--insert into car_accionmodifctes ( idaccionmodif, descri, cia)
+--values ( 5, '05 - Direccion del Aval', 1);
+--insert into car_accionmodifctes ( idaccionmodif, descri, cia)
+--values ( 6, '06 - Punto de Venta', 1);
+--insert into car_accionmodifctes ( idaccionmodif, descri, cia)
+--values ( 7, '07 - Tipo Quincenal / Mensual /Contado', 1);
+--insert into car_accionmodifctes ( idaccionmodif, descri, cia)
+--values ( 8, '08 - Tipo de Cliente', 1);
+--insert into car_accionmodifctes ( idaccionmodif, descri, cia)
+--values ( 9, '09 - Num de Factura', 1);
+--insert into car_accionmodifctes ( idaccionmodif, descri, cia)
+--values ( 10, '10 - Jefe Grupo', 1);
+--insert into car_accionmodifctes ( idaccionmodif, descri, cia)
+--values ( 11, '11 - Comision Jefe de Grupo', 1);
+--insert into car_accionmodifctes ( idaccionmodif, descri, cia)
+--values ( 12, '12 - Fecha Pago Comision Jefe Grupo', 1);
+--insert into car_accionmodifctes ( idaccionmodif, descri, cia)
+--values ( 13, '13 - Opcion Carta', 1);
+--insert into car_accionmodifctes ( idaccionmodif, descri, cia)
+--values ( 14, '14 - Cumplea#os', 1);
+--insert into car_accionmodifctes ( idaccionmodif, descri, cia)
+--values ( 15, '15 - Servicio', 1);
+--insert into car_accionmodifctes ( idaccionmodif, descri, cia)
+--values ( 16, '16 - Enganche', 1);
+--insert into car_accionmodifctes ( idaccionmodif, descri, cia)
+--values ( 17, '17 - Saldo Enganche', 1);
+--insert into car_accionmodifctes ( idaccionmodif, descri, cia)
+--values ( 18, '18 - Numero de Letras');
+--insert into car_accionmodifctes ( idaccionmodif, descri, cia)
+--values ( 19, '19 - Importe de cada letra', 1);
+--insert into car_accionmodifctes ( idaccionmodif, descri, cia)
+--values ( 20, '20 - Importe de Bonificacion', 1);
+--insert into car_accionmodifctes ( idaccionmodif, descri, cia)
+--values ( 21, '21 - Precio de Contado', 1);
+--insert into car_accionmodifctes ( idaccionmodif, descri, cia)
+--values ( 22, '22 - Cambio de Codigo', 1);
+--insert into car_accionmodifctes ( idaccionmodif, descri, cia)
+--values ( 23, '23 - Porcentaje Descuento', 1);
+--insert into car_accionmodifctes ( idaccionmodif, descri, cia)
+--values ( 24, '24 - Status del Cliente', 1);
+--insert into car_accionmodifctes ( idaccionmodif, descri, cia)
+--values ( 25, '25 - Datos de Solicitud', 1);
+--delete from car_accionmodifctes where idaccionmodif=26;
+--insert into car_accionmodifctes ( idaccionmodif, descri, cia)
+--values ( 26, '26 - Polizas Xtensa', 1);
+--insert into car_accionmodifctes ( idaccionmodif, descri, cia)
+--values ( 27, '27 - Comisiones', 1);
+--insert into car_accionmodifctes ( idaccionmodif, descri, cia)
+--values ( 28, '28 - Articulos', 1);
+--insert into car_accionmodifctes ( idaccionmodif, descri, cia)
+--values ( 29, '29 - Cancelacion x Cambio', 1);
+      
+--commit work;
+
+--alter table ubivta add column activo varchar(1); commit work;
+--alter table ubivta add column fecbaj date; commit work;
+
+--update ubivta set activo = 'A', fecbaj = '2009-12-31'
+--where activo is null;
+--commit work;
+
+--- Se modifica la tabla car_ptovta para agregar la columna de status
+-- y la fecha de baja
+
+--alter table car_ptovta add column activo varchar(1); commit work;
+--alter table car_ptovta add column fecbaj date; commit work;
+
+--update car_ptovta set activo = 'A', fecbaj = '2009-12-31'
+--where activo is null;
+--update car_ptovta set activo = 'B'
+--where (
+--  ubica = '63' or
+--  ubica = '60' or
+--  ubica = 'T1' or
+--  ubica = 'TE' or
+--  ubica = 'MO' or  
+--  ubica = 'TE' or
+--  ubica = 'U2' 
+--);
+
+--update car_ptovta set nombre = 'MOTUL 2' where ubica = 'MO';
+--update car_ptovta set nombre = 'SUCURSAL MOTUL ' where ubica = 'MT';
+
+--commit work;
+
+--insert into car_corlarpzodet
+--( idcorlarpzodet, idcorlarpzo, qom, nulets, cia)
+--values ( 122, 1, 'Q', 10, 1);
+--insert into car_corlarpzodet
+--( idcorlarpzodet, idcorlarpzo, qom, nulets, cia)
+--values ( 123, 1, 'M', 5, 1);
+--insert into car_corlarpzodet
+--( idcorlarpzodet, idcorlarpzo, qom, nulets, cia)
+--values ( 125, 1, 'Q', 36, 1);
+--insert into car_corlarpzodet
+--( idcorlarpzodet, idcorlarpzo, qom, nulets, cia)
+--values ( 124, 1, 'M', 18, 1);
+
+--CREATE TABLE FAC_PERMIPROYECTOS (
+--   IDPERMIPROYECTO 	INTEGER NOT NULL primary key,
+--   IDPROYECTO 		INTEGER,
+--   IDPERMIS 		INTEGER);
+
+--CREATE TABLE CAR_PERMISOS (
+--    PERMISO 	VARCHAR(1),
+--    DESCRIPCION VARCHAR(30)
+--);
+--insert into car_permisos
+--( permiso, descripcio)
+--select * form permisos;
+
+--CREATE TABLE FAC_PROYECTOS (
+--    IDPROYECTO INTEGER NOT NULL,
+--    DESCRI 		VARCHAR(50));
+--    
+--insert into fac_proyectos ( 200, 'CAPYCON');
+
+--CREATE TABLE CAR_PERMIUSUARIO (
+--    IDUSUARIO 		INTEGER NOT NULL,
+--    IDPERMIS 		INTEGER NOT NULL,
+--    PERMIS 		VARCHAR(1)
+--            );
+--insert into car_permiusuario ( idusuario, idpermis, permis)
+--select * from permiusuario;
+
+
+--CREATE TABLE CAR_PERMISIONES (
+--    IDPERMIS 		INTEGER NOT NULL,
+--    DESCRIPCION 	VARCHAR(30) NOT NULL);            
+--
+--insert into car_permisiones ( idpermis, descripcion)
+--select * from permisiones;
+
+--CREATE TABLE FAC_PERMIPROYECTOS (
+--    IDPERMIPROYECTO 	INTEGER NOT NULL primary key,
+--    IDPROYECTO 		INTEGER,
+--    IDPERMIS 		INTEGER);
+--
+
+         
+-- Modificaciones del 01-Jun-2011 para agregar Juridico
+--   create table car_juridico ( 
+--   idjuridico                  integer not null primary key, 
+--   idcli                       integer not null, 
+--   fecha                       date, 
+--   idusuario                   integer, 
+--   fechora                     timestamp, 
+--   status                      char(1), 
+--   fectermina                  date, 
+--   timetermina                 timestamp, 
+--   idusertermina               integer, 
+--   tipo                        integer, 
+--   cia				integer);
+
+--commit work;
+                                         
+--create index car_juridico_x01 on car_juridico ( idcli );
+
+--commit work;
+
+-- Modificaciones del 08-Julio-2011
+
+--alter table car_tiposctes add column activo char(1);
+--commit work;
+--update car_tiposctes set activo = 'A';
+--update car_tiposctes set activo = 'B' where ticte = 'TP'
+--or ticte = 'TD' or ticte = 'TB';
+
+--commit work;
+
+
+--create table car_termtc (
+--      idtermtc			integer not null primary key,
+--      clave			varchar(10) not null,
+--      descri			varchar(30),
+--      cia			integer not null,
+--      unique (clave, cia)
+--);
+
+--create table car_termitarjetas (
+--     idtermitarjeta		integer not null primary key,
+--     idtermtc			integer not null,
+--     clave			varchar(20) not null,
+--     descri			varchar(30),
+--     tipo			varchar(2),
+--     plazo			integer,
+--     tasa			double precision,
+--     sobretasa			double precision,
+--     poriva			double precision,
+--     cia			integer not null,
+--     unique (clave, cia)
+--);
+
+--commit work;
+
+--insert into car_termtc (idtermtc, clave, descri, cia)
+--values (1, 'BBVA', 'BBVA', 1);
+
+--insert into car_termtc (idtermtc, clave, descri, cia)
+--values (2, 'BANAMEX', 'BANAMEX', 1);
+
+--insert into car_termitarjetas ( idtermitarjeta, idtermtc, clave, descri, tipo, plazo, tasa, sobretasa, poriva, cia)
+--values ( 1, 1, 'BBVA-TD', 'BBVA Y OTRAS T.DEBITO', 'TD', 0, 1.65, 0, 16, 1);
+--insert into car_termitarjetas ( idtermitarjeta, idtermtc, clave, descri, tipo, plazo, tasa, sobretasa, poriva, cia)
+--values ( 2, 1, 'BBVA-TC-00', 'BBVA Y OTRAS T.C', 'TC', 0, 2.25, 0, 16, 1);
+--insert into car_termitarjetas ( idtermitarjeta, idtermtc, clave, descri, tipo, plazo, tasa, sobretasa, poriva, cia)
+--values ( 3, 1, 'BBVA-TC-06', 'BBVA Y OTRAS T.C 6 M S/I', 'TC', 6, 8.25, 0, 16, 1);
+--insert into car_termitarjetas ( idtermitarjeta, idtermtc, clave, descri, tipo, plazo, tasa, sobretasa, poriva, cia)
+--values ( 4, 1, 'BBVA-TC-12', 'BBVA Y OTRAS T.C 12 M S/I', 'TC', 12, 13.75, 0, 16, 1);
+--insert into car_termitarjetas ( idtermitarjeta, idtermtc, clave, descri, tipo, plazo, tasa, sobretasa, poriva, cia)
+--values ( 5, 1, 'HSBC-TD', 'HSBC EN BBVA T.DEBITO', 'TD', 0, 1.65, 0, 16, 1);
+--insert into car_termitarjetas ( idtermitarjeta, idtermtc, clave, descri, tipo, plazo, tasa, sobretasa, poriva, cia)
+--values ( 6, 1, 'HSBC-TC-00', 'HSBC EN BBVA T.C', 'TC', 0, 2.25, 0, 16, 1);
+--insert into car_termitarjetas ( idtermitarjeta, idtermtc, clave, descri, tipo, plazo, tasa, sobretasa, poriva, cia)
+--values ( 7, 1, 'HSBC-TC-06', 'HSBC EN BBVA T.C 6 M S/I', 'TC', 6, 7.16, 2.25, 16, 1);
+--insert into car_termitarjetas ( idtermitarjeta, idtermtc, clave, descri, tipo, plazo, tasa, sobretasa, poriva, cia)
+--values ( 8, 1, 'HSBC-TC-12', 'HSBC EN BBVA T.C 12 M S/I', 'TC', 12, 13.11, 2.25, 16, 1);
+--insert into car_termitarjetas ( idtermitarjeta, idtermtc, clave, descri, tipo, plazo, tasa, sobretasa, poriva, cia)
+--values ( 9, 2, 'BANAMEX-TC-00', 'BANAMEX T.C', 'TC', 0, 2.08, 0, 16, 1);
+--insert into car_termitarjetas ( idtermitarjeta, idtermtc, clave, descri, tipo, plazo, tasa, sobretasa, poriva, cia)
+--values ( 10, 2, 'BANAMEX-TD', 'BANAMEX T.DEBITO', 'TD', 0, 1.55, 0, 16, 1);
+--insert into car_termitarjetas ( idtermitarjeta, idtermtc, clave, descri, tipo, plazo, tasa, sobretasa, poriva, cia)
+--values ( 11, 2, 'BANAMEX-TC-06', 'BANAMEX T.C 6 M S/I', 'TC', 0, 8.61, 0, 16, 1);
+--insert into car_termitarjetas ( idtermitarjeta, idtermtc, clave, descri, tipo, plazo, tasa, sobretasa, poriva, cia)
+--values ( 12, 2, 'BANAMEX-TC-12', 'BANAMEX T.C 12 M S/I', 'TC', 0, 13.67, 0, 16, 1);
+--insert into car_termitarjetas ( idtermitarjeta, idtermtc, clave, descri, tipo, plazo, tasa, sobretasa, poriva, cia)
+--values ( 13, 2, 'BANAMEX-FONACOT', 'BANAMEX FONACOT', 'TC', 0, 2.08, 0, 16, 1);
+--insert into car_termitarjetas ( idtermitarjeta, idtermtc, clave, descri, tipo, plazo, tasa, sobretasa, poriva, cia)
+--values ( 14, 1, 'BBVA-FONACOT', 'BBVA FONACOT', 'TC', 0, 2.25, 0, 16, 1);
+
+--commit work;
+
+--create table car_bitacora_info (
+--  idbitacora		integer not null primary key,
+--  fecha			date,
+--  hora			timestamp,
+--  envorec		varchar(10),
+--  envia			varchar(10),
+--  recibe		varchar(10),
+--  tipoinfo		varchar(10),
+--  voc			varchar(1),
+--  fecini		date,
+--  fecfin		date,
+--  sucini		varchar(10),
+--  sucfin		varchar(10),
+--  cia			integer
+--);
+
+--commit work;
+ 
+
+-- Se modifica la tabla de car_plazos para agregar columna de tipo de plazo. 
+-- C=Compromiso Cte. P=Propuesto
+
+--alter table car_plazos    add column tipo varchar(1);
+--alter table car_plazostmp add column tipo varchar(1);
+
+--commit work;
+
+--update car_plazos set tipo = 'P' where tipo is null;
+--commit work;
+
+--alter table car_codpol add column lugemi varchar(70);
+--commit work;
+
+--alter table car_codpol add column serie  varchar(5);
+--commit work;
+
+--alter table car_codpol add column correo varchar(70);
+--commit work;
+
+-- Modificaciones del 01-Oct-2013 para agregar 12 meses y 24 Quincenas
+--update car_corlarpzodet set activo=0 where 
+--(
+--( qom = 'Q' and nulets = 26)  or
+--( qom = 'M' and nulets = 13)
+--);
+
+--insert into car_corlarpzodet
+--( idcorlarpzodet, idcorlarpzo, qom, nulets, cia, activo, meses)
+--select
+--(select max(idcorlarpzodet+1) from car_corlarpzodet ) as id,
+--(select idcorlarpzo from car_corlarpzo where tiplazo = 'C' ) as idcorlarpzo,
+--'Q', '24', 1, 1, 12
+--from car_corlarpzo where rownum < 2;
+
+--insert into car_corlarpzodet
+--( idcorlarpzodet, idcorlarpzo, qom, nulets, cia, activo, meses)
+--select
+--(select max(idcorlarpzodet+1) from car_corlarpzodet ) as id,
+--(select idcorlarpzo from car_corlarpzo where tiplazo = 'C' ) as idcorlarpzo,
+--'M', '12', 1, 1, 12
+--from car_corlarpzo where rownum < 2;
+
+-- Pongo inactivo todos los plazos mensuales
+-- DRBR 09-Julio-2014
+--
+
+-- Aun no se bloquean los anteriores -- DRBR 9-Jul-2014
+--update car_corlarpzodet set activo=0 where 
+--(
+--  ( qom = 'M' )  or
+--  ( qom = 'Q' and nulets <> 4 and nulets <> 8 and nulets <> 16
+--    and nulets <> 22 and nulets <> 28 and nulets <> 34
+--  )
+--);
+
+--insert into car_corlarpzodet
+--( idcorlarpzodet, idcorlarpzo, qom, nulets, cia, activo, meses, idanucartera)
+--select
+--(select max(idcorlarpzodet+1) from car_corlarpzodet ) as id,
+--(select idcorlarpzo from car_corlarpzo where tiplazo = 'C' ) as idcorlarpzo,
+--'Q', '16', 1, 1, 8,
+--(select idanucartera from car_anuscartera where anucartera = 2014) as idanucartera
+--from car_corlarpzo where rownum < 2;
+--
+--insert into car_corlarpzodet
+--( idcorlarpzodet, idcorlarpzo, qom, nulets, cia, activo, meses, idanucartera)
+--select
+--(select max(idcorlarpzodet+1) from car_corlarpzodet ) as id,
+--(select idcorlarpzo from car_corlarpzo where tiplazo = 'C' ) as idcorlarpzo,
+--'Q', '22', 1, 1, 11,
+--(select idanucartera from car_anuscartera where anucartera = 2014) as idanucartera
+--from car_corlarpzo where rownum < 2;
+
+
+--insert into car_corlarpzodet
+--( idcorlarpzodet, idcorlarpzo, qom, nulets, cia, activo, meses, idanucartera)
+--select
+--(select max(idcorlarpzodet+1) from car_corlarpzodet ) as id,
+--(select idcorlarpzo from car_corlarpzo where tiplazo = 'C' ) as idcorlarpzo,
+--'Q', '28', 1, 1, 14,
+--(select idanucartera from car_anuscartera where anucartera = 2014) as idanucartera
+--from car_corlarpzo where rownum < 2;
+
+--insert into car_corlarpzodet
+--( idcorlarpzodet, idcorlarpzo, qom, nulets, cia, activo, meses, idanucartera)
+--select
+--(select max(idcorlarpzodet+1) from car_corlarpzodet ) as id,
+--(select idcorlarpzo from car_corlarpzo where tiplazo = 'C' ) as idcorlarpzo,
+--'Q', '34', 1, 1, 17,
+--(select idanucartera from car_anuscartera where anucartera = 2014) as idanucartera
+--from car_corlarpzo where rownum < 2;
+
+-- Modificaciones del 18-Marzo-2016
+-- se crean columnas conlimite e implimite para definir
+-- una tarjeta que tenga lite en la comision
+
+alter table car_termitarjetas add column conlimite varchar(1);
+commit work;
+alter table car_termitarjetas add column implimite double precision;
+commit work;
+
+update car_termitarjetas set implimite=0 where implimite is null;
+update car_termitarjetas set conlimite='N' where conlimite is null;
+
+update car_termitarjetas set implimite=18.97 where clave = 'BBVA-TD';
+update car_termitarjetas set conlimite='S'   where clave = 'BBVA-TD';
+
+commit work;
+
+-- Se crea rutina busobserv2 para recibir plazos
+
+"CREATE PROCEDURE BUSOBSERV2 (OBSERV VARCHAR(200) )
+   RETURNS (IDOBSERV INTEGER, OBS VARCHAR(200))
+   BEGIN
+   EXEC SQL PREPARE BUSOBSERV_A1 SELECT IDOBSERV FROM CAR_OBSERVS WHERE OBSERV = ?;
+   EXEC SQL PREPARE BUSOBSERV_A2  SELECT MAX(IDOBSERV) FROM CAR_OBSERVS WHERE IDOBSERV > 0;
+   EXEC SQL PREPARE BUSOBSERV_A3 INSERT INTO CAR_OBSERVS (IDOBSERV, OBSERV) VALUES (?,?);
+   EXEC SQL EXECUTE BUSOBSERV_A1 USING (OBSERV) INTO (IDOBSERV);
+   EXEC SQL FETCH BUSOBSERV_A1;
+   IF SQLSUCCESS = 1  THEN
+       OBS := OBSERV;
+       RETURN ROW;
+   ELSE
+     EXEC SQL EXECUTE BUSOBSERV_A2 INTO (IDOBSERV);
+     EXEC SQL FETCH BUSOBSERV_A2;
+     IF IDOBSERV IS NULL THEN
+       IDOBSERV := 0;
+     END IF
+     IDOBSERV := IDOBSERV + 1;
+     EXEC SQL EXECUTE BUSOBSERV_A3 USING (IDOBSERV, OBSERV);
+     OBS :=OBSERV;
+     RETURN ROW;
+  END IF
+  EXEC SQL DROP BUSOBSERV_A1;
+  EXEC SQL DROP BUSOBSERV_A2;
+  EXEC SQL DROP BUSOBSERV_A3;
+   END
+";
+
+-- 13-Junio-2016
+-- Se crea la tabla de metodos de pago
+
+create table car_tipagocfdi (
+idtipago integer not null primary key,
+clave	varchar(10) not null unique,
+descri  varchar(50),
+orden	integer,
+activo	integer,
+complem	integer
+);
+
+insert into car_tipagocfdi ( idtipago, clave, descri, orden, activo, complem)
+values (1, '01', 'EFECTIVO', 1, 1, 0 );
+
+insert into car_tipagocfdi ( idtipago, clave, descri, orden, activo, complem)
+values (2, '02', 'CHEQUE NOMINATIVO', 2,  1, 1 );
+
+insert into car_tipagocfdi ( idtipago, clave, descri, orden, activo, complem)
+values (3, '03', 'TRANSFERENCIA ELECTRONICA DE FONDOS', 3,  1, 1 );
+
+insert into car_tipagocfdi ( idtipago, clave, descri, orden, activo, complem)
+values (4, '04', 'TARJETA DE CREDITO', 4, 1, 1  );
+
+insert into car_tipagocfdi ( idtipago, clave, descri, orden, activo, complem)
+values (5, '05', 'MONEDERO ELECTRONICO', 99, 0, 0  );
+
+insert into car_tipagocfdi ( idtipago, clave, descri, orden, activo, complem)
+values (6, '06', 'DINERO ELECTRONICO', 99, 0, 0 );
+
+insert into car_tipagocfdi ( idtipago, clave, descri, orden, activo, complem)
+values (8, '08', 'VALES DE DESPENSA', 99, 0, 0 );
+
+insert into car_tipagocfdi ( idtipago, clave, descri, orden, activo, complem)
+values (28, '28', 'TARJETA DE DEBITO', 5, 1, 1 );
+
+insert into car_tipagocfdi ( idtipago, clave, descri, orden, activo, complem)
+values (29, '29', 'TARJETA DE SERVICIO', 99,0, 0 );
+
+insert into car_tipagocfdi ( idtipago, clave, descri, orden, activo, complem)
+values (99, '99', 'OTROS', 99, 0, 0 );
+
+commit work;

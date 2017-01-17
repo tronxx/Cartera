@@ -1,0 +1,1090 @@
+* Programa quer sirve para generar el Flujo de Efectivo de los Clientes
+  DRBR 22 Oct 1997
+*
+
+#dMIS02 %02d~; #dMIS4 %4d~;  #dMLE4 %-4ld~; #dMFE %-5.2f~; #dMDS13 %,13.2f~;
+#dMIS2 %2d~;   #dMIE4 %-4d~; #dMLS4 %4ld~; #dMFS5 %5.2f~; #dMDS9 %-9.2f~;
+#dMIE2 %-2d~;  #dMDS2 %2.0f~; #dMDS15 %,15.2f~;
+#dMIS6 %,6d~;
+#i/programas/lib/funkey.i;
+
+f0; M
+	sff_z            s2,
+	version_z	s30,
+	fech9_z     {
+	  dias2_z       s16,
+	  hora_z         s6,
+	  resto_z        s5,
+	            }
+	bandman_z        s3,
+        band_z           s3,
+	bandh_z          s3,
+	nemp_z		s80,
+	direc_z		s50,
+	modul_z		s30,
+	modul2_z	s10,
+	usuarios_z      s80,
+	teruser_z       s80,
+	mibd_z          s80,
+	nombuse_z       s15,
+	clause_z        s10,
+	bandf1_z	 s3,
+	impre_z			i,
+	font_z			i,
+	micar_z			s3,
+	carac_z			i,
+	
+	meses_z			i,
+	prtda_z			i,
+	ultda_z			i,
+	saldo_z			d,
+	fecha_z			D,
+	fechb_z			D,
+	impsal_z		d,
+	totclis_z		i,
+        idcli_z			l,
+	dias_z			i,
+	mes_z			i,
+	otdi_z			i,
+        diasbus_z		l,
+	diatra_z		i,
+        clivian_z		i,
+        prlisan_z		i,
+	clivig_z		i,
+	prlis_z			d,
+	signo_z			s2,
+	implet_z		d,
+	tothor_z		d,
+	piva_z			d,
+	diamax_z		i,
+	diamin_z		i,
+	misdias_z		i,
+	milet_z			i,
+	let_z			i,
+        anu_z			i,
+        antanu_z		i,
+	diavnc_z		d,
+	anttda_z		s3,
+	codigo_z	{
+	  tda_z			s2,
+	  cod1_z		s9,
+	  		}
+	fecbas_z	{
+	  fecbasaa_z		i,
+	  fecbasmm_z		i,
+	  fecbasdd_z		i,
+	  		}
+
+	cartsi_z		d,
+	cartno_z		d,
+	cartno05_z		d,
+	cartno06_z		d,
+	cartno08_z		d,
+	cartno10_z		d,
+	cartno11_z		d,
+	cortplsi_z		d,
+	largplsi_z		d,
+	cortplno_z		d,
+	largplno_z		d,
+	clicp_z			i,
+	clilp_z			i,
+        maxcol_z		i,
+        maxrow_z		i,
+        renst_z			i,
+	
+	corplsi10_z			d,
+	larplsi10_z			d,
+	corplno10_z			d,
+	larplno10_z			d,
+	corpl10_z			d,
+	larpl10_z			d,
+	cart10_z			d,
+	corplsi15_z			d,
+	larplsi15_z			d,
+	corplno15_z			d,
+	larplno15_z			d,
+	corpl15_z			d,
+	larpl15_z			d,
+	cart15_z			d,
+	corplsi20_z			d,
+	larplsi20_z			d,
+	corplno20_z			d,
+	larplno20_z			d,
+	corpl20_z			d,
+	larpl20_z			d,
+	cart20_z			d,
+
+* --> Archivos de Memoria Necesarios para Funcionar <-- *
+	cmds_z		{
+	  cmd1_z		s7,
+	  cmd2_z		s13,
+	  cmd3_z		s30,
+			}
+	arch_z			s13,
+
+
+	fech8_z           	D,
+	bandimp_z		s3,
+	enc_z			s3,
+	sigo_z			s2,
+	diaslet_z		d,
+	tasaiva_z		s6,
+	impvnc_z		d200,
+	anus_z			l20,
+	idcorlarpzo_z		l,
+	numtda_z		l,
+	antidcorlarpzo_z	l,
+	prcod_z			s11,
+	ulcod_z			s11,
+	milin_z			s100,
+        nelem_z			i,
+        inicia_z		i,
+        termin_z		i,
+        ntablas_z		i,
+        tablaac_z		i,
+        ncolxtab_z		i,
+        ii_z			i,
+        ind5_z			i,
+        ind4_z			i,
+	ind1_z            i,
+	ind2_z            i,
+	cuantos_z	  i,
+	termi_z           i,
+	esp_z             i,
+	exten_z           i,
+	tam0             s0,;
+
+mtam0&; 
+q+,version_z,"V:2.00 DK",;
+* --> Control de Versiones
+  2.00 DK Modificado para generar los totales Corto Largo Plazo x Anu Cartera
+*
+Ff3; FOdatos.ini~,r~; FGNodatos; Fknemp_z,l; &f0; tu1; tr; ts0;
+GPAN; GABRE_TABLA; (arch_z)=($flujoefe.tex,12); (impre_z)=(1); (piva_z)=(15);
+z0,nemp_z,#;
+Ff5; FO.impri.ini~,r~; FG|; | Fknemp_z,l; >sinemp_z,#,impre_z; . FC; Ff1;
+&a; &cfech8_z; qD,2,fecbas_z,fech8_z,;
+(fecbasdd_z)=(1); qD,1,fecbas_z,fech8_z,; (fech8_z)=(fech8_z)(86400)-;
+GTOMA_PARAMETROS; 
+
+
+[fec; t@5,3; \Fecha Base:\; t0Fin; (fecha_z)=(fech8_z); ifecha_z,+10;
+!(fecha_z)0($-1)>fec; qD,2,fecbas_z,fecha_z,;
+[prc; t@6,3; \Del Codigo:\; t0fec; t@6,20; iprtda_z,MIE2,MIS2;
+[ulc; t@6,40; \Al Codigo:\; t0prc; t@6,60; iultda_z,MIE2,MIS2;
+t@11,3; pfecbasaa_z,MIS2; \-\; pfecbasmm_z,MIS2; \-\;pfecbasdd_z,MIS2;
+[nco; t@7,3; \Cuantas Columnas x Tabla ? \; t0ulc; 
+t@7,30; incolxtab_z,MIE4,MIS4;
+*
+[pco; t@7,3; \Primer Codigo:\; t0ulc; iprcod_z,#;
+[uco; t@7,40; \Ultimo Codigo:\; t0pco; iulcod_z,#;
+*
+
+[piv; t@8,3; \Cartera del       %Iva (XX para todas)\; 
+t@8,15; itasaiva_z,4; >sdtasaiva_z,#,piva_z;
+@piva_z,100; !(piva_z)0($0)(tasaiva_z)5($XX,2)&>piv;
+GST; \Estan correctos los datos ? <S/N> : \; y|; | gulc; .
+
+tS1,1,0,0,23,80; tv0; tc;
+GGRABA_PARAMETROS; (sigo_z)=($N,1);
+Ff6; FOflujo.tex~,w~;
+
+f6; k3; P$; f4; k2; P$; f13; k2; P$; 
+* --> Elimino y tomo los datos de los cliente <-- * 
+f7; k6; P$; k7; P$;
+* ---> ----- <----- *
+f9; k4; P$; * --> Pone a ceros edorescar<-- *
+
+f1; 
+!(tasaiva_z)0($XX,2)>|; k3; | k2;  .
+P;
+{ n+;
+  Ff1; \Leyendo:\; ptiplazo_cli,0; s1; pnumcli_cli,0; s1; 
+  pqom_cli,0; s1; pnulet1_cli,MIS2; s1; pcargos_cli,MDS13; s1; 
+  pabonos_cli,MDS13; l;
+  !(sigo_z)5($N,1)>|; isigo_z,1; l; .
+  (codigo_z)=(numcli_cli,#); (idcli_z)=(idcli_cli);
+  !(band_z)5($S,1)>|; 
+    (anttda_z)=(tda_z,#); (band_z)=($S,1);
+  |
+    !(tda_z)5(anttda_z,2)>|;
+       GAGREEDORESCAR; 
+       z0,clivian_z,#; z0,prlisan_z,#; (antanu_z)=(fecompaa_cli);
+       (tda_z)=(anttda_z,#); GAGREFLU; 
+       (codigo_z)=(numcli_cli,#); (anttda_z)=(tda_z,#);
+    .
+  .
+  !(fecompaa_cli)5(antanu_z)>|; 
+    GAGREEDORESCAR; z0,clivian_z,#; z0,prlisan_z,#; (antanu_z)=(fecompaa_cli);
+  .
+  z0,import_mvc,#; f2; k1; P; n|;.
+  * Ya tengo el cliente, la fecha de compra, el numero de letras1,letras2,
+    importe letras1,letras2, qom, eng, servicio ahora puedo calcular fechas *
+  (implet_z)=(cargos_cli)(import_mvc)-; @implet_z,100; (meses_z)=(nulet1_cli);
+  !(qom_cli)0($Q,1)>|; (meses_z)=(meses_z)(2)/; .
+  !(implet_z)2($1)>|; f1; a; g-; .
+  Ff6; pnumcli_cli,0; s1; pcargos_cli,MDS13;
+  s1; pimport_mvc,MDS13; s1; pimplet_z,MDS13; l; Ff1;
+  (prlis_z)=(prlis_z)(precon_cli)+; (clivig_z)=(clivig_z)(1)+;
+  (prlisan_z)=(prlisan_z)(precon_cli)+; (clivian_z)=(clivian_z)(1)+;
+  !(tiplazo_cli)0($L,1)>|;
+    * -- Es Cliente de Largo Plazo  *
+    !(status_cli)0($*,1)>|;
+      (largplsi_z)=(largplsi_z)(implet_z)+; (cartsi_z)=(cartsi_z)(implet_z)+;
+    |
+      (largplno_z)=(largplno_z)(implet_z)+; (cartno_z)=(cartno_z)(implet_z)+;
+    .
+    (clilp_z)=(clilp_z)(1)+;
+  |
+    * -- Es Cliente de Corto Plazo  *
+    !(status_cli)0($*,1)>|;
+      (cortplsi_z)=(cortplsi_z)(implet_z)+; (cartsi_z)=(cartsi_z)(implet_z)+;
+    |
+      (cortplno_z)=(cortplno_z)(implet_z)+; (cartno_z)=(cartno_z)(implet_z)+;
+    .
+    (clicp_z)=(clicp_z)(1)+;
+  .
+  !(status_cli)5($*,1)>|;
+    !(meses_z)2($6)>|; (cartno05_z)=(cartno05_z)(implet_z)+; .
+    !(meses_z)0($6)>|; (cartno06_z)=(cartno06_z)(implet_z)+; .
+    !(meses_z)0($8)>|; (cartno08_z)=(cartno08_z)(implet_z)+; .
+    !(meses_z)0($10)>|; (cartno10_z)=(cartno10_z)(implet_z)+; .
+    !(meses_z)1($10)>|; (cartno11_z)=(cartno11_z)(implet_z)+; .
+  .
+  
+  (impsal_z)=(eng_cli)(servic_cli)+; qD,1,fecomp_cli,fechb_z,;
+  (diatra_z)=(fechb_z)(fecha_z)-(86400)/; (misdias_z)=(diatra_z);
+  !(qom_cli)0($Q,1)>|; (diaslet_z)=(15.2); | (diaslet_z)=(30.4); .
+  !(impsal_z)1(import_mvc)>|;
+    (dias_z)=(diatra_z)(diaslet_z)(2)/+; (implet_z)=(impsal_z)(import_mvc)-; 
+    GSUMALOALFLU;
+    (milet_z)=(1);
+  |
+    (milet_z)=(import_mvc)(eng_cli)-(servic_cli)-(canle1_cli)/(1)+;
+  .
+  (diavnc_z)=(diatra_z)(diaslet_z)(milet_z)*+; (let_z)=(milet_z);
+  (impsal_z)=(eng_cli)(servic_cli)+(canle1_cli)(milet_z)*+;
+  { !(let_z)1(nulet1_cli)>+;
+    (dias_z)=(diavnc_z);
+    !(impsal_z)1(import_mvc)>|;
+      (implet_z)=(impsal_z)(import_mvc)-;
+      !(implet_z)1(canle1_cli)>|; (implet_z)=(canle1_cli); .
+      GSUMALOALFLU;
+    .
+    (let_z)=(let_z)(1)+; (diavnc_z)=(diavnc_z)(diaslet_z)+; (impsal_z)=(impsal_z)(canle1_cli)+;
+  )
+  (diavnc_z)=(diatra_z)(diaslet_z)+; (let_z)=(1);
+  { !(let_z)1(nulet2_cli)>+;
+    (dias_z)=(diavnc_z);
+    !(impsal_z)1(import_mvc)>|;
+      (implet_z)=(impsal_z)(import_mvc)-;
+      !(implet_z)1(canle2_cli)>|; (implet_z)=(canle2_cli); .
+      GSUMALOALFLU;
+    .
+    (let_z)=(let_z)(1)+; (diavnc_z)=(diavnc_z)(diaslet_z)+; (impsal_z)=(impsal_z)(canle2_cli)+;
+  )
+  f1; a;
+)
+GAGREFLU;
+GAGREEDORESCAR; 
+GST; \Hasta aqui ya tenemos armado el Flujo de efectivo !!!\;
+GHAZ_REPORTE;
+gFin;
+
+[TOMA_PARAMETROS;
+x echo 1 >>.flujoefe.ini ~;
+Ff5; FO.flujoefe.ini~,r~;
+FGlistos_parametros; z0,milin_z,#; Fkmilin_z,l; >similin_z,#,prtda_z;
+FGlistos_parametros; z0,milin_z,#; Fkmilin_z,l; >similin_z,#,ultda_z;
+FGlistos_parametros; z0,milin_z,#; Fkmilin_z,l; >similin_z,#,ncolxtab_z;
+FGlistos_parametros; z0,milin_z,#; Fkmilin_z,l; (tasaiva_z)=(milin_z,4);
+[listos_parametros; Ff5; FC; Ff1;
+R;
+
+[GRABA_PARAMETROS;
+Ff5; FO.flujoefe.ini~,w~;
+pprtda_z,MIS2; l;
+pultda_z,MIS2; l;
+pncolxtab_z,MIS2; l;
+ptasaiva_z,0; l;
+Ff5; FC; Ff1;
+R;
+
+[HAZ_REPORTE;
+z0,nelem_z,#; z0,band_z,#;
+f5; k1; P; { n+; (nelem_z)=(nelem_z)(1)+; f5; a; )
+(ntablas_z)=(nelem_z)(ncolxtab_z)/;
+(ind1_z)=(ntablas_z)(ncolxtab_z)*; 
+!(ind1_z)2(nelem_z)>|; (ntablas_z)=(ntablas_z)(1)+; .
+(tablaac_z)=(0);
+{ !(tablaac_z)3(ntablas_z)>+;
+  (inicia_z)=(tablaac_z)(ncolxtab_z)*(1)+;
+  (termin_z)=(inicia_z)(ncolxtab_z)+(1)-;
+  !(termin_z)1(nelem_z)>|; (termin_z)=(nelem_z); .
+  GGENERAREP;
+  (tablaac_z)=(tablaac_z)(1)+;
+)
+!(band_z)5($S,1)>|;
+  Ff4; FO(arch_z),w~; FP66,60,Enc,Pie; (band_z)=($S,1);
+.
+GGENERA_RESUMEN;
+Ff4; FC; Ff1;
+tr; tf; tS0; GSalir;
+gFin;
+R;
+
+[GENERAREP;
+* - Ahora generamos el Reporte  - 
+  Primero, tomo el valor maximo y minimo de dias... *
+(enc_z)=($1,1);
+!(band_z)5($S,1)>|; 
+  Ff4; FO(arch_z),w~; FP66,60,Enc,Pie; (band_z)=($S,1);
+|
+  Ff4; GFONT30;
+.
+(dias_z)=(diamin_z);
+f12; k1; P;
+{ n+;
+  (dias_z)=(dias_ind12);
+  Ff1; \Imprimiendo x Dias:\; pdias_z,MIS2; l;
+  !(dias_z)3($0)>|;
+    !(enc_z)0($1,1)>|; GULIN1; (enc_z)=($2,1); GSUBENC2; .
+  .
+  (otdi_z)=(dias_z); !(otdi_z)2($0)>|; (otdi_z)=(otdi_z)(-1)*; .
+  Ff4; s5; potdi_z,MIS4; \|\; z0,tothor_z,#; z0,ind1_z,#; (ind4_z)=(1);
+  f5; k1; P;
+  { n+;
+    !(ind4_z)1(termin_z)>+;
+    (tda_z)=(codtda_ina,#); f4; k1; P; n|; z0,importe_flu,#; .
+    !(ind4_z)3(inicia_z)(ind4_z)4(termin_z)&>|;
+      pimporte_flu,MDS13; \|\; 
+    .
+    (tothor_z)=(tothor_z)(importe_flu)+;
+    (ind4_z)=(ind4_z)(1)+;
+    f5; a;
+  )
+  ptothor_z,MDS13; \|\; potdi_z,MIS4; l;
+  f12; a;
+)
+!(enc_z)0($1,1)>|; GULIN1; .
+!(enc_z)0($2,1)>|; GULIN2; .
+GULIN;
+R;
+
+[GENERA_RESUMEN;
+(enc_z)=($3,1); Ff4; GFONT30;
+z0,cartsi_z,#; z0,cartno_z,#; z0,cartno05_z,#; z0,cartno06_z,#;
+z0,cartno08_z,#; z0,cartno10_z,#; z0,cartno11_z,#; z0,cortplsi_z,#;
+z0,largplsi_z,#; z0,cortplno_z,#; z0,largplno_z,#; z0,clicp_z,#; z0,clilp_z,#;
+f6;
+!(tasaiva_z)0($XX,2)>|;
+  k6;
+|
+  k4;
+.
+P;
+{ n+;
+  GIMPRI3;
+  f6; a;
+)
+GULIN3;
+GGENERA_CORTO_LARGO_PLAZO;
+R;
+
+[ULIN1;
+f5; k1; P; Ff4; s5; \Tot:|\; z0,tothor_z,#; z0,ind1_z,#; (ind4_z)=(1);
+{ n+;
+  !(ind4_z)1(termin_z)>+;
+  z0,total_inb,#; (tda_z)=(codtda_ina,#); f7; k3; P; n|; z0,total_inb,#; .
+  !(ind4_z)3(inicia_z)(ind4_z)4(termin_z)&>|;  ptotal_inb,MDS13; \|\; .
+  (tothor_z)=(tothor_z)(total_inb)+; (ind4_z)=(ind4_z)(1)+;
+  f5; a;
+)
+ptothor_z,MDS13; l; l;
+R;
+
+[ULIN2;
+f5; k1; P; Ff4; s5; \Tot:|\; z0,tothor_z,#; z0,ind1_z,#; (ind4_z)=(1);
+{ n+;
+  !(ind4_z)1(termin_z)>+;
+  z0,total_inb,#; (tda_z)=(codtda_ina,#); f7; k4; P; n|; z0,total_inb,#; .
+  !(ind4_z)3(inicia_z)(ind4_z)4(termin_z)&>|;  ptotal_inb,MDS13; \|\; .
+  (tothor_z)=(tothor_z)(total_inb)+; (ind4_z)=(ind4_z)(1)+;
+  f5; a;
+)
+ptothor_z,MDS13; l; l;
+R;
+
+[ULIN;
+f5; k1; P; Ff4; s5; \Tot:|\; z0,tothor_z,#; (ind4_z)=(1);
+{ n+;
+  !(ind4_z)1(termin_z)>+;
+  z0,total_inb,#; (tda_z)=(codtda_ina,#);
+  !(ind4_z)3(inicia_z)(ind4_z)4(termin_z)&>|;  pimporte_ina,MDS13; \|\; .
+  (tothor_z)=(tothor_z)(importe_ina)+; (ind4_z)=(ind4_z)(1)+;
+  f5; a;
+)
+ptothor_z,MDS13; l; l;
+R;
+
+[Enc;
+Ff3; FT; FGNodatos; Ff4; GFONT11; GFONT14; Fc80,3; l; Ff3; FGNodatos; Ff4;
+GFONT13; \flujoefe \; GFONT14; &a; &cfech8_z; &p3fech9_z; pfech8_z,+8;
+s1; phora_z,#; s1; FW3; l;
+GFONT17; \Flujo de Efectivo al \; pfecha_z,+10; 
+!(tasaiva_z)0($XX,2)>|;
+  \Cartera Sin Importar Tasa Iva\;
+|
+  \ Cartera del \; ppiva_z,MFS5; \% \;
+.
+GFONT18; \ Pag:\; Fp%d~; l;
+GFONT17; \De Codigo:\; pprtda_z,MIS2; \ Al:\; pultda_z,MIS2; 
+GFONT18; GFONT13; GFONT12; l;
+!(enc_z)0($1,1)>|; GSUBENC1; .
+!(enc_z)0($2,1)>|; GSUBENC2; .
+!(enc_z)0($3,1)>|; GSUBENC3; .
+!(enc_z)0($4,1)>|; GSUBENC4; .
+!(enc_z)0($5,1)>|; GSUBENC_TOT_CARTERA_CLPZO_X_TASA_IVA; .
+Ft;
+
+[SUBENC1;
+Ff4; GFONT15; GFONT14; Fc40,\Cartera Vencida~; GFONT13; GFONT16; l;
+GSUBENC1A;
+R;
+
+
+[SUBENC1A;
+Ff4; s5; \Dias \; f5; k1; P; (ind4_z)=(1);
+{ n+;
+  !(ind4_z)1(termin_z)>+;
+  !(ind4_z)3(inicia_z)(ind4_z)4(termin_z)&>|;
+    pcodtda_ina,0; s1; f3; (tda_z)=(codtda_ina,#); k1; P; n|; GNOTDA; .
+    pnombre_tda,10; \|\;
+  .
+  (ind4_z)=(ind4_z)(1)+;
+  f5; a;
+)
+\ Total Gral. Dias\; l;
+R;
+
+[SUBENC2;
+Ff4; GFONT15; GFONT14; Fc40,\Cartera Corriente~; GFONT13; GFONT16; l;
+GSUBENC1A;
+R;
+
+[SUBENC3;
+Ff4; GFONT15; GFONT14; \Total de Cartera Vigente al \; pfecha_z,+10; GFONT16; GFONT13; l;
+\----Codigo-------------    Cartera Si    Cartera No 5 Meses o men       6 Meses       8 Meses      10 Meses  Mas de 10 Me Total Cartera\; l;
+R;
+
+[IMPRI3;
+Ff4; pcod_rca,0; s1; f3; (tda_z)=(cod_rca,#); k1; P; n|; GNOTDA; .
+pnombre_tda,20; \|\; pcartsi_rca,MDS13; \|\; pcartno_rca,MDS13; \|\;
+pcartno05_rca,MDS13; \|\; pcartno06_rca,MDS13; \|\; pcartno08_rca,MDS13; \|\;
+pcartno10_rca,MDS13; \|\; pcartno11_rca,MDS13; \|\;
+(tothor_z)=(cartsi_rca)(cartno_rca)+; ptothor_z,MDS13; l;
+(cartsi_z)=(cartsi_z)(cartsi_rca)+;
+(cartno_z)=(cartno_z)(cartno_rca)+;
+(cartno05_z)=(cartno05_z)(cartno05_rca)+;
+(cartno06_z)=(cartno06_z)(cartno06_rca)+;
+(cartno08_z)=(cartno08_z)(cartno08_rca)+;
+(cartno10_z)=(cartno10_z)(cartno10_rca)+;
+(cartno11_z)=(cartno11_z)(cartno11_rca)+;
+R;
+
+[ULIN3;
+\   Total de la Cartera |\;
+pcartsi_z,MDS13; \|\; pcartno_z,MDS13; \|\; pcartno05_z,MDS13; \|\;
+pcartno06_z,MDS13; \|\; pcartno08_z,MDS13; \|\; pcartno10_z,MDS13; \|\;
+pcartno11_z,MDS13; \|\;
+(tothor_z)=(cartsi_z)(cartno_z)+; ptothor_z,MDS13; l;
+z0,cartsi_z,#; z0,cartno_z,#; z0,cartno05_z,#; z0,cartno06_z,#;
+z0,cartno08_z,#; z0,cartno10_z,#; z0,cartno11_z,#; z0,cortplsi_z,#;
+z0,largplsi_z,#; z0,cortplno_z,#; z0,largplno_z,#; z0,clicp_z,#; z0,clilp_z,#;
+R;
+
+[BRINCA_A_CORTO_LARGO;
+GGENERA_CORTO_LARGO_PLAZO;
+Ff4; FC; Ff1; gFin;
+R;
+
+[GENERA_CORTO_LARGO_PLAZO;
+z0,ind4_z,#; z0,ind5_z,#; z0,cuantos_z,#;
+f11; k1; P;
+{ n+;
+  (cuantos_z)=(cuantos_z)(1)+;
+  (ind4_z)=(anus_z&)(cuantos_z)(1)-(8)*+;
+  (anus_z[ind4_z])=(anu_ind11); 
+  (ind4_z)=(ind4_z)(4)+;
+  (anus_z[ind4_z])=(idcorlarpzo_ind11);
+  f11; a;
+)
+(enc_z)=($4,1); Ff4; l; GSUBENC4;
+f6;
+!(tasaiva_z)0($XX,2)>|;
+  k6;
+|
+  k4;
+.
+P;
+{ n+;
+  GIMPRI4;
+  f6; a;
+)
+GULIN4;
+R;
+
+[SUBENC4;
+Ff4; GFONT15; GFONT14; \Analisis de Corto/Largo al \; pfecha_z,+10; GFONT16; GFONT13; l;
+\----Codigo-------------|\;
+z0,ind4_z,#; z0,ind5_z,#; 
+{ !(ind5_z)3(cuantos_z)>+;
+  (ind4_z)=(anus_z&)(ind5_z)(8)*+;
+  (antanu_z)=(anus_z[ind4_z]);
+  (ind4_z)=(ind4_z)(4)+;
+  (idcorlarpzo_z)=(anus_z[ind4_z]);
+  f14; k1; P; n|;.
+  f15; k1; P; n|;.
+  ptiplazo_clp,1;  \P \; pdescri_anc,12; \|Ctes|\;
+  (ind5_z)=(ind5_z)(1)+;
+)
+\        Total|T.Ctes|\; l;
+
+R;
+
+[IMPRI4;
+Ff4; pcod_rca,0; s1; f3; (tda_z)=(cod_rca,#); k1; P; n|; GNOTDA; .
+pnombre_tda,20; \|\; 
+>sltda_z,#,numtda_z;
+z0,ind4_z,#; z0,ind5_z,#; z0,tothor_z,#; z0,totclis_z,#;
+{ !(ind5_z)3(cuantos_z)>+;
+  (ind4_z)=(anus_z&)(ind5_z)(8)*+;
+  (antanu_z)=(anus_z[ind4_z]);
+  (ind4_z)=(ind4_z)(4)+;
+  (idcorlarpzo_z)=(anus_z[ind4_z]);
+  z0,tiplazo_ind11,l;
+  f11; k2; P; n|;. (saldo_z)=(cargos_ind11)(abonos_ind11)-;
+  (tothor_z)=(tothor_z)(saldo_z)+; (totclis_z)=(totclis_z)(cuantos_ind11)+;
+  psaldo_z,MDS15; \|\;
+  pcuantos_ind11,MLS4; \|\;
+  (ind5_z)=(ind5_z)(1)+;
+)
+ptothor_z,MDS15; \|\; ptotclis_z,MLS4;
+l;
+R;
+
+[ULIN4;
+Ff4; GFONT14; \   Total de la Cartera |\; 
+z0,tothor_z,#; z0,totclis_z,#;
+f11; k1; P;
+{ n+;
+  (saldo_z)=(cargos_ind11)(abonos_ind11)-;
+  psaldo_z,MDS15; \|\; pcuantos_ind11,MLS4; \|\;
+  (tothor_z)=(tothor_z)(saldo_z)+; (totclis_z)=(totclis_z)(cuantos_ind11)+;
+  f11; a;
+)
+ptothor_z,MDS15; \|\; ptotclis_z,MLS4; \|\; l;
+l; l;
+GTOT_CARTERA_CLPZO_X_TASA_IVA;
+R;
+
+[TOT_CARTERA_CLPZO_X_TASA_IVA;
+Ff4; 
+z0,tothor_z,#; z0,totclis_z,#; z0,cartsi_z,#; z0,cartno_z,#; 
+z0,clicp_z,#; z0,clilp_z,#; z0,diaslet_z,#;
+GFONT19; s30; \|\;
+\    Cartera 15%\; \|\; 
+\Ctes\; \|\;
+\    Cartera 16%\; \|\;
+\Ctes\; \|\;
+\  Total Cartera\; \|\;
+\Ctes\; \|\; 
+GFONT20; l;  
+(antidcorlarpzo_z)=(-1);
+
+f11; k1; P;
+{ n+;
+  (antanu_z)=(anu_ind11);
+  (idcorlarpzo_z)=(idcorlarpzo_ind11);
+  !(antidcorlarpzo_z)0($-1)>|;
+    (antidcorlarpzo_z)=(idcorlarpzo_z);
+  .
+  !(idcorlarpzo_z)5(antidcorlarpzo_z)>|;
+    GSUBT_COR_LAR_PZO_X_TASA_IVA_Y_ANU;
+    (antidcorlarpzo_z)=(idcorlarpzo_z);
+  .
+  f14; k1; P; n|;.
+  f15; k1; P; n|;.
+  z0,milin_z,#; q+,milin_z,descri_clp," ",descri_anc,;
+  (saldo_z)=(cargos_ind11)(abonos_ind11)-;
+  Ff4; pmilin_z,30; \|\; pdiaslet_z,MDS15; \|\; \   0|\;
+  psaldo_z,MDS15; \|\; pcuantos_ind11,MLS4; \|\;
+  psaldo_z,MDS15; \|\; pcuantos_ind11,MLS4; \|\; l;
+  (tothor_z)=(tothor_z)(saldo_z)+; (totclis_z)=(totclis_z)(cuantos_ind11)+;
+  (cartsi_z)=(cartsi_z)(saldo_z)+; (clicp_z)=(clicp_z)(cuantos_ind11)+;
+  f11; a;
+)
+GSUBT_COR_LAR_PZO_X_TASA_IVA_Y_ANU;
+z0,milin_z,#; q+,milin_z,"TOTAL DE CARTERA",; 
+Ff4; 
+GFONT19;
+pmilin_z,30; \|\; pdiaslet_z,MDS15; \|\; \   0|\;
+ptothor_z,MDS15; \|\; ptotclis_z,MLS4; \|\;
+ptothor_z,MDS15; \|\; ptotclis_z,MLS4; \|\; 
+GFONT20;
+l;
+l; l;
+R;
+
+[SUBT_COR_LAR_PZO_X_TASA_IVA_Y_ANU;
+z0,milin_z,#; q+,milin_z,"SUBTOTAL DE PLAZO",; 
+Ff4; 
+GFONT19; pmilin_z,30; \|\; pdiaslet_z,MDS15; \|\; \   0|\;
+pcartsi_z,MDS15; \|\; pclicp_z,MIS4; \|\;
+pcartsi_z,MDS15; \|\; pclicp_z,MIS4; \|\; 
+GFONT20;
+l;
+z0,cartsi_z,#; z0,clicp_z,#;
+R;
+
+[SUBENC_TOT_CARTERA_CLPZO_X_TASA_IVA;
+R;
+
+[IMPRIME_CARTERA_SI_NO_X_IVA;
+z0,cartsi_z,#; z0,cartno_z,#; z0,cartno05_z,#; z0,cartno06_z,#;
+z0,cartno08_z,#; z0,cartno10_z,#; z0,cartno11_z,#; z0,cortplsi_z,#;
+z0,largplsi_z,#; z0,cortplno_z,#; z0,largplno_z,#; z0,clicp_z,#; z0,clilp_z,#;
+GFONT19; s26;
+f7; k5; P; 
+{ n+;
+  (piva_z)=(total_inb); \  Cartera \; ppiva_z,MDS2; \%|\;
+  f7; a;
+)
+\ Cartera Tot.|\; GFONT20; l;
+
+z0,corplsi10_z,#; z0,larplsi10_z,#; z0,corplno10_z,#; z0,larplno10_z,#;
+(ii_z)=(1); GIMPRIME_DATO_CORTO_LARGO_PZO;
+(ii_z)=(2); GIMPRIME_DATO_CORTO_LARGO_PZO;
+(ii_z)=(3); GIMPRIME_DATO_CORTO_LARGO_PZO; l;
+(ii_z)=(4); GIMPRIME_DATO_CORTO_LARGO_PZO;
+(ii_z)=(5); GIMPRIME_DATO_CORTO_LARGO_PZO;
+(ii_z)=(6); GIMPRIME_DATO_CORTO_LARGO_PZO; l;
+GFONT19;
+(ii_z)=(7); GIMPRIME_DATO_CORTO_LARGO_PZO; GFONT20;
+R;
+
+[IMPRIME_DATO_CORTO_LARGO_PZO;
+z0,tothor_z,#;
+!(ii_z)0($1)>|; \ Corto Plazo Si           \; .
+!(ii_z)0($2)>|; \ Corto Plazo No           \; .
+!(ii_z)0($3)>|; \ Suma Corto Plazo Si y No \; .
+!(ii_z)0($4)>|; \ Largo Plazo Si           \; .
+!(ii_z)0($5)>|; \ Largo Plazo No           \; .
+!(ii_z)0($6)>|; \ Suma Largo Plazo Si y No \; .
+!(ii_z)0($7)>|; \ Suma Corto Y Largo Plazo \; .
+
+f7; k5; P;
+{ n+;
+  (piva_z)=(total_inb); 
+  z0,corplsi_inc,l; f8; k1; P; n|;. 
+  !(ii_z)0($1)>|; (larplsi10_z)=(corplsi_inc); .
+  !(ii_z)0($2)>|; (larplsi10_z)=(corplno_inc); . 
+  !(ii_z)0($3)>|; (larplsi10_z)=(corplsi_inc)(corplno_inc)+;  .
+  !(ii_z)0($4)>|; (larplsi10_z)=(larplsi_inc); .
+  !(ii_z)0($5)>|; (larplsi10_z)=(larplno_inc); .
+  !(ii_z)0($6)>|; (larplsi10_z)=(larplno_inc)(larplsi_inc)+; .
+  !(ii_z)0($7)>|; 
+    (larplsi10_z)=(corplno_inc)(corplsi_inc)+(larplno_inc)+(larplsi_inc)+; 
+  .
+  plarplsi10_z,MDS13; \|\;
+  (tothor_z)=(tothor_z)(larplsi10_z)+;
+  f7; a;
+)
+ptothor_z,MDS13; \|\; l;
+R;
+
+[Pie; Fe;
+
+[SUMALOALFLU;
+!(dias_z)2($0)>|;
+  (dias_z)=(dias_z)(-1)*; (signo_z)=($2,1);
+|
+  (signo_z)=($1,1);
+.
+(mes_z)=(dias_z)(30)/; (otdi_z)=(mes_z)(30)*;
+!(otdi_z)2(dias_z)>|; (mes_z)=(mes_z)(1)+; .
+!(signo_z)0($2,1)>|; (mes_z)=(mes_z)(-1)*; .
+(ind1_z)=(impvnc_z&)(mes_z)(100)+(8)*+;
+(impvnc_z[ind1_z])=(impvnc_z[ind1_z])(implet_z)+;
+R;
+   
+[AGREFLU;
+(ind2_z)=(0); (ind1_z)=(impvnc_z&);
+t@0,60; \Estoy en AGREFLU...\;
+{ !(ind2_z)1($200)>+;
+  (implet_z)=(impvnc_z[ind1_z]); @implet_z,100;
+  !(implet_z)1($0)>|;
+    (dias_z)=(ind2_z)(100)-(30)*;
+    !(ind2_z)2($100)>|; (signo_z)=($2,1); | (signo_z)=($1,1); .
+    f4; k1; P;
+    n|;
+      z0,cod_flu,l; (signo_flu)=(signo_z,#); (cod_flu)=(tda_z,#);
+      (dias_flu)=(dias_z); (importe_flu)=(implet_z); f4; QNOPDAGF4; k7; P$;
+    |
+      f4; k6; P$; f4; k1; P; n|; z0,cod_flu,l; .
+    .
+    Ff1; pdias_z,MLS4; s1; pcod_flu,0; s1; pdias_flu,MLS4; s1;
+    pimporte_flu,MDS13; s1; pimplet_z,MDS13; l;
+  .
+  (ind1_z)=(ind1_z)(8)+; (ind2_z)=(ind2_z)(1)+;
+)
+(ind1_z)=(impvnc_z&); z0,impvnc_z[ind1_z],1600;
+z0,cuantos_ind10,l; f10; k1; P; n|;.
+!(tasaiva_z)5($XX,2)>|;
+  !(cuantos_ind10)0($0)>|;
+    z0,fecha_rca,l; (fecha_rca)=(fecbas_z,#); (cod_rca)=(tda_z,#);
+    (tasa_rca)=(piva_z); (cartsi_rca)=(cartsi_z); (cartno_rca)=(cartno_z);
+    (cartno05_rca)=(cartno05_z); (cartno06_rca)=(cartno06_z);
+    (cartno08_rca)=(cartno08_z); (cartno10_rca)=(cartno10_z);
+    (cartno11_rca)=(cartno11_z); (cortplsi_rca)=(cortplsi_z);
+    (largplsi_rca)=(largplsi_z); (cortplno_rca)=(cortplno_z);
+    (largplno_rca)=(largplno_z);
+    (clicp_rca)=(clicp_z); (clilp_rca)=(clilp_z);
+    f6; QNOPDAGF6; k5; P$;
+    f13; k2; P$;
+  |
+    f6; k2; P$;
+  .
+.
+z0,cartsi_z,#; z0,cartno_z,#; z0,cartno05_z,#; z0,cartno06_z,#;
+z0,cartno08_z,#; z0,cartno10_z,#;
+z0,cartno11_z,#; z0,cortplsi_z,#; z0,largplsi_z,#; z0,cortplno_z,#;
+z0,largplno_z,#; z0,clicp_z,#; z0,clilp_z,#;
+z0,clivig_z,#; z0,prlis_z,#;
+R;
+
+[AGREEDORESCAR;
+!(tasaiva_z)0($XX,2)>R;
+!(clivian_z)0($0)(prlisan_z)0($0)&>R;
+z0,idanucartera_anc,l; f14; k1; P; n|;. (anu_z)=(anucartera_anc);
+Ff1; \Estoy en agreedorescar :\; pfecbasaa_z,MIS2; \-\; pfecbasmm_z,MIS2;
+\-\; pfecbasdd_z,MIS2; \:\; panttda_z,0; \:\; ppiva_z,MFS5; \:\; panu_z,MIS2; l;
+z0,cuantos_ind10,l; f10; k2; P; n|;.
+!(cuantos_ind10)0($0)>|;
+  Ff1; \A Cuantos Ind10 =\; pcuantos_ind10,MLS4; l;
+  z0,fecha_edc,l; (fecha_edc)=(fecbas_z,#); (tasiva_edc)=(piva_z);
+  (cod_edc)=(anttda_z,#); (clivig_edc)=(clivian_z); 
+  (vigprlis_edc)=(prlisan_z); (anter_edc)=(anu_z);
+  f9; QNOPDAGF9; k3; P$;
+|
+  Ff1; \B Cuantos Ind10 =\; pcuantos_ind10,MLS4; l;
+  f9; k2; P$;
+.
+R;
+
+[GRABAVIGTES;
+R;  
+
+[NOPDMDF4; GST; `7; \No pude modificar flujoefe....\; Z2; R;
+[NOPDAGF4; GST; `7; \No pude agregar flujoefe...\; Z2; R;
+[NOPDAGF6; GST; `7; \No pude agregar rescar...\; Z2; R;
+[NOPDAGF9; GST; `7; \No pude agregar edorescar...\; Z2; R;
+
+[MANDAELFNT; f13; k1; P; nR; GSACAF; R;
+
+#isacaf.i;
+#iimpri.i;
+
+[ABRE_TABLA; 
+Ff5; FObasedato.ini~,r~; FGNOBD; Fkmibd_z,l; FC; Ff1;
+fd1; O@,mibd_z,"sa","lux",1,ERRCNB,;  * con conexion autocommit    *
+f1; M
+	numcli_cli		s11,
+	cargos_cli		d,
+	abonos_cli		d,
+	fecomp_cli	{
+	  fecompaa_cli		i,
+	  fecompmm_cli		i,
+	  fecompdd_cli		i,
+			}
+	nulet1_cli		i,
+	nulet2_cli		i,
+	canle1_cli		d,
+	canle2_cli		d,
+	qom_cli			s2,
+	eng_cli			d,
+	servic_cli		d,
+	piva_cli		d,
+	status_cli		s2,
+	precon_cli		d,
+        idcli_cli		l,
+        tiplazo_cli		s2,
+	tam_cli			s0,;
+
+k0; ot,"clientes",;
+k1; kp,"numcli=?",codigo_z,#,1,;
+k2; kq,"select numcli,cargos,abonos,fechavta,nulet1,nulet2,canle1,canle2,b.qom,
+    enganc,servic,piva,status,precon,idcli,tiplazo 
+    from clientes b
+    join car_corlarpzodet d on b.qom = d.qom and b.nulet1 = d.nulets
+    join car_corlarpzo c on d.idcorlarpzo = c.idcorlarpzo
+    join car_anuscartera e on
+    ( year(b.fechavta) >= e.anuini and year(b.fechavta) <= e.anufin)
+    and d.idanucartera = e.idanucartera
+    where b.tienda between ? and ? and b.fechavta <= ? and b.piva = ? and
+    (cargos > abonos or (abonos >= cargos and fecsal > ?))
+    order by numcli, piva",
+    prtda_z,ultda_z,fecbas_z,#,3,piva_z,fecbas_z,#,3,;
+k3; kq,"select numcli,cargos,abonos,fechavta,nulet1,nulet2,canle1,canle2,b.qom,
+    enganc,servic,piva,status,precon,idcli,tiplazo 
+    from clientes b
+    join car_corlarpzodet d on b.qom = d.qom and b.nulet1 = d.nulets
+    join car_corlarpzo c on d.idcorlarpzo = c.idcorlarpzo
+    join car_anuscartera e on
+    ( year(b.fechavta) >= e.anuini and year(b.fechavta) <= e.anufin)
+    and d.idanucartera = e.idanucartera
+    where tienda between ? and ? and fechavta <= ? and
+    (cargos > abonos or (abonos >= cargos and fecsal > ?))
+    order by numcli, piva",
+    prtda_z,ultda_z,fecbas_z,#,3,fecbas_z,#,3,;
+
+f2; M
+	import_mvc		d,;
+k0; ot,"mvcli2",;
+k1; kq,"select sum(import) from mvcli2 where idcli=? and fechamov <= ?",
+    idcli_z,fecbas_z,#,3,;
+
+f3; #itiendas.i;
+k0; ot,"tiendas",;
+k1; kp,"codigo=?",tda_z,#,1,;
+k2; kq,"select * from tiendas order by codigo",;
+
+f4; #iflujoefe.i;
+k0; ot,"flujoefe",;
+k1; kp,"cod=? and dias=?",tda_z,#,1,dias_z,;
+k2; kq,"delete from flujoefe",;
+k3; kq,"select * from flujoefe order by cod,dias",;
+k4; kq,"select * from flujoefe order by dias",;
+k6; kq,"update flujoefe set importe=importe+? where
+	cod=? and dias=?",
+        implet_z,tda_z,#,1,dias_z,;
+k7; kq,"insert into flujoefe (cod,dias,signo,importe) values (?,?,?,?)",
+	cod_flu,#,1,dias_flu,signo_flu,#,1,importe_flu,;
+
+f5; M
+	codtda_ina	s3,
+        cuantos_ina	l,
+        importe_ina	d,
+	tam_ina		s0,;
+k0; ot,"flujoefe",;
+k1; kq,"select cod,count(*),sum(importe) from flujoefe group by cod",;
+k3; kq,"select tiplazo, c.idcorlarpzo, anucartera, e.descri, 
+        sum(b.cargos), sum(a.comfon), count(*)
+        from renrelcftmp a join clientes b on a.folio = b.idcli
+        join car_corlarpzodet d on b.qom = d.qom and b.nulet1 = d.nulets
+        join car_corlarpzo c on d.idcorlarpzo = c.idcorlarpzo
+        join car_anuscartera e on
+        d.idanucartera = e.idanucartera and
+        ( year(b.fechavta) >= e.anuini and year(b.fechavta) <= e.anufin)
+        where c.idcorlarpzo=? and piva=? and 
+        e.anuini <= ? and e.anufin >= ?
+        group by tiplazo, c.idcorlarpzo, anucartera, e.descri",
+        idcorlarpzo_z,piva_z,antanu_z,antanu_z,;
+
+f6; #irescar.i;
+k0; ot,"rescar",;
+k1; kp,"fecha=? and cod=? and tasa=?",fecbas_z,#,3,tda_z,#,1,piva_z,;
+k2; kq,"update rescar set cartsi=?,cartno=?,cartno05=?,cartno06=?,cartno08=?,
+    cartno10=?,cartno11=?,cortplsi=?,largplsi=?,cortplno=?,largplno=?,clicp=?,
+    clilp=? where fecha=? and cod=? and tasa=?",
+    cartsi_z,cartno_z,cartno05_z,cartno06_z,cartno08_z,cartno10_z,
+    cartno11_z,cortplsi_z,largplsi_z,cortplno_z,largplno_z,clicp_z,clilp_z,
+    fecbas_z,#,3,tda_z,#,1,piva_z,;
+k3; kq,"delete from rescar where fecha=? and tasa=?",
+    fecbas_z,#,3,piva_z,;
+k4; kp,"fecha=? and tasa=? order by cod",fecbas_z,#,3,piva_z,;
+k5; kq,"insert into rescar (fecha,cod,tasa,cartsi,cartno,cartno05,cartno06,
+	cartno08,cartno10,cartno11,cortplsi,largplsi,cortplno,largplno,
+        clicp,clilp) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        fecha_rca,#,3,cod_rca,#,1,tasa_rca,cartsi_rca,cartno_rca,
+        cartno05_rca,cartno06_rca,cartno08_rca,cartno10_rca,
+        cartno11_rca,cortplsi_rca,largplsi_rca,cortplno_rca,
+        largplno_rca,clicp_rca,clilp_rca,;
+k6; kq,"select fecha, cod, sum(tasa), sum(cartsi), sum(cartno), sum(cartno05),
+        sum(cartno06), sum(cartno08), sum(cartno10), sum(cartno11),
+        sum(cortplsi), sum(largplsi), sum(cortplno), sum(largplno),
+        cast(sum(clicp) as smallint), cast(sum(clilp) as smallint)
+        from rescar where fecha=?  group by fecha,cod",fecbas_z,#,3,;
+
+f7; M
+	total_inb	d,
+	tam_inb		s0,;
+k0; ot,"flujoefe",;
+k1; kq,"select sum(importe) from flujoefe where cod=?",tda_z,#,1,;
+k2; kq,"select sum(importe) from flujoefe where cod=?",
+	tda_z,#,1,;
+k3; kq,"select sum(importe) from flujoefe where cod=? and dias < 0",
+	tda_z,#,1,;
+k4; kq,"select sum(importe) from flujoefe where cod=? and dias >=0",
+	tda_z,#,1,;
+k5; kq,"select unique tasa from rescar where fecha=?",fecbas_z,#,3,;
+k6; kq,"delete from renrelcftmp",;
+k7; kq,"insert into renrelcftmp (folio,comfon)
+        select a.idcli, (select sum(import) from mvcli2 b
+        where a.idcli = b.idcli and b.fechamov <= ?) from clientes a
+        where tienda between ? and ? and fechavta <= ? and
+        qom <> 'C' and
+        (cargos > abonos or (abonos >= cargos and fecsal > ?))",
+    fecbas_z,#,3,prtda_z,ultda_z,fecbas_z,#,3,fecbas_z,#,3,;
+       
+f8; M
+	corplsi_inc			d,
+	larplsi_inc			d,
+	corplno_inc			d,
+	larplno_inc			d,
+	tam_inc				s0,;
+k0; ot,"rescar",;
+k1; kq,"select sum(cortplsi),sum(largplsi),sum(cortplno),sum(largplno) from rescar
+	where tasa=? and fecha=?",piva_z,fecbas_z,#,3,;
+k2; kq,"select b.tienda, tiplazo, anucartera, e.descri, 
+        sum(b.cargos), sum(a.comfon) 
+        from renrelcftmp a join clientes b on a.folio = b.idcli
+        join renfacmentmp g on b.tienda = g.idfac
+        join tiendas f on g.codigo = f.codigo
+        join car_corlarpzodet d on b.qom = d.qom and b.nulet1 = d.nulets
+        join car_corlarpzo c on d.idcorlarpzo = c.idcorlarpzo
+        join car_anuscartera e on
+        d.idanucartera = e.idanucartera and
+        ( year(b.fechavta) >= e.anuini and year(b.fechavta) <= e.anufin)
+        group by f.zoncar, b.tienda, piva, tiplazo, anucartera,e.descri",;
+
+f9; #iedorescar.i;
+k0; ot,"edorescar",;
+k1; kp,"fecha=? and cod=? and tasiva=? and anter=?",
+	fecbas_z,#,3,anttda_z,#,1,piva_z,anu_z,;
+k2; kq,"update edorescar set clivig=clivig+?,vigprlis=vigprlis+?
+	where fecha=? and cod=?	and tasiva=? and anter=?",
+	clivian_z,prlisan_z,fecbas_z,#,3,anttda_z,#,1,piva_z,anu_z,;
+k3; kq,"insert into edorescar (fecha,tasiva,cod,vtasctopl,vtaslarpl,
+	engctopl,englgopl,polizasctopl,polizaslarpl,cancelctopl,
+        cancellarpl,incobctopl,incoblarpl,totcarctopl,totcarlarpl,
+        clivig,clisdos,clicrdca,clicrdpi,clicanca,clicanpi,vigprlis,
+        clisdprlis, anter)
+        values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        fecha_edc,#,3,tasiva_edc,cod_edc,#,1,vtasctopl_edc,vtaslarpl_edc,
+        engctopl_edc,englgopl_edc,polizasctopl_edc,polizaslarpl_edc,
+        cancelctopl_edc,cancellarpl_edc,incobctopl_edc,incoblarpl_edc,
+        totcarctopl_edc,totcarlarpl_edc,clivig_edc,clisdos_edc,clicrdca_edc,
+        clicrdpi_edc,clicanca_edc,clicanpi_edc,vigprlis_edc,clisdprlis_edc,
+        anter_edc,;
+k4; kq,"update edorescar set clivig=0,vigprlis=0
+	where fecha=? and tasiva=?",fecbas_z,#,3,piva_z,;
+
+f10; M
+	cuantos_ind10		l,;
+k0; ot,"rescar",;
+k1; kq,"select count(*) from rescar where fecha=? and cod=? and tasa=?",
+	fecbas_z,#,3,tda_z,#,1,piva_z,;
+k2; kq,"select count(*) from edorescar where fecha=? and cod=? and 
+	tasiva=? and anter=?",
+        fecbas_z,#,3,anttda_z,#,1,piva_z,anu_z,;
+k3; kq,"select anter from edorescar where fecha=?",fecbas_z,#,3,;
+
+f11; M
+        tiplazo_ind11		s2,
+        idcorlarpzo_ind11	l,
+        anu_ind11		l,
+        descri_ind11		s31,
+        cargos_ind11		d,
+        abonos_ind11		d,
+        cuantos_ind11		l,
+        tam_ind11		s0,;
+k0; ot,"clientes",;
+k1; kq,"select tiplazo, c.idcorlarpzo, anucartera, e.descri, 
+        sum(b.cargos), sum(a.comfon), count(*)
+        from renrelcftmp a join clientes b on a.folio = b.idcli
+        join car_corlarpzodet d on b.qom = d.qom and b.nulet1 = d.nulets
+        join car_corlarpzo c on d.idcorlarpzo = c.idcorlarpzo
+        join car_anuscartera e on
+        d.idanucartera = e.idanucartera and
+        ( year(b.fechavta) >= e.anuini and year(b.fechavta) <= e.anufin)
+        group by tiplazo, c.idcorlarpzo, anucartera, e.descri",;
+k2; kq,"select tiplazo, c.idcorlarpzo, anucartera, e.descri, 
+        sum(b.cargos), sum(a.comfon), count(*)
+        from renrelcftmp a join clientes b on a.folio = b.idcli
+        join car_corlarpzodet d on b.qom = d.qom and b.nulet1 = d.nulets
+        join car_corlarpzo c on d.idcorlarpzo = c.idcorlarpzo
+        join car_anuscartera e on
+        d.idanucartera = e.idanucartera and
+        ( year(b.fechavta) >= e.anuini and year(b.fechavta) <= e.anufin)
+        where b.tienda = ? and c.idcorlarpzo=? and 
+        e.anuini <= ? and e.anufin >= ?
+        group by tiplazo, c.idcorlarpzo, anucartera, e.descri",
+        numtda_z,idcorlarpzo_z,antanu_z,antanu_z,;
+k3; kq,"select tiplazo, c.idcorlarpzo, anucartera, e.descri, 
+        sum(b.cargos), sum(a.comfon), count(*)
+        from renrelcftmp a join clientes b on a.folio = b.idcli
+        join car_corlarpzodet d on b.qom = d.qom and b.nulet1 = d.nulets
+        join car_corlarpzo c on d.idcorlarpzo = c.idcorlarpzo
+        join car_anuscartera e on
+        d.idanucartera = e.idanucartera and
+        ( year(b.fechavta) >= e.anuini and year(b.fechavta) <= e.anufin)
+        where c.idcorlarpzo=? and piva=? and 
+        e.anuini <= ? and e.anufin >= ?
+        group by tiplazo, c.idcorlarpzo, anucartera, e.descri",
+        idcorlarpzo_z,piva_z,antanu_z,antanu_z,;
+k4; kq,"select tiplazo, c.idcorlarpzo, c.idcorlarpzo, e.descri, 
+        sum(b.cargos), sum(a.comfon), count(*)
+        from renrelcftmp a join clientes b on a.folio = b.idcli
+        join car_corlarpzodet d on b.qom = d.qom and b.nulet1 = d.nulets
+        join car_corlarpzo c on d.idcorlarpzo = c.idcorlarpzo
+        join car_anuscartera e on
+        d.idanucartera = e.idanucartera and
+        ( year(b.fechavta) >= e.anuini and year(b.fechavta) <= e.anufin)
+        where c.idcorlarpzo=? and piva=? 
+        group by tiplazo, c.idcorlarpzo, c.idcorlarpzo, e.descri",
+        idcorlarpzo_z,piva_z,;
+
+f12; M
+	dias_ind12		l,
+        importe_ind12		d,
+        tam_ind12		s0,;
+k0; ot,"flujoefe",;
+k1; kq,"select dias, sum(importe) from flujoefe group by dias",;
+
+f13; #itablefnt.i;
+k0; ot,"fonts",;
+k1; kp,"impre=? and numero=?",impre_z,font_z,;
+k2; kq,"commit work",;
+
+f14; #icar_anuscartera.i;
+k0; ot,"car_anuscartera",;
+k1; kp,"anuini <= ? and anufin >= ?",antanu_z,antanu_z,;
+
+f15; #icar_corlarpzo.i;
+k0; ot,"car_corlarpzo",;
+k1; kp,"idcorlarpzo=?",idcorlarpzo_z,;
+R;
+
+#i/programas/lib/colores.i;
+#i/programas/lib/tomamaxrc.i;
+#i/programas/lib/status.i;
+
+[PAN; 
+Ff1; Gdefine_colores; Gamarillo_negro; Gtomamaxrc; 
+GST; tf; tn; #iprog1.i; ^=direc_z,#); z0,modul_z,#;
+(modul_z)=($Reporte de Flujo de Efectivo,28); (modul2_z)=($CAR-MDS,7);
+GBANNER; Gblanco_azul;
+R;
+
+[R; R; [E; ];
+
+[NOBD; Ff1; GST; `7; \No existe el archivo basedato.ini ...\; gFin1;
+[ERRCNB; GST; `6; \No pude conectarme a la base de datos...\; gFin1;
+[ERROR1; GST; `7; \No pude agregar registro en mantos.v ...\; gFin1;
+[ERROR4; GST; `7; \No pude agregar registro \; pteruser_z,0; gFin1;
+[NOTDA; z0,nombre_tda,#; (nombre_tda)=($INEXISTENTE,11); R;
+[Nodatos; Ff1; GST; `7; \archivo datos incompleto o inexistente...\; gFin1;
+
+[Fin1; y|;.
+[Fin; t@23,0; te; };

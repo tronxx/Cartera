@@ -1,0 +1,172 @@
+* Programa que sirve para Eliminar los clientes saldados hasta una fecha
+  DRBR 24 de Septiembre de 1997
+*
+
+#dMIE2 %-2d~; #dMLE6 %-6ld~; #dMLE4 %-4ld~; #dMFE %-5.2f~; #dMLS10 %10ld~;
+#dMIS2 %2d~;   #dMLS6 %6ld~; #dMLS4 %4ld~; #dMFS5 %5.2f~;   #dMDS9 %-9.2f~;
+#i/programas/lib/funkey.i;
+
+f0; M
+	ter_z            s2,
+	fech9_z     {
+	  dias2_z       s16,
+	  hora_z         s6,
+	  resto_z        s5,
+	            }
+	bandman_z        s1,
+	band_z           s1,
+	bandh_z          s1,
+	nemp_z		s80,
+	direc_z		s50,
+	modul_z		s30,
+	modul2_z	s10,
+	usuarios_z      s80,
+	teruser_z       s80,
+	mibd_z          s80,
+	nombuse_z       s15,
+	clause_z        s10,
+	bandf1_z	 s1,
+	saldo_z		d,
+
+	fech8_z           D,
+        sqlsen_z		s80,
+        idcli_z			l,
+	fecha_z			D,
+	fechb_z			D,
+        fechc_z			D,
+        fechd_z			D,
+	fecini_z	{
+	  feciniaa_z		i,
+	  fecinimm_z		i,
+	  fecinidd_z		i,
+	  		}
+	fecult_z	{
+	  fecultaa_z		i,
+	  fecultmm_z		i,
+	  fecultdd_z		i,
+	  		}
+	fecanini_z	{
+	  fecaniniaa_z		i,
+	  fecaninimm_z		i,
+	  fecaninidd_z		i,
+	  		}
+	fecanult_z	{
+	  fecanultaa_z		i,
+	  fecanultmm_z		i,
+	  fecanultdd_z		i,
+	  		}
+       strfecini_z	{
+         strfeciniaa_z		s4,
+         strfecinimm_z		s2,
+         strfecinidd_z		s2,
+                         }
+       strfecfin_z	{
+         strfecfniaa_z		s4,
+         strfecfnimm_z		s2,
+         strfecfnidd_z		s2,
+                         }
+	prtda_z			i,
+	ultda_z			i,
+	cuantos_z		i,
+	borrados_z		i,
+	nargs_z			i,
+	maxcol_z		i,
+	maxrow_z		i,
+	renst_z			i,
+        voc_z			s2,
+	
+	ind1_z            i,
+	ind2_z            i,
+	termi_z           i,
+	esp_z             i,
+	exten_z           i,
+	tam0             s0,;
+
+mtam0&; tr; Ff3; FOdatos.ini~,r~; FGNodatos; Fknemp_z,l; &f0; tu1; tr; ts0;
+* &a; &cfech8_z; &p3fech9_z; pfech8_z,+8; s1; phora_z,#; s1; FW3; l; *
+GPAN; GABRE_TABLA;
+
+$inargs_z;
+!(nargs_z)3($2)>|;
+  $s1,strfecini_z,#;  $s2,strfecfin_z,#;
+  >sistrfeciniaa_z,#,feciniaa_z;
+  >sistrfecinimm_z,#,fecinimm_z;
+  >sistrfecinidd_z,#,fecinidd_z;
+  >sistrfecfniaa_z,#,fecultaa_z;
+  >sistrfecfnimm_z,#,fecultmm_z;
+  >sistrfecfnidd_z,#,fecultdd_z;
+  qD,1,fecini_z,fecha_z,; qD,1,fecult_z,fechb_z,;
+.
+
+[fei; t@5,3; \Saldados del :\; t@5,25; t0Fin; pfecha_z,+10;
+!(fecha_z)0($-1)>fei; qD,2,fecini_z,fecha_z,;
+[feu; t@6,3; \Saldados al  :\; t@6,25; t0fei; pfechb_z,+10;
+!(fechb_z)0($-1)>feu; qD,2,fecult_z,fechb_z,;
+(prtda_z)=(0); (ultda_z)=(89);
+[prt; t@5,40; \Del Codigo:\; t0feu; t@5,60; pprtda_z,MIE2,MIS2;
+[ult; t@6,40; \Al Codigo:\; t0prt; t@6,60;  pultda_z,MIE2,MIS2;
+
+GST; `7; \Estan Correctos los datos ? <S/N> :\; 
+tS1,3,1,18,78; tc; tf;
+Ff4; FOclientexbaja.txt~,w~;
+f1; k1; P;
+{ n+;
+  Ff1; \Leyendo:\; pnumcli_cli,0; s1; pnombre_cli,0; l;  
+  Ff4; 
+  \delete from clientes  where numcli='\; pnumcli_cli,0; \'\; `59; l;
+  \delete from mvcli2    where idcli=\; pidcli_cli,MLS10; `59; l;
+  \delete from dircli2   where idcli=\; pidcli_cli,MLS10; `59; l;
+  \delete from solicit2  where idcli=\; pidcli_cli,MLS10; `59; l;
+  \delete from misdatsol where idcli=\; pidcli_cli,MLS10; `59; l;
+  \delete from observcli where codcli='\; pnumcli_cli,0; \'\; `59; l;
+  \delete from renrelco  where codcli='\; pnumcli_cli,0; \'\; `59; l;
+  !(ticte_cli)($FN,2)>|;
+    \delete from facfon2   where iddcli=\; pidcli_cli,MLS10; `59; l;
+  .
+  
+  \--\; pborrados_z,MIS2; \ Registros eliminados\; l;
+  !(cuantos_z)1($100)>|; \commit work\; `59; l; z0,cuantos_z,#; .
+  (cuantos_z)=(cuantos_z)(1)+;
+  f1; a;
+)
+Ff4; \commit work\; `59; l;
+Ff4; FC; Ff1; tf; tr; tS0,0,0,23,80;
+gFin;
+
+[ABRE_TABLA; 
+Ff5; FObasedato.ini~,r~; FGNOBD; Fkmibd_z,l; FC; Ff1;
+fd1; O@,mibd_z,"sa","lux",1,ERRCNB,;  * con conexion autocommit    *
+
+f1; M
+	numcli_cli		s11,
+        nombre_cli		s35,
+        ticte_cli		s3,
+        idcli_cli		l,;
+k0; ot,"clientes",;
+k1; kq,"select numcli,nombre,ticte,idcli from clientes
+	where (
+          (cargos <= abonos > 1 and fecsal between ? and ?)
+          and ( ticte <> 'FN' and ticte <> 'IM' )
+        )
+	and fechavta  < ? and tienda between ? and ? order by numcli",
+	fecini_z,#,3,fecult_z,#,3,fecult_z,#,3,prtda_z,ultda_z,;
+R;
+
+#i/programas/lib/colores.i;
+#i/programas/lib/tomamaxrc.i;
+#i/programas/lib/status.i;
+
+[PAN;
+Ff1; Gdefine_colores; Gtomamaxrc; Gamarillo_negro; GST; tf; tn; #iprog1.i;
+z0,modul_z,#; (modul_z)=($Analitico de Ventas,19); (modul2_z)=($CAR-MDS,7);
+^=direc_z,#);
+GBANNER; Gblanco_azul;
+R;
+
+[R; R; [E; ];
+[NOBD; Ff1; GST; `7; \No existe el archivo basedato.ini ...\; gFin1;
+[ERRCNB; GST; `6; \No pude conectarme a la base de datos...\; gFin1;
+[Nodatos; Ff1; GST; `7; \archivo datos incompleto o inexistente...\; gFin1;
+
+[Fin1; y|;.
+[Fin; t@23,0; te; };

@@ -1,0 +1,1254 @@
+* Programa que sirve para Capturar las Facturas de los Clientes
+  DRBR 28-Dic-1996
+*
+
+#dMDE10 %-10.0f~; #dMDE12 %-12.2f~; #dMIE5 %-5d~; #dMLE6 %-6d~; #dMFE %-6.2f~;
+#dMDS10 %10.0f~;  #dMDS12 %,12.2f~; #dMIS5 %5d~;  #dMLS6 %06d~;  #dMFS %6.2f~;
+#dMDS9 %,9.2f~;  #dMIS2 %2d~; #dMLS10 %10ld~;
+#dMLE5 %-5ld~;   #dMIE2 %-2d~;
+#dMLS5 %5ld~;    #dMIS4 %4d~;
+#i/programas//lib/funkey.i;
+
+f0; M
+	nemp_z          	s80,
+	direc_z         	s80,
+	version_z		s21,
+        sff_z			i,
+        impre_z                 i,
+        font_z                  i,
+        micar_z                 s3,
+        carac_z                 i,
+        idusuario_z		l,
+        iddato_z		l,
+        modul_z         	s40,
+	modul2_z        	s10,
+	ter_z            	s2,
+	fech9_z     {
+	  dias_z        	s16,
+	  hora_z         	s5,
+	  resto_z        	s5,
+	            }
+	fech8_z           	D,
+        fecha_z			D,
+        fechb_z			D,
+        fecbas_z		D,
+	totfacli_z        	d,
+	ncli_z            	d,
+	admin_z           	i,
+        tpmov_z			s2,
+        accion_z		s2,
+        maxrow_z		i,
+        maxcol_z		i,
+        renst_z			i,
+	mibd_z			s80,
+	mibdinv_z      		s80,
+	importe_z	  	d,
+	soli_z      {
+	  progra_z      	s41,
+	  codref_z      	s12,
+	  tarea_z		s10,
+	            }
+	msg_z          		s100,
+	msg1_z       {
+	  par1_z         	s8,
+	  par2_z         	s2,
+	  par3_z         	s1,
+	  par4_z         	s2,
+	             }
+*   -->  Variables y Rutina para Reportes Multiples en variables   <--    *
+	cmds_z		{
+	  cmd1_z		s7,
+	  cmd2_z		s13,
+	  cmd3_z		s30,
+			}
+	arch_z			s13,
+	nfac_z            	l,
+        idcliendoso_z		l,
+        idnombre_z		l,
+        iddir_z			l,
+        idcol_z			l,
+        idpoblac_z		l,
+        idptovta_z		l,
+        narts_z			i,
+        bandc_z			s2,
+        band4_z			s2,
+	mes_z			i,
+	bandf3_z		s2,
+	bandimp_z		s2,
+        bandrenf_z              s2,
+        concep2_z		s31,
+        nombre_z		s201,
+        dircli_z		s26,
+        colcli_z		s31,
+        poblac_z		s26,
+        vnd_z			s4,
+        ptovta_z		s3,
+        nommes_z		s20,
+        busantcli_z		s80,
+        bussigcli_z		s80,
+        busconse_z		s80,
+        busidrenfac_z		s80,
+        busidfac_z		s80,
+        busultfac_z		s80,
+        updtcli_z		s200,
+        updtdcl_z		s200,
+        bajcli_z		s200,
+        bajmvcli_z		s200,
+        updtfac_z		s200,
+        bajfac_z		s200,
+        bajdcl_z		s200,
+        bajrenffo_z		s200,
+        inscli_z		s200,
+        titven_z			s80,
+        appat_z				s51,
+        apmat_z				s51,
+        nompil1_z			s51,
+        nompil2_z			s51,
+        clinp1_z			s51,
+        clinp2_z			s51,
+        cliapp_z			s51,
+        cliapm_z			s51,
+        idnomcli_z			l,
+        col_z				i,
+        idrel_z				l,
+        folio_z				l,
+        bandnom_z			s2,
+        REL_NOMCLI			l,
+        REL_NOMAVA			l,
+        REL_NOMFIDE			l,
+        FAC_TRADICIONAL			l,
+        FAC_FONACOT			l,
+        NUM_IMPRESIONES_FAC		l,
+        TIPO_TARJETA_CREDITO_FELIZ	l,
+        TIPO_TARJETA_CREDITO_BANCARIA	l,
+        destruc_z			d,
+        prbaseasi_z			d,
+        plista_z		d,
+        totfac_z		d,
+        bonif_z			d,
+        servic_z		d,
+        efecti_z		d,
+        nconcep_z		l,
+        idrenfac_z              l,
+        idfac_z                 l,
+	nargs_z           	i,
+        conse_z			i,
+        numtda_z		i,
+	band_z           	s2,
+	mifac_z			l,
+        ntda_z			i,
+        strtda_z		s3,
+        cod2_z		{
+          tdacli_z		s2,
+          ubiage_z		s2,
+          faccli_z		s6,
+        		}
+        ubivta_z		s3,
+	codcli_z              	s11,  * Codigo del Cliente Fonacot       *
+	seriefac_z               s3,  * Numero de la Factura de Fonacot  *
+	ultfac_z                 l,  * Esta es mi ultima Factura        *
+	pagcon_z                  d,
+	tasa_z                    d,  * tasa de Comision FONACOT         *
+	import_z                  d,  * Importe del Renglon              *
+	subtot_z                  d,  * Subtotal de la Factura           *
+	iva_z                     d,  * Importe del Iva                  *
+	total_z                   d,  * Total de la Factura              *
+        impren_z                d,
+        preciou_z               d,
+        pdsc_z                  d,
+        piva_z                  d,
+        canti_z                 l,
+        codigo_z                s14,
+        concepto_z		s31,
+        serieart_z              s21,
+        anter_z                 s2,
+        sigte_z                 s2,
+        bndf8_z                 s2,
+        bandf8_z                s2,
+        bandmov_z		s2,
+        col01_z                 i,
+        col02_z                 i,
+        col03_z                 i,
+        col04_z                 i,
+        rena_z                  i,
+        renb_z                  i,
+        tope_z                  i,
+        base_z                  i,
+        fechavta_z	{
+          fechavtaaa_z		i,
+          fechavtamm_z		i,
+          fechavtadd_z		i,
+        		}
+
+* ---> Estas son las variables que se necesitan para usar esta funcion  <---- *
+	bandb_z          	s2,
+	prifac_z          	l,
+	diganufac_z		i,
+	mimenu_z		i,
+        sqlcmd_z		s100,
+	milinea_z		s100,
+	clientes_z		s20,
+	mvcli_z			s20,
+	tbdircl_z		s20,
+	solicit_z		s20,
+	facfon_z		s20,
+	renfacfon_z		s20,
+	caroal_z		s20,
+        clifide_z		s20,
+        fideoasi_z		s2,
+        idcli_z			l,
+        tope1_z			i,
+        base1_z			i,
+        bndf1_z			s2,
+        bandprog_z		s2,
+        haciabus_z		s2,
+	ren_z             	i,
+	iii_z             	i,
+	pos1_z            	l,
+	col1_z            	i,
+	col2_z            	i,
+	xx_z              	i,
+	yy_z              	i,
+	ren2_z            	i,
+	cols_z            	i,
+	ii_z              	i,
+	ind1_z            	i,
+	ind2_z            	i,
+	termi_z           	i,
+	ntar_z		  	i,
+	esp_z             	i,
+	exten_z           	i,
+	nombuse_z       	s16,
+	clause_z        	s111,
+        cia_z                   i,
+	tam0             	s0,;
+mtam0&; tr;
+(renfacfon_z)=($renfacfo,8); GTOMA_PARAMETROS;
+Ff5; FO.impri.ini~,r~; FG|; | Fknemp_z,l; >sinemp_z,#,impre_z; . FC;
+z0,nemp_z,#; Ff5; FO.cias.ini~,r~; FG|; | Fknemp_z,l; .
+FC; Ff1; >sinemp_z,#,cia_z;
+Ff3; FOdatos.ini~,r~; FGNodatos; Fknemp_z,l; &f0; tu1;
+z0,termi_z,#; >istermi_z,ter_z,%02d~; ts0; tttntar_z; Gtomamaxrc;
+(arch_z)=($capfafon.tex,12); (piva_z)=(16);
+(col01_z)=(0); (col02_z)=(14); (col03_z)=(45); (col04_z)=(66);
+(tope_z)=(maxrow_z)(2)-; (base_z)=(14); (idcliendoso_z)=(-10);
+(strtda_z)=($90,2); (numtda_z)=(90);
+(fechavtaaa_z)=(1990); (fechavtamm_z)=(1); (fechavtadd_z)=(1);
+qD,1,fechavta_z,fecbas_z,; 
+ttunombuse_z; qu,nombuse_z,;
+* --> Solo para ahorrar teclazos, quitalo cuando este listo el programa <--
+  z0,nombuse_z,#; q+,nombuse_z,"RICARDO BASTO",; 
+*
+* Voy a a leer los parametros, 
+  A - Asi, sin bonificacion
+  F - Fide con bonificacion
+*
+z0,concep2_z,#; (concep2_z)=($F,1); 
+$inargs_z;
+!(nargs_z)3($2)>|;
+  $s1,concep2_z,#;
+.
+!(concep2_z)0($F,1)>|;
+  (fideoasi_z)=($F,1); (idcliendoso_z)=(-10);
+|
+  (fideoasi_z)=($A,1); (idcliendoso_z)=(-20);
+.
+
+GPAN; GABRE_TABLA;
+
+* --> -201 Valor base Fide <-- *
+(iddato_z)=(-201); z0,observ_ind5,l; f5; k2; P; n|;.
+>sdobserv_ind5,#,prbaseasi_z;
+* --> -202 Valor Destruccion Fide <-- *
+(iddato_z)=(-202); z0,observ_ind5,l; f5; k2; P; n|;.
+>sdobserv_ind5,#,destruc_z;
+!(prbaseasi_z)0($0)(destruc_z)0($0)>|;
+  GST; \Precio base:\; pprbaseasi_z,MDS12; \ Destruccion:\; pdestruc_z,MDS12;
+  \ Ambos deben ser diferentes de cero...\; y|;. gFin;
+.
+
+[use; GST; \Teclee su Nombre de Usuario : \; t0Fin; inombuse_z,15;
+[cla; GST; \Teclee la Clave de Usuario : \; t0use; z0,clause_z,#;
+* q+,clause_z,"XMAN",; *
+ts2; iclause_z,10;
+f15; k1; P; n|; GST; `7; \Usuario Inexistente ...\; guse; .
+!(permi02_use)0($N,1)>|;
+  GST; `7; \Lo Siento \; pnombre_use,#; \ No tiene Acceso a esta seccion \;
+  Z2; gFin;
+.
+(idusuario_z)=(idusuario_use); GDEFINE_REL_CLI;
+
+{
+  !(mimenu_z)0($0)>|; GMENS0;  GSELEC0;  .
+  !(mimenu_z)0($1)>|; GMENS01; GSELEC01; .
+)
+gFin;
+
+[NOPDMDF1; GST; `7; \No pude modificar \; pclientes_z,0; Z1; R;
+
+[MENS0;
+GST; \Seleccione: `A`nterior `S`iguiente `N`uevo `R`englones `B`aja \;
+\`I`mprime `C`onsulta `O`tros `F`in\;
+R;
+
+[MENS01;
+GST; \Seleccione: `P`arametros `O`tros `F`in\;
+R;
+
+[SELEC0;
+?G[Aantcli, [Ssigcli, [Ccodcli, [Nnvocli, [Rrenfac, [Mmodcli, [Bbajcli,
+  [aantcli, [ssigcli, [ccodcli, [nnvocli, [rrenfac, [mmodcli, [bbajcli, 
+  [Iimpfac, [Ootromen, [FFin,
+  [iimpfac, [ootromen, [fFin;
+R;
+
+[SELEC01;
+  ?G[Ppideparam, [Ootromen, [FFin,
+    [ppideparam, [ootromen, [fFin;
+R;
+
+[otromen;
+!(mimenu_z)0($1)>|; (mimenu_z)=(0); | (mimenu_z)=(1); .
+R;
+
+[pideparam;
+GST; \Cuantos Digitos imprimo en el anu de la factura ? \; t0R;
+idiganufac_z,MIE2,MIS2; !(diganufac_z)2($0)(diganufac_z)1($4)|>pideparam;
+GGRABA_PARAMETROS;
+R;
+
+[TOMA_PARAMETROS;
+tc; xcrea_param.bat .capfafid.ini ~;
+Ff5; FO.capfafid.ini~,r~;
+Ff5; FGFIN_TOMA_PARAMETROS; z0,milinea_z,#; Fkmilinea_z,l; >similinea_z,#,diganufac_z;
+[FIN_TOMA_PARAMETROS;
+Ff5; FC; Ff1; tr;
+R;
+
+[GRABA_PARAMETROS;
+tc;
+Ff5; FO.capfafid.ini~,w~;
+Ff5; pdiganufac_z,MIS4; l;
+Ff5; FC; Ff1; tr;
+R;
+
+[LOCALIZA_FACTURA;
+[sfa; z0,band_z,#; GST; \Teclee La Serie y Numero de la Factura...\; 
+t0R; tL07; iseriefac_z,2;
+!(accion_z)0($N,1)>|;
+  z0,ulticon_ind6,l; f7; k7; P; n|;. (nfac_z)=(ulticon_ind6)(1)+;
+.
+[nfa; GST; \Teclee el Numero de la Factura...\; t0sfa; tL06; infac_z,MLE6,MLS6;
+f3; k2; P; 
+n|; | 
+  (idcli_fid)=(idcli_faf); (idcli_z)=(idcli_faf); 
+  f1; k2; P; n|;. GDESPCLI; R; 
+.
+[ubi; GST; \Teclee la Ubicacion de la Venta...\; t0nfa; tL09; iubivta_z,2;
+f14; k1; P; 
+n|;
+  (bandb_z)=($U,1); Gbusca2; f14; k1; P;
+  n|; GST; \Ubicacion Inexistente...\; pubivta_z,0; Z1; gnvocli; .
+.
+tL09; pubivta_z,2;
+(band_z)=($S,1);
+R;
+
+[nvocli;
+(accion_z)=($N,1); GLOCALIZA_FACTURA; !(band_z)5($S,1)>R;
+(tdacli_z)=(strtda_z,2); (ubiage_z)=(ubivta_z,2); >lsnfac_z,faccli_z,MLS6;
+(codcli_z)=(cod2_z,10); tL00; pcodcli_z,10;
+f1; k1; P;
+n|; | 
+  GDESPCLI; GST; `7; \El codigo ya existe\; GDESPCLI; R;
+.
+(bonif_z)=(500); &a; &cfechb_z; GPIDATS; !(band_z)5($S,1)>R;
+
+* --> Ahora tomo el idcli <-- *
+qD,2,fechavta_z,fecha_z,; 
+z0,ulticon_ind6,l; f7; k9; P; n|;. (idcli_z)=(ulticon_ind6)(1)+;
+* --> Ahora Tomo el idfac  <-- *
+z0,ulticon_ind6,l; f7; k5; P; n|;. (idfac_z)=(ulticon_ind6)(1)+;
+GAGREGA_RELCLIS; (idnombre_z)=(ulticon_ind6);
+
+*
+(idcli_z)=(fecha_z)(fecbas_z)-(86400)/;
+(idcli_z)=(idcli_z)(100)x;
+(idcli_z)=(numtda_z)(1000000)x(idcli_z)+(conse_z)+;
+*
+
+z0,concep2_z,#; (concep2_z)=(dircli_z,#); z0,ncon_cpm,l; f6; k5; P; n|;.
+(iddir_z)=(ncon_cpm);
+z0,concep2_z,#; (concep2_z)=(colcli_z,#); z0,ncon_cpm,l; f6; k5; P; n|;.
+(idcol_z)=(ncon_cpm);
+(idpoblac_z)=(numero_pob);
+(idptovta_z)=(idptovta_ptv);
+
+z0,idcli_fid,l; (idcli_fid)=(idcli_z); (codigo_fid)=(codcli_z,#);
+qD,2,fecha_fid,fecha_z,; (idnombre_fid)=(idnombre_z); (iddirec_fid)=(iddir_z);
+(idfac_fid)=(idfac_z); (idcol_fid)=(idcol_z); (idpoblac_fid)=(idpoblac_z); 
+(idptovta_fid)=(idptovta_z); (agente_fid)=(vnd_z,#);
+(preciofid_fid)=(totfac_z); (bonifi_fid)=(bonif_z); 
+(iduser_fid)=(idusuario_z); (cia_fid)=(cia_z); (status_fid)=($A,1);
+f1; k3; P$;
+
+z0,idcli_faf,l; (idcli_faf)=(idcli_z); (serie_faf)=(seriefac_z,#);
+(tasa_faf)=(tasa_z); >lsnfac_z,factur_faf,MLS6; (nfac_faf)=(nfac_z); 
+qD,2,fecha_faf,fecha_z,; (idfac_faf)=(idfac_z);
+(precio2_faf)=(FAC_FONACOT);
+f3; QNOPDAGF3;
+!(caroal_z)0($A,1)>|; k4; P$; .
+!(caroal_z)0($C,1)>|; k5; P$; .
+
+!(fideoasi_z)0($F,1)>|;
+  (preciou_z)=(totfac_z); (canti_z)=(1); GAGRERENFAC;
+|
+  (preciou_z)=(totfac_z)(destruc_z)-; (canti_z)=(1);  GAGRERENFAC;
+  z0,serieart_z,#; z0,codigo_z,#; q+,codigo_z,"AUXILIAR",; 
+  z0,concepto_z,#; q+,concepto_z,"DESTRUCCION Y TRANSPORTE",; 
+  (preciou_z)=(destruc_z); (canti_z)=(1);  GAGRERENFAC;
+.
+
+!(fideoasi_z)0($F,1)>|;
+  (preciou_z)=(bonif_z)(-1)*; (canti_z)=(1); z0,codigo_z,#; z0,concepto_z,#;
+  (codigo_z)=($BONIFICA,8); q+,concepto_z,"MENOS BONIFICACION",;
+  z0,serieart_z,#; GAGRERENFAC;
+.
+
+GLISRENFAC;
+R;
+
+[AGREGA_RELCLIS;
+(nompil1_z)=(clinp1_z,#); (nompil2_z)=(clinp2_z,#); 
+(appat_z)=(cliapp_z,#);  (apmat_z)=(cliapm_z,#);
+(idnombre_z)=(idnomcli_z); (idrel_z)=(REL_NOMFIDE);
+f7; k10; P; n|;.
+R;
+
+[codcli;
+GST; \Teclee el codigo del cliente...\;
+tL00; t0R; icodcli_z,10;
+f1; k1; P;
+n|; GST; `7; \El codigo No Existe\; Z1; R; .
+GDESPCLI; 
+R;
+
+[PIDATS;
+z0,band_z,#;
+{ 
+  [fec; GST; \Teclee la Fecha de la Factura...\; t0+; (fecha_z)=(fechb_z);
+  tL01; ifecha_z,+10; !(fecha_z)0($-1)>fec;
+  [nom; GST; \Teclee el Nombre del Cliente...\;
+  (nompil1_z)=(clinp1_z,#); (nompil2_z)=(clinp2_z,#); 
+  (appat_z)=(cliapp_z,#);  (apmat_z)=(cliapm_z,#);
+  z0,titven_z,#; q+,titven_z,"Teclee el Nombre del Cliente:",;
+  GPIDENOMBRE; !(bandnom_z)5($S,1)>fec;
+  (clinp1_z)=(nompil1_z,#); (clinp2_z)=(nompil2_z,#);
+  (cliapp_z)=(appat_z,#);  (cliapm_z)=(apmat_z,#);
+  tL02; pnombre_z,34;
+  
+  [dir; GST; \Teclee la Direccion del Cliente...\; t0nom; tL03; idircli_z,25;
+  [col; GST; \Teclee la Colonia del Cliente...\; t0nom; tL04; icolcli_z,25;
+  [pob; GST; \Teclee la Poblacion del Cliente\; t0col; tL05; ipoblac_z,25;
+  f12; k1; P;
+  n|;
+    GBUSCAPOSIBILIDADES; (bandb_z)=($P,1); Gbusca2;
+    f12; k1; P; n|; GST; \Poblacion Incorrecta...\; Z1; gpob; .
+  .
+  tL05; ppoblac_z,25;
+  [vnd; GST; \Teclee el Vendedor...\; t0pob; tL08; ivnd_z,3; f16; k1; P;
+  n|;
+    (bandb_z)=($V,1); Gbusca2; f16; k1; P;
+    n|; GST; \Vendedor Incorrecto...\; Z1; Gvnd; .
+  .
+  tL08; pvnd_z,3;
+  * ---> Es Modificacion no pido los demas datos... <--- *
+  !(accion_z)0($M,1)>|; 
+    GST; \Estan correctos los datos ? <S/N>:\; y|; (band_z)=($S,1); g+; | g-; .
+  .
+  [cod; GST; \Teclee el Codigo del Articulo...\; t0vnd; tL14; icodigo_z,13;
+  f9; k1; P;
+  n|;
+    (bandb_z)=($I,1); Gbusca2; f9; k1; P;
+     n|; GST; `7; \Articulo Inexistente...\; Z1; gcod; .
+  .
+  tL14; pcodigo_z,13; tL15; pdescri_tmpinv,30; (preciou_z)=(precelec_tmpinv);
+  (canti_z)=(1); (concepto_z)=(descri_tmpinv,#);
+  !(tipo_tmpinv)0($ALF,3)>|;
+    [ser; GST; \Teclee la serie del articulo\; t0cod; tL16; iserieart_z,20;
+  |
+    z0,serieart_z,#;
+  .
+  [fo2; GST; \Teclee el Folio del Articulo...\; t0cod; tL26; ifolio_z,MLE6,MLS6;
+  [tfa; GST; \Teclee el Precio Venta...\; t0cod; tL11; itotfac_z,MDE12,MDS12;
+  !(fideoasi_z)0($F,1)>|;
+    [bon; GST; \Teclee la Bonificacion FIDE\; t0tfa; tL12; ibonif_z,MDE12,MDS12;
+  |
+    z0,bonif_z,#;
+  .
+  (efecti_z)=(totfac_z)(bonif_z)-; tL13; pefecti_z,MDS12;
+  GST; \Estan correctos los datos ? <S/N>:\; y|; (band_z)=($S,1); g+; .
+)
+R;
+
+[BUSCAPOSIBILIDADES;
+Fslexten_z,poblac_z; (exten_z)=(exten_z)(1)+;
+{ !(exten_z)2($1)>+;
+  (exten_z)=(exten_z)(1)-; z0,msg_z,#; (msg_z)=(poblac_z,exten_z); q+,msg_z,"%",;
+  z0,ulticon_ind6,l; f7; k3; P; n|;. !(ulticon_ind6)1($0)>+;
+)
+z0,poblac_z,#; (poblac_z)=(msg_z,exten_z);
+R;
+
+[modcli;
+(accion_z)=($M,1);
+GLOCALIZA_FACTURA;
+(tdacli_z)=(strtda_z,2); (ubiage_z)=(ubivta_z,2); >lsnfac_z,faccli_z,MLS6;
+(codcli_z)=(cod2_z,10); tL00; pcodcli_z,10;
+f1; k1; P;
+n|; GST; \Cliente Inexistente...\; Z1; R; .
+GST; \Esta seguro de Modificar este cliente ? <S/N>:\; y|; | gR; .
+qD,1,fecha_faf,fechb_z,; GPIDATS; !(band_z)5($S,1)>R;
+
+f1; k2; P; nR;
+z0,concep2_z,#; (concep2_z)=(dircli_z,#); z0,ncon_cpm,l; f6; k5; P; n|;.
+(iddir_z)=(ncon_cpm);
+z0,concep2_z,#; (concep2_z)=(colcli_z,#); z0,ncon_cpm,l; f6; k5; P; n|;.
+(idcol_z)=(ncon_cpm);
+(idpoblac_z)=(numero_pob);
+(idptovta_z)=(idptovta_ptv);
+
+qD,2,fecha_fid,fecha_z,; (idnombre_fid)=(idnombre_z); (iddirec_fid)=(iddir_z);
+(idcol_fid)=(idcol_z); (idpoblac_fid)=(idpoblac_z); 
+(idptovta_fid)=(idptovta_z); (agente_fid)=(vnd_z,#);
+(preciofid_fid)=(totfac_z); (bonifi_fid)=(bonif_z); 
+(iduser_fid)=(idusuario_z);
+f1; k4; P$; GAGREGA_RELCLIS;
+R;
+
+[bajcli;
+(accion_z)=($B,1); 
+GLOCALIZA_FACTURA;
+(tdacli_z)=(strtda_z,2); (ubiage_z)=(ubivta_z,2); >lsnfac_z,faccli_z,MLS6;
+(codcli_z)=(cod2_z,10); tL00; pcodcli_z,10;
+f1; k1; P;
+n|; GST; \Cliente Inexistente...\; Z1; R; .
+GST; \Esta seguro de Borrar este cliente ? <S/N>:\; y|; | gR; .
+f1; k5; P$;
+f3; k8; P$;
+f8; k8; P$;
+GCLR;
+R;
+
+[antcli; (bandmov_z)=($A,1); GMUEVETE; R;
+[sigcli; (bandmov_z)=($S,1); GMUEVETE; R;
+
+[MUEVETE;
+z0,codigo_ind11,l; f11;
+!(bandmov_z)0($A,1)>|; k2; .
+!(bandmov_z)0($S,1)>|; k1; .
+P; nR; !(codigo_ind11)2($ ,1)>R; (codcli_z)=(codigo_ind11,#);
+f1; k1; P; nR; GDESPCLI;
+R;
+
+[DESPCLI; 
+(idcli_z)=(idcli_fid); z0,idcli_faf,l; f3; k1; P; n|;. 
+(idfac_z)=(idfac_faf); (nfac_z)=(nfac_faf); (codcli_z)=(codigo_fid,#);
+(idptovta_z)=(idptovta_fid); f14; k3; P; n|;.
+(ubivta_z)=(ubica_ptv,#); (idrel_z)=(REL_NOMFIDE); 
+z0,ulticon_ind6,l; f7; k17; P; n|;. (idnombre_z)=(ulticon_ind6);
+f18; k5; P; 
+{ n+;
+  !(nref_rfsol)0($1)>|; (clinp1_z)=(refyobs_rfsol,50); .
+  !(nref_rfsol)0($2)>|; (clinp2_z)=(refyobs_rfsol,50); .
+  !(nref_rfsol)0($3)>|; (cliapp_z)=(refyobs_rfsol,50); .
+  !(nref_rfsol)0($4)>|; (cliapm_z)=(refyobs_rfsol,50); .
+  f18; a;
+)
+
+z0,nombre_z,#; q+,nombre_z,cliapp_z,;
+!(cliapm_z)1($ ,1)>|; q+,nombre_z," ",cliapm_z,; .
+!(clinp1_z)1($ ,1)>|; q+,nombre_z," ",clinp1_z,; .
+!(clinp2_z)1($ ,1)>|; q+,nombre_z," ",clinp2_z,; .
+(idpoblac_z)=(idpoblac_fid);
+
+(iddir_z)=(iddirec_fid); (idcol_z)=(idcol_fid); (seriefac_z)=(serie_faf,#);
+(nconcep_z)=(iddirec_fid); z0,ncon_cpm,l; f6; k1; P; n|;. 
+(dircli_z)=(concepto_cpm,25);
+f12; k3; P; n|;. (poblac_z)=(nombre_pob,#);
+(nconcep_z)=(idcol_z); z0,ncon_cpm,l; f6; k1; P; n|;. 
+(colcli_z)=(concepto_cpm,25); 
+(totfac_z)=(preciofid_fid); (bonif_z)=(bonifi_fid);
+(vnd_z)=(agente_fid,#);
+
+qD,1,fecha_faf,fecha_z,; 
+tL00; pcodcli_z,10; tL01; pfecha_z,+10;
+tL02; pnombre_z,34;
+tL03; pdircli_z,25;
+tL04; pcolcli_z,30;
+tL05; ppoblac_z,25;
+tL07; pserie_faf,2;
+tL11; ptotfac_z,MDS12;
+!(fideoasi_z)0($F,1)>|; tL12; pbonif_z,MDS12; .
+tL08; pvnd_z,3; tL09; pubivta_z,2; tL06; pnfac_z,MLS6;
+(efecti_z)=(totfac_z)(bonif_z)-; tL13; pefecti_z,MDS12;
+GLISRENFAC;
+R;
+
+[NOPDAGF3; GST; `7; \No pude agregar registro en facfon ...\; Z2; R;
+[NOPDMDF3; GST; `7; \No pude mdificar registro en facfon ...\; Z2; R;
+
+[PIDATFAC;
+z32,band_z,#; (band_z)=($S,1);
+{ 
+  GST; \Estan Correctos los datos ? <S/N> : \; y|; (band_z)=($S,1); g+; .
+)
+R;
+
+[BUSCONCEP;
+(concep2_z)=(concepto_z,#); 
+z0,ncon_cpm,l; f6; k5; P; n|;. (nconcep_z)=(ncon_cpm);
+R;
+
+[CLR;
+tL00; s10; tL01; s10; tL02; s34; tL03; s25; tL04; s25; tL05; s25;
+tL07; s2; tL08; s4; tL11; s12; tL12; s12;
+tL09; s2; tL06; s6; tL13; s12; t@base_z,0; te;
+R;
+
+[DESPFAC;
+(idcli_z)=(idcli_faf);
+f1; k2; P; n|; GNOCLI; . qD,1,fecha_faf,fecha_z,; (fechb_z)=(fecha_z);
+tL00; pcodigo_fid,10;
+tL01; pnombre_z,34; tL33; pserie_faf,2; tL02; pnfac_faf,MLS6;
+tL04; pfecha_z,+10;
+!(nombre_z)0($FN,2)>|; tL05; ptasa_faf,MFS; .
+(tasa_z)=(tasa_faf); (seriefac_z)=(serie_faf,#); (idfac_z)=(idfac_faf);
+(nfac_z)=(concep1_faf);
+GDESPTOTFAC; GLISRENFAC;
+R;
+
+[DESPTOTFAC;
+tL11; ptotal_faf,MDS12; 
+(efecti_z)=(total_faf)(bonif_z)-; tL13; pefecti_z,MDS12;
+R;
+
+[modfac;
+GST; \Teclee el Numero de la Factura...\; pcodcli_z,#; t0R;
+tL33; iseriefac_z,2;
+tL02; infac_z,MLE6,MLS6;
+f3; k2; P;
+n|; GST; `7; \No Existe esa Factura...\; Z1; R; . GDESPFAC;
+GST; `7; \Seguro de Modificar Esta Factura ? <S/N> : \; y|; | R; .
+GPIDATFAC; !(band_z)5($S,1)>R; f3; k2; P; nR;
+(tasa_faf)=(tasa_z);
+f3; QNOPDMDF3;
+!(caroal_z)0($A,1)>|; k6; P$; .
+!(caroal_z)0($C,1)>|; k7; P$; .
+GDESPFAC;
+R;
+
+[bajfac;
+GST; \Teclee el Numero de la Factura...\; pcodcli_z,0; t0R;
+tL33; iseriefac_z,2;
+tL02; infac_z,MLE6,MLS6;
+f3; k2; P;
+n|; GST; `7; \No Existe esa Factura...\; Z1; R; . GDESPFAC;
+GST; `7; \Seguro de Borrar Esta Factura ? <S/N> : \;
+y|;
+  !(caroal_z)0($A,1)>|; f3; k8; P$; f8; k6; P$; .
+  !(caroal_z)0($C,1)>|; f3; k9; P$; f8; k3; P$; .
+.
+R;
+
+[impfac;
+f3; k2; P; 
+n|;
+  GST; \No existe Serie:\; pseriefac_z,0; \ Numero:\; pnfac_z,MLS6; y|;. R;
+.
+tc; Ff4; FO(arch_z),w~; GFONT11; s10; pnombre_z,0;
+* s5; \FFG-740520-SY9\; -- DRBR 08-May-2002 Se Elimina la impresion de RFC *
+l; l; s10; pdircli_z,0; s1; pcolcli_z,0; l;
+s10; ppoblac_z,0; (ind2_z)=(7); GLFEED;
+(rena_z)=(base_z); t@base_z,0; te;
+(bndf8_z)=($N,1); z0,ind2_z,#; f8; k1; P;
+{ n+;
+  !(codigo_rff)0($BONIFI,6)>|; s5; | pcanti_rff,MLS5; .
+  s5; (nconcep_z)=(descri_rff); z0,concepto_cpm,l;
+  f6; k1; P; n|;. pconcepto_cpm,30;
+  (import_z)=(importe_rff)(iva_rff)+;
+  !(import_z)2($0)>|; (import_z)=(import_z)(-1)*; .
+  !(import_z)5($0)>|; s5; pimport_z,MDS12; .
+  (ind2_z)=(ind2_z)(1)+; l;
+  Fslexten_z,serie_rff;
+  !(exten_z)1($0)>|; s10; \Serie:\; pserie_rff,0; (ind2_z)=(ind2_z)(1)+; l; .
+  f8; a;
+)
+(ind2_z)=(8)(ind2_z)-(2)+; GLFEED;
+(importe_z)=(total_faf); GTOMALETRAS; tc; Ff4;
+s3; GFONT12; \Son : (\; pmsg_z,0; \ Pesos \;
+ppar4_z,#;  \/100 M.N.)\; GFONT11; (ind2_z)=(3); GLFEED;
+s26; ptotal_faf,MDS12; (ind2_z)=(6); GLFEED;
+s45; ptotal_faf,MDS12; l;
+l; s25; pfechaDay_faf,MIS2; s7; (mes_z)=(fechaMon_faf); GSACANOMMES;
+s11; z0,milinea_z,#; >isfechaYear_faf,milinea_z,MIS4;
+!(diganufac_z)5($4)>|; (ii_z)=(4)(diganufac_z)-; z32,milinea_z,ii_z; .
+pmilinea_z,4; l; l;
+
+s10; \GRACIAS POR SU PREFERENCIA ...\; l;
+Ff4; FC; tr; Ff1; GSalir;
+GST; \Desea imprimir el endoso ? <S/N>:\; y|; GIMPRIENDOSO; .
+R;
+
+[LFEED; { !(ind2_z)2($1)>+; l; (ind2_z)=(ind2_z)(1)-; ) R;
+
+[IMPRIENDOSO;
+tc; Ff4; FO(arch_z),w~;
+(ind2_z)=(4); GLFEED; (ind2_z)=(0);
+!(fideoasi_z)0($A,1)>|;
+   s25; pfechaDay_faf,MIS2; \ de \; (mes_z)=(fechaMon_faf); GSACANOMMES;
+  \ de \; pfechaYear_faf,MIS4; 
+  (ind2_z)=(2); GLFEED;
+.
+
+f5; k1; P;
+{ n+;
+  Ff4; s5; pobserv_ind5,0; l; 
+  (ind2_z)=(ind2_z)(1)+;
+  f5; a;
+)
+Fslexten_z,nombre_z; (ind2_z)=(10)(ind2_z)-; !(ind2_z)1($0)>|; GLFEED; .
+(ind2_z)=(4); GLFEED;
+(esp_z)=(70)(40)-(2)/; !(esp_z)2($0)>|; z0,esp_z,#; .
+sesp_z; c_40; l;
+(esp_z)=(70)(exten_z)-(2)/; !(esp_z)2($0)>|; z0,esp_z,#; .
+sesp_z; pnombre_z,0; l;
+Ff4; FC; tr; Ff1; GSalir;
+R;
+
+[TOMALETRAS;
+(progra_z)=($vpg4s /programas/vps/cartera/util1.vp    ,41);
+>dsimporte_z,msg1_z,%13.2f~; z32,codref_z,#; (codref_z)=(msg1_z,10);
+(tarea_z)=($12345.txt,9); >lsntar_z,tarea_z,%05ld~;
+tv0; tc; x(soli_z); tr; tv1; z0,msg_z,#;
+Ff5; FO(tarea_z),r~; FG|; (msg_z)=($NO PUDE LEER,20); | Fkmsg_z,l; . FC;
+R;
+
+[renfac;
+GLISRENFAC; z0,bandrenf_z,#;
+{
+  GMENS1; GSELEC1; !(bandrenf_z)0($S,1)>+;
+)
+R;
+
+[MENS1;
+GST; \Seleccione:`A`nterior `S`iguiente `N`uevo `B`orra `L`ista `R`egresa\;
+R;
+
+[SELEC1;
+?G[Aantren, [Ssigren, [Nnvoren, [Bborren, [LLISRENFAC, [Rregren,
+  [aantren, [ssigren, [nnvoren, [bborren, [lLISRENFAC, [rregren;
+R;
+
+[regren; (bandrenf_z)=($S,1); R;
+
+[nvoren;
+(renb_z)=(rena_z)(1)+;
+!(renb_z)1(tope_z)>|;
+  t@base_z,0; td; (rena_z)=(rena_z)(1)-; (renb_z)=(tope_z);
+.
+GPIDATREN; !(band_z)5($S,1)>|; GLISRENFAC; R; .
+GAGRERENFAC; GLISRENFAC; f3; k2; P; nR; GDESPTOTFAC;
+R;
+
+[AGRERENFAC;
+ z0,ulticon_ind6,l; f7; k2; P; n|;. z0,idrenfacfo_rff,l;
+(idrenfacfo_rff)=(ulticon_ind6)(1)+; (idfacfon_rff)=(idfac_z);
+(idcli_rff)=(idcli_z);
+(total_z)=(preciou_z)(canti_z)(1)(pdsc_z)-**; @total_z,100;
+(preciou_z)=(preciou_z)(piva_z)(100)/(1)+/; @preciou_z,100; 
+(codigo_rff)=(codigo_z,#);
+GBUSCONCEP; (descri_rff)=(nconcep_z);
+(canti_rff)=(canti_z); (preciou_rff)=(preciou_z);
+(importe_rff)=(canti_rff)(preciou_rff)*; @importe_rff,100;
+(piva_rff)=(piva_z); (pdsc_rff)=(pdsc_z);
+(descto_rff)=(importe_rff)(pdsc_z)(100)/*; @descto_rff,100;
+(iva_z)=(total_z)(importe_rff)-(descto_rff); @iva_z,100;
+(iva_rff)=(iva_z);
+(cia_rff)=(cia_z); (import_z)=(importe_rff);
+(serie_rff)=(serieart_z,#); @import_z,100; @iva_z,100;
+(folio_rff)=(folio_z);
+!(caroal_z)0($A,1)>|;
+  f8; QNOPDAGF8; k5; P$;
+|
+  f8; QNOPDAGF8; k2; P$;
+.
+f3; QNOPDAGF8; k9; P$;
+R;
+
+[NOPDAGF8; GST; \No pude agregar registro en renfacfo...\; y|;. R;
+
+[PIDATREN;
+z32,band_z,#;
+{
+  [cod2; GST; \Teclee el Codigo del Articulo...\; t0+; tL14; icodigo_z,13;
+  (canti_z)=(1); 
+  !(fechaYear_faf)1($2009)>|; (piva_z)=(16); | (piva_z)=(15); .
+  !(codigo_z)0($BONIF,5)>|;
+    z0,concepto_z,#; q+,concepto_z,"MENOS BONIFICACION",;
+    (tipo_tmpinv)=($ALF,3); z0,serieart_z,#; 
+    (preciou_z)=(bonif_z)(-1)*; tL15; pconcepto_z,30;
+  |
+    !(codigo_z)0($AUXILIAR,8)>|;
+      [des; GST; \Teclee la Descripcion:\; t0cod2; tL24; iconcepto_z,30;
+      (tipo_tmpinv)=($ALF,3); z0,serieart_z,#;
+    |
+      f9; k1; P;
+      n|;
+        (bandb_z)=($I,1); Gbusca2; f9; k1; P;
+        n|; GST; `7; \Articulo Inexistente...\; Z1; gcod2; .
+      .
+      tL14; pcodigo_z,13; tL15; pdescri_tmpinv,30;
+      (preciou_z)=(precelec_tmpinv);
+      * --> Calcula el Precio de Venta en base al margen, suspendido
+      !(poruti_z)0($0)>|; (poruti_z)=(1); .
+      (preciou_z)=(costos_tmpinv)(poruti_z)/(piva_tmpinv)(100)/(1)+x;
+      ----> Fin de Comentario <----- *
+      * -->Asigna el precio en funcion del total de la Venta <-- *
+      (preciou_z)=(totfac_z);
+      (concepto_z)=(descri_tmpinv,#); (piva_z)=(piva_tmpinv);
+      t@renb_z,col04_z; ppreciou_z,MDS12;
+    .
+  .
+  *
+  [piv; GST; \Teclee el Porcentaje de Iva:\; t0cod2; tL28; ipiva_z,MFE,MFS;
+  [can; GST; \Teclee la Cantidad...\; t0piv; tL26; icanti_z,MLE5,MLS5;
+  [pru; GST; \Teclee el Precio Unitario (Iva Incluido)...\;
+  t0can; ptipo_tmpinv,0; tL27; ipreciou_z,MDE12,MDS12;
+  *
+  (impren_z)=(preciou_z)(canti_z)*; t@renb_z,col04_z; pimpren_z,MDS12;
+  !(tipo_tmpinv)0($ALF,3)(codigo_z)5($BONIF,5)&>|;
+    [ser2; GST; \Teclee la serie del articulo\; t0cod2; tL16; iserieart_z,20;
+  |
+    z0,serieart_z,#;
+  .
+  [fol; GST; \Teclee el Folio del Articulo...\; t0cod2; tL26; ifolio_z,MLE6,MLS6;
+  GST; \X Estan Correctos los datos ? <S/N>:\; y|; (band_z)=($S,1); g+; .
+)
+R;
+
+
+
+[borren;
+!(bndf8_z)0($N,1)>R;
+GST; \Seguro de borrar este renglon ? <S/N>:\;
+y|;
+  (import_z)=(importe_rff)(-1)*; (iva_z)=(iva_rff)(-1)*;
+  (idrenfac_z)=(idrenfacfo_rff);
+  f3; k9; P$;
+  !(caroal_z)0($A,1)>|;
+    f8; k7; P$;
+  |
+    f8; k4; P$;
+  .
+  GLISRENFAC; f3; k2; P; nR; GDESPTOTFAC;
+.
+R;
+
+[LISRENFAC;
+(rena_z)=(base_z); t@base_z,0; te;
+(bndf8_z)=($N,1); f8; k1; P; nR;
+{ 
+  GDESPREN; f8; a; n+; GSUMAREN;
+)
+f8; b; nR; GDESPMIREN; (bndf8_z)=($S,1);
+(anter_z)=($S,1); (sigte_z)=($N,1);
+R;
+
+[DESPMIREN; ta1; GDESPREN; ta0; tp;
+tL14; pcodigo_rff,13; tL15; pconcepto_cpm,30; tL16; pserie_rff,20;
+tL26; pfolio_rff,MLS6;
+R;
+
+[DESPREN;
+(importe_z)=(importe_rff)(iva_rff)+;
+t@rena_z,col01_z; pcodigo_rff,13; (nconcep_z)=(descri_rff);
+z0,concepto_cpm,l; f6; k1; P; n|;.
+t@rena_z,col02_z; pconcepto_cpm,30; t@rena_z,col03_z; pserie_rff,20;
+t@rena_z,col04_z; pimporte_z,MDS12;
+R;
+
+[antren;
+!(bndf8_z)0($N,1)>R; !(anter_z)0($N,1)>R;
+GDESPREN; f8; b; n|; (anter_z)=($N,1); a; nR; GDESPMIREN; R; .
+GRESTAREN; GDESPMIREN; (sigte_z)=($S,1);
+R;
+
+[sigren;
+!(bndf8_z)0($N,1)>R; !(sigte_z)0($N,1)>R;
+GDESPREN; f8; a; n|; (sigte_z)=($N,1); b; nR; GDESPMIREN; R; .
+GSUMAREN; GDESPMIREN; (anter_z)=($S,1);
+R;
+
+[SUMAREN;
+(rena_z)=(rena_z)(1)+;
+!(rena_z)1(tope_z)>|; t@base_z,0; td; (rena_z)=(tope_z); .
+R;
+
+[RESTAREN;
+(rena_z)=(rena_z)(1)-;
+!(rena_z)2(base_z)>|; t@base_z,0; ti; (rena_z)=(base_z); .
+R;
+
+* --------> Este es el Codigo de la Busqueda  <-- ----------------------- *
+ 
+[SALDEBUS;
+!(bandb_z)0($C,1)>|; (codcli_z)=(codigo_fid,#); .
+!(bandb_z)0($I,1)>|; (codigo_z)=(codigo_tmpinv,#); .
+!(bandb_z)0($U,1)>|; (ubivta_z)=(ubica_ptv,#);  .
+!(bandb_z)0($P,1)>|; (poblac_z)=(nombre_pob,#); .
+!(bandb_z)0($V,1)>|; (vnd_z)=(codigo_ven,#);    .
+!(bandprog_z)0($1,1)>|; GKprog1; .
+R;
+
+[DESPTITULO;
+t@1,1;
+!(bandb_z)0($C,1)>|; \Listado de Clientes\; .
+!(bandb_z)0($P,1)>|; \Listado de Poblaciones\; .
+!(bandb_z)0($U,1)>|; \Listado de Puntos de Venta\; .
+!(bandb_z)0($V,1)>|; \Listado de Vendedores\; .
+!(bandb_z)0($I,1)>|; \Listado de Articulos\; .
+R;
+ 
+[BUSCAINI;
+!(bandb_z)0($C,1)>|; f1; k6; P; .
+!(bandb_z)0($I,1)>|; f9; k2; P; .
+!(bandb_z)0($U,1)>|; f14; k2; P; .
+!(bandb_z)0($P,1)>|; f12; k2; P; .
+!(bandb_z)0($V,1)>|; f16; k2; P; .
+R;                                                                              
+
+[SELARCH;
+!(bandb_z)0($C,1)>|; f1; .
+!(bandb_z)0($I,1)>|; f9; .
+!(bandb_z)0($U,1)>|; f14; .
+!(bandb_z)0($P,1)>|; f12; .
+!(bandb_z)0($V,1)>|; f16; .
+R;
+ 
+[DESPRENOR;
+!(bandb_z)0($C,1)>|;
+  (nconcep_z)=(idnombre_fid); f6; k1; P; n|;. (nombre_z)=(concepto_cpm,#);
+  t@ren_z,col1_z; pcodigo_fid,10; s1; pnombre_z,34;
+.
+!(bandb_z)0($I,1)>|;
+  t@ren_z,col1_z; pcodigo_tmpinv,13; s1; pdescri_tmpinv,30;
+.
+!(bandb_z)0($U,1)>|;
+  t@ren_z,col1_z; pubica_ptv,2; s1; pnombre_ptv,30;
+.
+!(bandb_z)0($P,1)>|;
+  t@ren_z,col1_z; pnombre_pob,25;
+.
+!(bandb_z)0($V,1)>|;
+  t@ren_z,col1_z; pcodigo_ven,3; s1; pnombre_ven,30;
+.
+R;
+
+[nvoreg; R;
+
+[Ayuda; ];
+[Kprog1; R;
+[Kprog2; R;
+[Kprog4; R;
+
+#ibusca.i;
+#isacaf.i;
+#iimpri.i;
+
+[MANDAELFNT; f13; k1; P; n|; z0,impre_fnt,l; . GSACAF; R;
+
+[misar;
+tS11,10,1,10,70; tM;
+t@1,1; \Clientes:\; pclientes_z,0; s10;
+t@2,1; \Mvcli   :\; pmvcli_z,0; s10;
+t@3,1; \Dircli  :\; ptbdircl_z,0; s10;
+t@4,1; \Solicit :\; psolicit_z,0; s10;
+t@6,1; \Presione <S> P/Continuar...\; y|;.
+tR11,10,1,10,70; tS0;
+R;
+
+[TOMAALTAS;
+Ff6; FOaltas.ini~,r~;
+{ Ff6; FG+; z0,milinea_z,#; Fkmilinea_z,l;
+  !(milinea_z)0($clientes:,9)>|; Ff6; FG+; Fkclientes_z,l; 	g-; .
+  !(milinea_z)0($mvcli:,6)>|;    Ff6; FG+; Fkmvcli_z,l;    	g-; .
+  !(milinea_z)0($dircli:,7)>|;   Ff6; FG+; Fktbdircl_z,l;   	g-; .
+  !(milinea_z)0($solicit:,8)>|;  Ff6; FG+; Fksolicit_z,l;  	g-; .
+  !(milinea_z)0($facfon:,7)>|;	 Ff6; FG+; Fkfacfon_z,l;	g-; .
+  !(milinea_z)0($renffo:,7)>|;	 Ff6; FG+; Fkrenfacfon_z,l;	g-; .
+  !(milinea_z)0($caroal:,7)>|;	 Ff6; FG+; Fkcaroal_z,l;	g-; .
+  !(milinea_z)0($clifide:,8)>|;	 Ff6; FG+; Fkclifide_z,l;	g-; .
+)
+Ff6; FC;
+!(clifide_z)2($ ,1)>|;
+  GST; `7; \No esta definida la tabla de Fide:\; pclifide_z,0;
+  \ Desea agregarlo ? <S/N>: \; 
+  y|;
+    xecho clifide: >>altas.ini ~;
+    xecho car_clifide >>altas.ini ~;
+    GST; \Presione <S> para continuar ( le voy a sacar y vuelva a entrar)\; y|;.
+  . 
+  gFin;
+.
+R;
+
+[ABRE_TABLA;
+GTOMAALTAS;
+Ff5; FObasedato.ini~,r~; FGNOBD; Fkmibd_z,l; FC; Ff1; 
+fd1; O@,mibd_z,"sa","lux",1,ERRCNB,;  * con conexion autocommit    *
+f1; #icar_clifide.i;
+k0; ot,clifide_z,;
+k1; kp,"codigo=?",codcli_z,#,1,;
+k2; kp,"idcli=?",idcli_z,;
+z0,inscli_z,#; q+,inscli_z,"insert into ",clifide_z," (idcli,codigo,fecha,idnombre,iddirec,",;
+	q+,inscli_z,"idcol,idpoblac,idptovta,agente,idfac,preciofid,bonifi,iduser,cia,status) ",;
+	q+,inscli_z,"values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",;
+k3; kq,inscli_z,idcli_fid,codigo_fid,#,1,fecha_fid,#,3,idnombre_fid,iddirec_fid,
+	idcol_fid,idpoblac_fid,idptovta_fid,agente_fid,#,1,idfac_fid,
+        preciofid_fid,bonifi_fid,iduser_fid,cia_fid,status_fid,#,1,;
+z0,updtcli_z,#; q+,updtcli_z,"update ",clifide_z," set fecha=?,idnombre=?,iddirec=?,idcol=?,idpoblac=?,",;
+	q+,updtcli_z,"idptovta=?,agente=?,idfac=?,preciofid=?,bonifi=?,iduser=? ",;
+	q+,updtcli_z,"where idcli=?",;
+k4; kq,updtcli_z,fecha_fid,#,3,idnombre_fid,iddirec_fid,
+	idcol_fid,idpoblac_fid,idptovta_fid,agente_fid,#,1,idfac_fid,
+        preciofid_fid,bonifi_fid,iduser_fid,idcli_z,;
+z0,bajcli_z,#; q+,bajcli_z,"delete from ",clifide_z," where idcli=?",;
+k5; kq,bajcli_z,idcli_z,;
+
+f3; #ifacfon2.i;
+k0; ot,facfon_z,;
+k1; kp,"idcli=? order by serie,factur",idcli_z,;
+k2; kp,"serie=? and nfac=?",seriefac_z,#,1,nfac_z,;
+q+,sqlcmd_z,"delete from ",facfon_z," where idcli=? and factur=? and concep1=?",;
+k3; kq,sqlcmd_z,idcli_z,seriefac_z,#,1,nfac_z,;
+k4; kq,"insert into facfonalta (idcli,factur,tasa,canti1,concep1,
+	precio1,canti2,concep2,precio2,canti3,idfac,precio3,subtot,
+        iva,total,nfac,fecha,serie)
+        values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        idcli_faf,factur_faf,#,1,tasa_faf,canti1_faf,concep1_faf,
+        precio1_faf,canti2_faf,concep2_faf,precio2_faf,canti3_faf,
+        idfac_faf,precio3_faf,subtot_faf,iva_faf,total_faf,nfac_faf,
+        fecha_faf,#,3,serie_faf,#,1,;
+k5; kq,"insert into facfon2 (idcli,factur,tasa,canti1,concep1,
+	precio1,canti2,concep2,precio2,canti3,idfac,precio3,subtot,
+        iva,total,nfac,fecha,serie)
+        values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        idcli_faf,factur_faf,#,1,tasa_faf,canti1_faf,concep1_faf,
+        precio1_faf,canti2_faf,concep2_faf,precio2_faf,canti3_faf,
+        idfac_faf,precio3_faf,subtot_faf,iva_faf,total_faf,nfac_faf,
+        fecha_faf,#,3,serie_faf,#,1,;
+k6; kq,"update facfonalta set tasa=?,canti1=?,concep1=?,
+	precio1=?,canti2=?,precio2=?,canti3=?,precio3=?,
+        subtot=?,iva=?,total=? where idfac=?",
+	tasa_faf,canti1_faf,concep1_faf,precio1_faf,
+        canti2_faf,precio2_faf,canti3_faf,precio3_faf,
+        subtot_faf,iva_faf,total_faf,idfac_z,;
+k7; kq,"update facfon2 set tasa=?,canti1=?,concep1=?,
+	precio1=?,canti2=?,precio2=?,canti3=?,precio3=?,
+        subtot=?,iva=?,total=? where idfac=?",
+	tasa_faf,canti1_faf,concep1_faf,precio1_faf,
+        canti2_faf,precio2_faf,canti3_faf,precio3_faf,
+        subtot_faf,iva_faf,total_faf,idfac_z,;
+z0,bajfac_z,#;
+q+,bajfac_z,"delete from ",facfon_z," where idcli=?",;
+k8; kq,bajfac_z,idcli_z,;
+z0,updtfac_z,#;
+q+,updtfac_z,"update ",facfon_z," set subtot=round(subtot+?,2),iva=round(iva+?,2),total=round(total+?+?,2) ",;
+q+,updtfac_z,"where idcli=? and idfac=?",;
+k9; kq,updtfac_z,import_z,iva_z,import_z,iva_z,idcli_z,idfac_z,;
+
+f5; M
+	observ_ind5		s201,
+        tma_ind5		s0,;
+k0; ot,"car_obsercli",;
+k1; kq,"select b.observ from car_obsercli a join car_observs b 
+	on a.idobserv = b.idobserv where idcli = ? order by a.idobservcli",
+        idcliendoso_z,;
+k2; kq,"select b.observ from car_obsercli a join car_observs b 
+	on a.idobserv = b.idobserv where idcli = ?",
+        iddato_z,;
+
+f6; M
+	ncon_cpm  		l,
+	concepto_cpm  		s31,
+        tam_cpm			s0,;
+k0; ot,"conceps",;
+k1; kq,"select ncon, concepto from conceps where ncon=?",nconcep_z,;
+k2; kq,"insert into conceps (ncon,concepto) values (?,?)",
+	nconcep_z,concepto_z,#,1,;
+k3; kq,"select concepto, ncon from conceps where concepto=?",concepto_z,#,1,;
+k4; kq,"call oldbusconcep(?)",concepto_z,#,1,;
+k5; kq,"call oldbusconcep(?)",concep2_z,#,1,;
+
+f7; M
+	ulticon_ind6		l,;
+k0; ot,"conceps",;
+k1; kq,"select max(ncon) from conceps",;
+k3; kq,"select count(*) from poblacs where nombre like ?",msg_z,#,1,;
+z0,busidrenfac_z,#; q+,busidrenfac_z,"select max(idrenfacfo) from ",renfacfon_z,;
+k2; kq,busidrenfac_z,;
+z0,busidfac_z,#; q+,busidfac_z,"select max(idfac) from ",facfon_z,;
+k5; kq,busidfac_z,;
+z0,busultfac_z,#; q+,busultfac_z,"select max(nfac) from ",facfon_z,;
+q+,busultfac_z," where serie=?",;
+k7; kq,busultfac_z,seriefac_z,#,1,;
+z0,busconse_z,#; 
+q+,busconse_z,"select max(idcli) from ",clifide_z," where idcli > 0",;
+k9; kq,busconse_z,;
+k10; kq,"call bus_relcli_nombre(?, ?, ?, ?, ?, ?, ?)",
+	idrel_z,idcli_z,appat_z,#,1,apmat_z,#,1,nompil1_z,#,1,nompil2_z,#,1,
+        caroal_z,#,1,;
+!(caroal_z)0($C,1)>|;
+  k17; kq,"select iddato from car_relclis where idcli = ? and tiporel = ?",
+  	idcli_z,idrel_z,;
+|
+  k17; kq,"select iddato from car_relclialta where idcli = ? and tiporel = ?",
+  	idcli_z,idrel_z,;
+.
+
+f8; #irenfacfo.i;
+k0; ot,renfacfon_z,;
+k1; kp,"idfacfon=? order by idrenfacfo",idfac_z,;
+k2; kq,"insert into renfacfo (idrenfacfo,idfacfon,idcli,codigo,descri,
+	serie,preciou,canti,piva,pdsc,importe,descto,iva,cia,folio)
+        values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        idrenfacfo_rff,idfacfon_rff,idcli_rff,codigo_rff,#,1,
+        descri_rff,serie_rff,#,1,preciou_rff,canti_rff,piva_rff,
+        pdsc_rff,importe_rff,descto_rff,iva_rff,cia_rff,folio_rff,;
+k3; kq,"delete from renfacfo where idfacfon=?",idfac_z,;
+k4; kq,"delete from renfacfo where idrenfacfo=?",idrenfac_z,;
+k5; kq,"insert into renfacfoalta (idrenfacfo,idfacfon,idcli,codigo,descri,
+	serie,preciou,canti,piva,pdsc,importe,descto,iva,cia,folio)
+        values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        idrenfacfo_rff,idfacfon_rff,idcli_rff,codigo_rff,#,1,
+        descri_rff,serie_rff,#,1,preciou_rff,canti_rff,piva_rff,
+        pdsc_rff,importe_rff,descto_rff,iva_rff,cia_rff,folio_rff,;
+k6; kq,"delete from renfacfoalta where idfacfon=?",idfac_z,;
+k7; kq,"delete from renfacfoalta where idrenfacfo=?",idrenfac_z,;
+z0,bajrenffo_z,#;
+q+,bajrenffo_z,"delete from ",renfacfon_z," where idfacfon=?",;
+k8; kq,bajrenffo_z,idfac_z,;
+
+* --> f9 le pertence a Inven <-- *
+f10; M
+	serie_ind10		s3,
+	factur_ind10		l,
+        totfac_ind10		d,;
+k0; ot,facfon_z,;
+k1; kq,"select serie,factur,total from facfon2 
+	where idcli=? order by serie,factur",idcli_z,;
+k2; kq,"select serie,factur,total from facfonalta 
+	where idcli=? order by serie,factur",idcli_z,;
+
+f11; M
+	codigo_ind11		s11,
+	tam_ind11		s0,;
+k0; ot,clientes_z,;
+z0,bussigcli_z,#; q+,bussigcli_z,"select min(codigo) from ",clifide_z," where codigo > ?",;
+k1; kq,bussigcli_z,codcli_z,#,1,;
+z0,busantcli_z,#; q+,busantcli_z,"select max(codigo) from ",clifide_z," where codigo < ?",;
+k2; kq,busantcli_z,codcli_z,#,1,;
+
+f12; #ipoblacs.i;
+k0; ot,"poblacs",;
+k1; kp,"nombre=?",poblac_z,#,1,;
+k2; kp,"nombre like ? order by nombre",msg_z,#,1,;
+k3; kp,"numero=?",idpoblac_z,;
+
+f13; #itablefnt.i;
+k0; ot,"fonts",;
+k1; kp,"impre=? and numero=?",impre_z,font_z,;
+
+f14; #icar_ptovta.i;
+k0; ot,"car_ptovta",;
+k1; kp,"ubica=? and cia=?",ubivta_z,#,1,cia_z,;
+k2; kp,"cia=? order by ubica",cia_z,;
+k3; kp,"idptovta=?",idptovta_z,;
+
+f15; M
+	nombre_use		s16,
+        maestro_use		s2,
+        iniciales_use		s5,
+        permi02_use		s2,
+        idusuario_use		l,
+        tam_use			s0,;
+k0; ot,"usuarios",;
+k1; kq,"select a.nombre, a.maestro, a.iniciales, a.permi02, b.idusuario 
+	from usuarios a join car_usuarios b on a.nombre = b.login
+	where a.nombre=? and a.clave=?",
+        nombuse_z,#,1,clause_z,#,1,;
+
+f16; #ivendedor.i;
+k0; ot,"vendedor",;
+k1; kp,"codigo=?",vnd_z,#,1,;
+k2; kp,"codigo <> ? order by codigo",vnd_z,#,1,;
+
+f18; #irefsol.i;
+k0; ot,"refsol",;
+k1; kp,"nref=?",nconcep_z,;
+k5; kq,"select cast(c.nombre as varchar(65)), cast (1 as integer)
+        from car_nombres b join car_nompil c on b.idnom1 = c.idnompil
+        where b.idnombre = ?
+        union
+        select cast(c.nombre as varchar(65)), cast (2 as integer)
+        from car_nombres b join car_nompil c on b.idnom2 = c.idnompil
+        where b.idnombre = ?
+        union
+        select cast(c.apellido as varchar(65)), cast (3 as integer)
+        from car_nombres b join car_apellidos c on b.idappat = c.idapellido
+        where b.idnombre = ?
+        union
+        select cast(c.apellido as varchar(65)), cast (4 as integer)
+        from car_nombres b join car_apellidos c on b.idapmat = c.idapellido
+        where b.idnombre = ?",
+        idnombre_z,idnombre_z,idnombre_z,idnombre_z,;
+
+
+* -- Abro la BD INVEN -- *
+Ff5; FObdinven.ini~,r~; FGNOBD; Fkmibdinv_z,l; FC; Ff1;
+fd2; O@,mibdinv_z,"sa","lux",1,ERRCNB,;  * con conexion autocommit    *
+
+f9; #iinventmp.i;
+k0; ot,"inven",;
+k1; kp,"codigo=? and cia=?",codigo_z,#,1,cia_z,;
+k2; kp,"codigo like ?+'%' and cia=? order by codigo",codigo_z,#,1,cia_z,;
+R;
+
+#i/programas/lib/colores.i;
+#i/programas/lib/tomamaxrc.i;
+#i/programas/lib/ventananom.i;
+#i/programas/lib/sacanommes.i;
+
+[PAN; 
+Ff1; Gdefine_colores; Gtomamaxrc; Gamarillo_negro; tf; GST; tn; t@0,0;
+tP/programas/vps/cartera/capfafid.s~;
+tL/programas/vps/cartera/capfafid.pos~;
+ta0; t@2,0; tBmaxcol_z,7; t@0,0; tBmaxcol_z,12;
+^=direc_z,#); Fslexten_z,nemp_z; z0,modul_z,#; z0,modul2_z,#;
+q+,modul_z,"Captura Clientes Asi",; (modul2_z)=($CAR-MDS,7);
+GBANNER; Gblanco_azul;
+!(fideoasi_z)0($A,1)>|; tL25; s12; .  
+R;
+
+[R; R; [E; ];
+[ST; t@12,0; tl; t@12,0; ta1; ta=; ta0; tp; R;
+[NOCLI; R;
+[ERROR3; gFin1;
+[NOBD; Ff1; GST; `7; \No existe el archivo basedato.ini ...\; gFin1;
+[ERRCNB; GST; `7; \No pude conectarme a la base de datos...\; gFin1;
+[Nodatos; Ff1; GST; `7; \archivo datos incompleto o inexistente...\; gFin1;
+
+*   -->  Variables y Rutina para Reportes Multiples en variables   <--    *
+[Fin1; y|;.
+[Fin; t@23,0; te; };

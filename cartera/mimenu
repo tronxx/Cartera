@@ -1,0 +1,1 @@
+dialog --menu "Seleccione su opcion" 24 78 10  "OPCION_1" 1  "OPCION2" 2

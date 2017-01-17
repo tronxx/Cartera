@@ -1,0 +1,360 @@
+* Programa que sirve para genera el analitico de Ventas en Caja
+  DRBR 16-Ene-1998
+*
+
+#dMIS2 %02d~; #dMLE6 %-6ld~; #dMLE4 %-4ld~; #dMFE %-5.2f~; #dMDS12 %,12.2f~;
+#dMIE2 %-2d~; #dMLS6 %6ld~; #dMLS3 %3ld~; #dMFS5 %5.2f~; #dMDS9 %-9.2f~;
+#i/programas/lib/funkey.i;
+
+f0; M
+	impre_z			i,
+	font_z			i,
+        sff_z			s2,
+	ter_z            s2,
+	fech9_z     {
+	  dias2_z       s16,
+	  hora_z         s6,
+	  resto_z        s5,
+	            }
+	bandman_z        s3,
+	bandh_z          s3,
+	nemp_z		s80,
+	direc_z		s50,
+	modul_z		s30,
+	modul2_z	s10,
+	usuarios_z      s80,
+	teruser_z       s80,
+	mibd_z          s80,
+	nombuse_z       s15,
+	clause_z        s10,
+	bandf1_z	 s3,
+        maxcol_z		i,
+        maxrow_z		i,
+        renst_z			i,
+	voc_z			s2,
+	milinea_z		s100,
+	clientes_z		s20,
+	mvcli_z			s20,
+	tbdircl_z		s20,
+	solicit_z		s20,
+
+	band_z			s3,
+	bandimp_z		s3,
+	numcli_z		s11,
+        idcli_z			l,
+	micar_z			s3,
+	carac_z			i,
+	cmds_z		{
+	  cmd1_z		s7,
+	  cmd2_z		s13,
+	  cmd3_z		s30,
+			}
+	arch_z			s13,
+	
+	aua_z			d,
+	aub_z			d,
+	porutf_z		d,
+	meses_z			i,
+	ubi_z			s3,
+        poblac_z		s26,
+	prelis_z		d,
+	totfac_z		d,
+	totprelis_z		d,
+	tottotfac_z		d,
+	totprelissi_z		d,
+	tottotfacsi_z		d,
+	totprelisno_z		d,
+	tottotfacno_z		d,
+        nmovs_z			l,
+        nsols_z			l,
+        nnoms_z			l,
+        nvnds_z			l,
+        nfons_z			l,
+        nrens_z			l,
+	
+        tmovs_z			l,
+        tsols_z			l,
+        tnoms_z			l,
+        tvnds_z			l,
+        tfons_z			l,
+        trens_z			l,
+	
+	fecha_z			D,
+	fechb_z			D,
+	fecini_z	{
+	  feciniaa_z		i,
+	  fecinimm_z		i,
+	  fecinidd_z		i,
+	  		}
+	fecult_z	{
+	  fecultaa_z		i,
+	  fecultmm_z		i,
+	  fecultdd_z		i,
+	  		}
+	caop_z			s2,
+	prubi_z			s3,
+	ulubi_z			s3,
+	prom_z			s4,
+        prpzo_z			i,
+        ulpzo_z			i,
+        prpzo1_z		i,
+        ulpzo1_z		i,
+	prtda_z			i,
+	ultda_z			i,
+
+
+	fech8_z           D,
+	ind1_z            i,
+	ind2_z            i,
+	termi_z           i,
+	esp_z             i,
+	exten_z           i,
+	tam0             s0,;
+
+mtam0&; Ff3; FOdatos.ini~,r~; FGNodatos; Fknemp_z,l; &f0; tu1; tr; ts0;
+GPAN; GST; (arch_z)=($relvtas0.txt,12); (impre_z)=(1); (ulpzo_z)=(99);
+
+[fei; t@5,3; \Fecha Inicial:\; t0Fin; &a; &cfecha_z; ifecha_z,+10;
+!(fecha_z)0($-1)>fei; qD,2,fecini_z,fecha_z,;
+[feu; t@5,40; \Fecha Final  :\; t0fei; (fechb_z)=(fecha_z); ifechb_z,+10;
+!(fechb_z)0($-1)>feu; qD,2,fecult_z,fechb_z,;
+[prt; t@6,3; \Del Codigo:\; t0feu; t@6,20; iprtda_z,MIE2,MIS2;
+[ult; t@6,40; \Al Codigo:\; t0prt; t@6,60; iultda_z,MIE2,MIS2;
+[poc; t@7,3; \Desea reporte de Ventas de `C`alle o `P`iso ? <C/P> : \; t0ulu;
+icaop_z,1; !(caop_z)5($C,1)(caop_z)5($P,1)&>poc;
+!(caop_z)0($P,1)>|;
+  [pru; t@8,3; \De la Ubicacion:\; t0ult; t@8,23; iprubi_z,2; 
+  (ulubi_z)=(prubi_z,#);
+  [ulu; t@8,40; \A la Ubicacion:\; t0pru; t@8,60; iulubi_z,2;
+.
+[cov; t@9,3; \Deseas Reporte de `V`entas o `C`artera ? <V/C> :\;
+t0poc; ivoc_z,1; !(voc_z)5($C,1)(voc_z)5($V,1)&>cov;
+[prm; t@10,3; \Vtas con Plazo de :      Meses\; 
+t0cov; t@10,23; iprpzo_z,MIE2,MIS2;
+[ulm; t@10,40; \            Hasta :         Meses\; 
+t0prm; t@10,63; iulpzo_z,MIE2,MIS2;
+
+GST; \Estan correctos los datos ? <S/N> : \; y|; | gpoc; .
+GABRE_TABLA;
+tS5,8,1,10,78; tc;
+!(caop_z)0($C,1)>|; f1; k2; P; .
+!(caop_z)0($P,1)>|; f1; k3; P; .
+{ n+;
+  Ff1; pnumcli_cli,0; s1; pnombre_cli,0; s1; pstatus_cli,0; l;
+  !(caop_z)0($C,1)>|;
+    !(jefgpo_cli)5(prom_z,#)>|;
+      !(band_z)5($S,1)>|; 
+        (prom_z)=(jefgpo_cli,#); Ff4; FO(arch_z),w~; FP66,60,Enc,Pie;
+      |
+        GSUBTOT; (prom_z)=(jefgpo_cli,#); GSUBENC;
+      .
+    .
+  |
+    !(ubiage_cli)5(ubi_z,#)>|;
+      !(band_z)5($S,1)>|; 
+        (ubi_z)=(ubiage_cli,#); Ff4; FO(arch_z),w~; FP66,60,Enc,Pie;
+      |
+        GSUBTOT; (ubi_z)=(ubiage_cli,#); GSUBENC;
+      .
+    .
+  .
+  GIMPRI;
+  f1; a;
+)
+!(band_z)5($S,1)>Fin;
+GSUBTOT; GULIN; Ff4; FC; Ff1; tr; tf; tS0; GSalir;
+gFin;
+
+[Enc;
+Ff3; FT; FGNodatos; Ff4; GFONT11; Fc80,3; l; Ff3; FGNodatos; Ff4;
+GFONT13; \relvtas \; GFONT14; &a; &cfech8_z; &p3fech9_z; pfech8_z,+8; s1;
+phora_z,#; s1; FW3; l; l;
+Fc50,\Analitico Ventas del ~; pfecha_z,+10; \ Al \; pfechb_z,+10;
+\ Pag:\; Fp%d~; l;
+!(voc_z)0($V,1)>|;
+  \REPORTE CLIENTES VENTAS\;
+|
+  \REPORTE CLIENTES CARTERA\;
+.
+l;
+GSUBENC; (band_z)=($S,1);
+Ft;
+
+[Pie; Fe;
+
+[SUBENC;
+Ff4;
+!(caop_z)0($C,1)>|;
+  f3; k1; P; n|; GNOPROM; . \Promotor:\; GFONT17; pprom_z,0; s1; pnombre_prm,0; GFONT18; l;
+|
+  f4; k1; P; n|; GNOUBI; . \Piso:\; GFONT17; pubi_z,#; s1; pnombre_ubi,0; GFONT18; l;
+.
+GFONT13;
+\Nombre                    Poblacion  Vnd Codigo_Cli  Lts TP Precio_Lista Total_Factur %Ut.F Compra              |  M|  S|  N|  V|  F|  R\; l;
+R;
+
+*1234567890123456789012345 1234567890 123 12345678901 123 12 123456789012 123456789012 12345 12345678901234567890 12 12 12 12 12 12*
+[IMPRI;
+(numcli_z)=(numcli_cli,#); (idcli_z)=(idcli_cli); (poblac_z)=(poblac_cli,#);
+f2; k1; P; n|; z0,compra_dcl,#; .
+Ff4; pnombre_cli,25; s1; ppoblac_cli,10; s1; 
+pagente_cli,3; s1; pnumcli_cli,10; pstatus_cli,1; s1; 
+pnulet1_cli,MIS2; pqom_cli,1; s1; pticte_cli,2; s1;  pprecon_cli,MDS12; s1; 
+pcargos_cli,MDS12; s1;
+(meses_z)=(nulet1_cli)(nulet2_cli)+;
+!(qom_cli)0($Q,1)>|; (meses_z)=(meses_z)(2)/; .
+(aua_z)=(canle1_cli)(bonifi_cli)-(nulet1_cli)*(canle2_cli)(bonifi_cli)-(nulet2_cli)*+;
+(aub_z)=(precon_cli)(piva_cli)(100)/(1)+*(enganc_cli)-; z0,porutf_z,#;
+@aua_z,10; @aub_z,10;
+!(aub_z)5($0)>|; (porutf_z)=(aua_z)(aub_z)/(1)-(100)*; .
+!(meses_z)5($0)>|; (porutf_z)=(porutf_z)(meses_z)/; .
+pporutf_z,MFS5; s1; pcompra_dcl,20; \|\;
+z0,cuantos_ind7,l; f7; k1; P; n|;. pcuantos_ind7,MLS3; \|\; (nmovs_z)=(nmovs_z)(cuantos_ind7)+;
+z0,cuantos_ind7,l; f7; k2; P; n|;. pcuantos_ind7,MLS3; \|\; (nsols_z)=(nsols_z)(cuantos_ind7)+;
+z0,cuantos_ind7,l; f7; k3; P; n|;. pcuantos_ind7,MLS3; \|\; (nnoms_z)=(nnoms_z)(cuantos_ind7)+;
+z0,cuantos_ind7,l; f7; k4; P; n|;. pcuantos_ind7,MLS3; \|\; (nvnds_z)=(nvnds_z)(cuantos_ind7)+;
+z0,cuantos_ind7,l; f7; k5; P; n|;. pcuantos_ind7,MLS3; \|\; (nfons_z)=(nfons_z)(cuantos_ind7)+;
+z0,cuantos_ind7,l; f7; k6; P; n|;. pcuantos_ind7,MLS3;      (nrens_z)=(nrens_z)(cuantos_ind7)+;
+f6; P; n|; \ Pob.X\; . 
+l;
+(prelis_z)=(prelis_z)(precon_cli)+; (totfac_z)=(totfac_z)(cargos_cli)+;
+!(status_cli)0($*,1)>|;
+  (totprelissi_z)=(totprelissi_z)(precon_cli)+; (tottotfacsi_z)=(tottotfacsi_z)(cargos_cli)+;
+|
+  (totprelisno_z)=(totprelisno_z)(precon_cli)+; (tottotfacno_z)=(tottotfacno_z)(cargos_cli)+;
+.
+R;
+
+[SUBTOT;
+Ff4; s60; c_12; s1; c_12; l;
+s46; \Total Ventas: \; pprelis_z,MDS12; s1; ptotfac_z,MDS12; s28;
+pnmovs_z,MLS3; \|\; (tmovs_z)=(tmovs_z)(nmovs_z)+; z0,nmovs_z,#;
+pnsols_z,MLS3; \|\; (tsols_z)=(tsols_z)(nsols_z)+; z0,nsols_z,#;
+pnnoms_z,MLS3; \|\; (tnoms_z)=(tnoms_z)(nnoms_z)+; z0,nnoms_z)(cuantos_ind7)+;
+pnvnds_z,MLS3; \|\; (tvnds_z)=(tvnds_z)(nvnds_z)+; z0,nvnds_z,#;
+pnfons_z,MLS3; \|\; (tfons_z)=(tfons_z)(nfons_z)+; z0,nfons_z,#;
+pnrens_z,MLS3;      (trens_z)=(trens_z)(nrens_z)+; z0,nrens_z,#;
+l;
+(totprelis_z)=(totprelis_z)(prelis_z)+; z0,prelis_z,#;
+(tottotfac_z)=(tottotfac_z)(totfac_z)+; z0,totfac_z,#;
+R;
+
+[ULIN;
+Ff4; s60; c_12; s1; c_12; l;
+s41; \Gran Total Ventas: \; ptotprelis_z,MDS12; s1; ptottotfac_z,MDS12; s28;
+ptmovs_z,MLS3; \|\;
+ptsols_z,MLS3; \|\;
+ptnoms_z,MLS3; \|\;
+ptvnds_z,MLS3; \|\;
+ptfons_z,MLS3; \|\;
+ptrens_z,MLS3;     
+l;
+s41; \Total Ventas     : \; ptotprelisno_z,MDS12; s1; ptottotfacno_z,MDS12; l;
+s41; \Total Ventas *   : \; ptotprelissi_z,MDS12; s1; ptottotfacsi_z,MDS12; l;
+R;
+
+[MANDAELFNT; f5; k1; P; nR; GSACAF; R;
+
+#isacaf.i;
+#iimpri.i;
+
+[TOMAALTAS;
+!(voc_z)0($V,1)>|;
+  Ff6; FOaltas.ini~,r~;
+|
+  Ff6; FOcartera.ini~,r~;
+.
+{ Ff6; FG+; z0,milinea_z,#; Fkmilinea_z,l;
+  !(milinea_z)0($clientes:,9)>|; Ff6; FG+; Fkclientes_z,l; g-; .
+  !(milinea_z)0($mvcli:,6)>|;    Ff6; FG+; Fkmvcli_z,l;    g-; .
+  !(milinea_z)0($dircli:,7)>|;   Ff6; FG+; Fktbdircl_z,l;   g-; .
+  !(milinea_z)0($solicit:,8)>|;  Ff6; FG+; Fksolicit_z,l;  g-; .
+)
+R;
+
+[ABRE_TABLA;
+GTOMAALTAS;
+Ff5; FObasedato.ini~,r~; FGNOBD; Fkmibd_z,l; FC; Ff1;
+fd1; O@,mibd_z,"sa","lux",1,ERRCNB,;  * con conexion autocommit    *
+f1; #iclientes.i;
+k0; ot,clientes_z,;
+k1; kp,"numcli=?",numcli_z,#,1,;
+k2; kp,"fechavta between ? and ? and ubiage = 'CA' and tienda between ? and ?
+	and ( ( ( qom = 'M' or qom = 'C')  and nulet1 between ? and ? ) or
+        ( qom = 'Q' and nulet1/2 between ? and ? ) )
+        order by ubiage,jefgpo,tienda,fechavta",    
+        fecini_z,#,3,fecult_z,#,3,prtda_z,ultda_z,
+        prpzo_z,ulpzo_z,prpzo_z,ulpzo_z,;
+k3; kp,"fechavta between ? and ? and ubiage <> 'CA' 
+	and ubiage between ? and ? and tienda between ? and ?
+	and ( ( ( qom = 'M' or qom = 'C')  and nulet1 between ? and ? ) or
+        ( qom = 'Q' and nulet1/2 between ? and ? ) )
+        order by ubiage,tienda,fechavta",    
+        fecini_z,#,3,fecult_z,#,3,prubi_z,#,1,ulubi_z,#,1,prtda_z,ultda_z,
+        prpzo_z,ulpzo_z,prpzo_z,ulpzo_z,;
+
+f2; #idircli2.i;
+k0; ot,tbdircl_z,;
+k1; kp,"idcli=?",idcli_z,;
+
+f3; #ipromotor.i;
+k0; ot,"promotor",;
+k1; kp,"clave=?",prom_z,#,1,;
+
+f4; #iubivta.i;
+k0; ot,"ubivta",;
+k1; kp,"codcar='00' and ubica=?",ubi_z,#,1,;
+
+f5; #itablefnt.i;
+k0; ot,"fonts",;
+k1; kp,"impre=? and numero=?",impre_z,font_z,;
+
+f6; #ipoblacs.i;
+k0; ot,"poblacs",;
+k1; kp,"nombre=?",poblac_z,#,1,;
+
+f7; M
+	cuantos_ind7		l,
+        tam_ind7		s0,;
+k0; ot,"poblacs",;
+!(voc_z)0($C,1)>|;
+  k1; kq,"select count(*) from mvcli2 where idcli = ?",idcli_z,;
+  k2; kq,"select count(*) from misdatsol where idcli = ?",idcli_z,;
+  k3; kq,"select count(*) from car_relclis where idcli = ?",idcli_z,;
+  k4; kq,"select count(*) from car_vndcli where idcli = ?",idcli_z,;
+  k5; kq,"select count(*) from facfon2 where idcli = ?",idcli_z,;
+  k6; kq,"select count(*) from facfon2 a 
+  	join renfacfo b on a.idfac = b.idfacfon where a.idcli = ?",idcli_z,;
+|
+  k1; kq,"select count(*) from mvclialta where idcli = ?",idcli_z,;
+  k2; kq,"select count(*) from misdatsolalta where idcli = ?",idcli_z,;
+  k3; kq,"select count(*) from car_relclialta where idcli = ?",idcli_z,;
+  k4; kq,"select count(*) from car_vndclialta where idcli = ?",idcli_z,;
+  k5; kq,"select count(*) from facfonalta where idcli = ?",idcli_z,;
+  k6; kq,"select count(*) from facfonalta a 
+  	join renfacfoalta b on a.idfac = b.idfacfon where a.idcli = ?",idcli_z,;
+.
+R;
+
+#i/programas/lib/colores.i;
+#i/programas/lib/tomamaxrc.i;
+#i/programas/lib/status.i;
+
+[PAN; 
+Ff1; Gdefine_colores; Gtomamaxrc; Gamarillo_negro; GST; tf; tn; #iprog1.i;
+z0,modul_z,#; (modul_z)=($Analitico de Ventas,19); (modul2_z)=($CAR-MDS,7);
+^=direc_z,#); 
+GBANNER; Gblanco_azul;
+R;
+
+[R; R; [E; ];
+
+[NOBD; Ff1; GST; `7; \No existe el archivo basedato.ini ...\; gFin1;
+[ERRCNB; GST; `6; \No pude conectarme a la base de datos...\; gFin1;
+[NOPROM; z0,nombre_prm,#; (nombre_prm)=($INEXISTENTE,11); R;
+[NOUBI;  z0,nombre_ubi,#; (nombre_ubi)=($INEXISTENTE,11); R;
+[Nodatos; Ff1; GST; `7; \archivo datos incompleto o inexistente...\; gFin1;
+
+[Fin1; y|;.
+[Fin; t@23,0; te; };
+

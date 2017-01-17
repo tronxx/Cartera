@@ -1,0 +1,645 @@
+* Programa que genera el reporte de informe segun el tipo de cliente
+  (CALIDAD de CREDITO)
+  DRBR 15-Mar-1993
+  ---------------------------------------------------------------------
+  Modificado para que tome la fecha de los acumulados de un archivo llamado
+  acumulao que se graba cada vez que se acumula
+  DRBR 14-Ago-1993
+*
+
+#dMDS10 %,10.2f~; #dMDSF %6.2f~; #dMDS14 %,14.2f~; #dMIS2 %02d~;
+
+
+f0; M
+	nemp_z          s80,
+	direc_z         s80,
+	modul_z         s30,
+	modul2_z        s10,
+	version_z		s20,
+        maxcol_z		i,
+        maxrow_z		i,
+        renst_z			i,
+        sff_z			s2,
+        html_z			s2,
+        tipocar_z		s2,
+	impre_z			i,
+	font_z			i,
+	micar_z			s3,
+	carac_z			i,
+	bandimp_z		s3,
+	cmds_z		{
+	  cmd1_z		s7,
+	  cmd2_z		s13,
+	  cmd3_z		s30,
+			}
+	arch_z			s13,
+	mibd_z			s80,
+	
+	ter_z          	       s2,
+        band_z			s3,
+        prmegazona_z		s3,
+        ulmegazona_z		s3,
+        antmegazona_z		s3,
+        megazona_z		s3,
+        saltop_z		s2,
+	zona_z         	       s3,
+        subzona_z		s4,
+        fechd_z			D,
+        feche_z			D,
+	fech8_z           	D,
+	fech9_z     	{
+	  dias_z        	s16,
+	  hora_z         	s6,
+	  resto_z        	s5,
+	            	}
+	fecha_z           	D,
+	fechb_z           	D,
+        fechmai_z		D,
+        fechmaf_z		D,
+        fechaai_z		D,
+        fechaaf_z		D,
+        fechf_z			D,
+        fechg_z			D,
+        fechh_z			D,
+        fechi_z			D,
+	fecsig_z	{
+	  fecsigaa_z		i,
+	  fecsigmm_z		i,
+	  fecsigdd_z		i,
+	  		}        
+	fecini_z	{
+	  feciniaa_z		i,
+	  fecinimm_z		i,
+	  fecinidd_z		i,
+	  		}
+	fecult_z	{
+	  fecultaa_z		i,
+	  fecultmm_z		i,
+	  fecultdd_z		i,
+	  		}
+        fecacuini_z	{
+          fecacuiniaa_z	i,
+          fecacuinimm_z	i,
+          fecacuinidd_z	i,
+        		}
+        fecacufin_z	{
+          fecacufinaa_z		i,
+          fecacufinmm_z		i,
+          fecacufindd_z		i,
+        		}
+	tsn_z			s2,
+        tasiva_z		s3,
+        piva1_z			d,
+        piva2_z			d,
+        import_z		d,
+        tothor_z		d,
+	creditot_z        	d,
+        engctopl_z		d,
+        englarpl_z		d,
+        vtacon_z		d,
+	engctoplmzn_z		d,
+	englarplmzn_z		d,
+	contadosmzn_z		d,
+	vtaprcrdmzn_z		d,
+	engctoplzon_z		d,
+	englarplzon_z		d,
+	contadoszon_z		d,
+	vtaprcrdzon_z		d,
+	engctopltot_z		d,
+	englarpltot_z		d,
+	contadostot_z		d,
+	vtaprcrdtot_z		d,
+    status1_z			s2,
+    status2_z			s2,
+	linea_z				s100,
+	ind1_z            	i,
+	ind2_z            	i,
+	termi_z           	i,
+	esp_z             	i,
+	exten_z           	i,
+        ult_z                           i,
+        iii_z                           i,
+	ii_z				i,
+	prmes_z				i,
+	ulmes_z				i,        
+	tam0             	s0,;
+mtam0&;
+q+,version_z,"V: 2.00 EB",;
+* -- Manejo de Versiones ---
+  2011-Oct-21 Se modifica para que el dato que se imprime de la venta
+  de contado sea el importe del abono, no el total facturacion
+  -------------------------
+  2015-02-05 2.00 Se modifica para que tome en cuenta la division 
+  de las Megazonas
+  -----------------------------------
+*
+Ff5; FO.impri2.ini~,r~;
+FG|; |
+  Fknemp_z,l;
+  !(nemp_z)0($html,4)>|;
+    (html_z)=($S,1);
+  |
+    >sinemp_z,#,impre_z;
+  .
+.
+FC; z0,nemp_z,#;
+
+tr; Ff3; FOdatos.ini~,r~; FGNodatos; Fknemp_z,l; &f0; tu1;
+GPAN; GABRE_TABLA;
+!(html_z)0($S,1)>|; 
+  (arch_z)=($conceng.html,12);
+|
+  (arch_z)=($conceng0.tex,12);
+.
+(tasiva_z)=($XX,2); (tipocar_z)=($T,1);
+GTOMA_PARAMETROS;
+
+&a; &cfeche_z; qD,2,fecult_z,feche_z,;
+(fecultdd_z)=(1); qD,1,fecult_z,feche_z,; (feche_z)=(feche_z)(86400)-;
+qD,2,fecult_z,feche_z,; (fecultdd_z)=(1); qD,1,fecult_z,fechd_z,;
+
+[fei; t@5,3; \Teclee la Fecha Inicial : \; t0Fin; (fecha_z)=(fechd_z);
+ifecha_z,+10; !(fecha_z)0($-1)>fei; qD,2,fecini_z,fecha_z,;
+[feu; t@5,40; \Fecha Final   : \; t0fei; (fechb_z)=(feche_z);
+ifechb_z,+10; !(fechb_z)0($-1)>feu; qD,2,fecult_z,fechb_z,;
+[son; t@6,3; \Concentrado de Enganches `T`otales `S`i o `N`o <T/S/N>:\; t0feu;
+itsn_z,1; !(tsn_z)5($T,1)(tsn_z)5($S,1)&(tsn_z)5($N,1)&>son;
+[tiv; t@7,3; \Ventas de Iva al (XX es total):\; t0son; itasiva_z,2;
+!(tasiva_z)0($XX,2)>|;
+  (piva1_z)=(0); (piva2_z)=(100);
+|
+  >sdtasiva_z,#,piva1_z; (piva2_z)=(piva1_z);
+.
+z0,status1_z,#; z0,status2_z,#;
+!(tsn_z)0($S,1)>|; (status1_z)=($*,1); (status2_z)=($*,1); .
+!(tsn_z)0($N,1)>|; (status1_z)=($x,1); .
+!(tsn_z)0($T,1)>|; (status1_z)=($*,1); .
+
+(fecsig_z)=(fecini_z,#); GPRIMERO_DE_MES_ANTER;
+qD,1,fecsig_z,fechf_z,; (fecsig_z)=(fecult_z,#); GULTIMO_DE_MES_ANTER; 
+qD,1,fecsig_z,fechg_z,; (fecsig_z)=(fecini_z,#);
+(fecsigaa_z)=(fecsigaa_z)(1)-; qD,1,fecsig_z,fechh_z,;
+(fecsig_z)=(fecult_z,#); (fecsigaa_z)=(fecsigaa_z)(1)-; 
+GULTIMO_DE_MES; qD,1,fecsig_z,fechi_z,;
+
+[mai; t@9,3; \Inicial Mes Ant:\; t0tiv; (fechmai_z)=(fechf_z);
+t@9,23; ifechmai_z,+10; !(fechmai_z)0($-1)>mai;
+[maf; t@9,40; \Final   Mes Ant:\; t0mai; (fechmaf_z)=(fechg_z);
+t@9,60; ifechmaf_z,+10; !(fechmaf_z)0($-1)>maf;
+[aai; t@10,3; \Inicial Anu Ant:\; t0maf; (fechaai_z)=(fechh_z);
+t@10,23; ifechaai_z,+10; !(fechaai_z)0($-1)>aai;
+[aaf; t@10,40; \Final   Anu Ant:\; t0aai; (fechaaf_z)=(fechi_z);
+t@10,60; ifechaaf_z,+10; !(fechaaf_z)0($-1)>aaf;
+[prm; t@11,3; \Mega Zona Inicial:\; t0aaf; iprmegazona_z,2;
+[ulm; t@11,40; \Mega Zona Final:\; t0prm; iulmegazona_z,2;
+[slp; t@12,3; \Deseas Salto de Pagina x Megazona ? <S/N>:\; t0ulm;
+isaltop_z,1; !(saltop_z)5($S,1)(saltop_z)5($N,1)&>slp;
+GST; \Estan correctos los datos ? <S/N> : \; y|; | gaaf; .
+GST; \Ahora se genera el reporte ...\;
+tS1,0,0,23,80; tv0; tc;
+GGRABA_PARAMETROS;
+f2; k1; P;
+{ n+;
+  Ff1; \Imprimo:\; pmegazona_ind2,0; s1; pzona_ind2,0; s1; psubzona_ind2,0; l;
+  !(band_z)5($S,1)>|;
+    (antmegazona_z)=(megazona_ind2,#);  
+    (zona_z)=(zona_ind2,#); Ff4; FO(arch_z),w~; 
+    !(html_z)0($S,1)>|; GENC_HTML; | GFONT34; FP66,60,Enc,Pie; .
+    (band_z)=($S,1);
+  .
+  !(megazona_ind2)5(antmegazona_z,#)>|;
+     GSUBTZON; GSUBT_MEGAZONA;
+     (antmegazona_z)=(megazona_ind2,#);  (zona_z)=(zona_ind2,#); 
+     !(saltop_z)0($S,1)>|; GSALTO_PAGINA; | GSUBENC_MEGAZONA; .
+  .  
+  !(zona_ind2)5(zona_z,#)>|;
+    GSUBTZON; (zona_z)=(zona_ind2,#); GSUBENC;
+  .
+  GIMPRI;
+  f2; a;
+)
+GSUBTZON; GSUBT_MEGAZONA; 
+!(saltop_z)0($S,1)>|; GSALTO_PAGINA; .
+GULIN; Ff4; FC; Ff1; tf; tr; tS0; GSalir;
+gFin;
+
+[TOMA_PARAMETROS;
+x echo 1 >>.conceng.ini ~;
+Ff5; FO.conceng.ini~,r~;
+(ii_z)=(0);
+{ FG+; z0,milin_z,#; Fkmilin_z,l; 
+  (ii_z)=(ii_z)(1)+;
+  !(ii_z)0($1)>|; (tsn_z)=(milin_z,1); .
+  !(ii_z)0($2)>|; (tasiva_z)=(milin_z,2); .
+  !(ii_z)0($3)>|; (prmegazona_z)=(milin_z,2); .
+  !(ii_z)0($4)>|; (ulmegazona_z)=(milin_z,2); .
+  !(ii_z)0($5)>|; (saltop_z)=(milin_z,1); .
+)
+Ff5; FC; Ff1;
+R;
+
+[GRABA_PARAMETROS;
+Ff5; FO.conceng.ini~,w~;
+ptsn_z,0; l;
+ptasiva_z,0; l;
+pprmegazona_z,0; l;
+pulmegazona_z,0; l;
+psaltop_z,0; l;
+Ff5; FC; Ff1;
+R;
+
+
+
+[Enc;
+GENC_HTML;
+Ft;
+
+[ENC_HTML;
+Ff3; FT; FGNodatos; Ff4;
+GINIHTML;
+GINICENTRADO; GFONT11; Fc80,3; GSALTO_LINEA;
+Ff3; FGNodatos; Ff4;
+(ii_z)=(-2); GINIFONTSIZE; GINITXTCONDENSADO; 
+\ conceng \; GFINFONT; GFINTXTCONDENSADO;
+&a; &cfech8_z; &p3fech9_z; pfech8_z,+8;
+s1; phora_z,#; s1; FW3;  GSALTO_LINEA;
+GINITXTDOBLEANCHO; Fc40,\INFORME DIRECCION~; GFINTXTDOBLEANCHO;
+GSALTO_LINEA;
+GINITXTDOBLEANCHO; 
+s4; \VENTAS DEL \; pfecha_z,+10; \ AL \; pfechb_z,+10; GFINTXTDOBLEANCHO;
+GSALTO_LINEA;
+GININEGRILLA; 
+z0,linea_z,#; q+,linea_z,"ACUMULADOS DE ENGANCHES VENTAS ",;
+!(tsn_z)0($T,1)>|; q+,linea_z,"TOTALES",; .
+!(tsn_z)0($S,1)>|; q+,linea_z,"SI",; .
+!(tsn_z)0($N,1)>|; q+,linea_z,"NO",; .
+Fslexten_z,linea_z; (esp_z)=(80)(exten_z)-(2)/; 
+!(esp_z)2($1)>|; z0,esp_z,#; .
+sesp_z; plinea_z,0;
+GSALTO_LINEA;
+!(tasiva_z)0($XX,1)>|;
+  Fc80,\ACUMULADOS DE VENTAS SIN IMPORTAR TASA DE IVA ~;
+|
+  Fc76,\ACUMULADOS DE VENTAS IVA AL ~; ptasiva_z,2;
+.
+GFINNEGRILLA; GSALTO_LINEA; GFINCENTRADO; GTXTELITE;
+\VENTAS DE MEGAZONA:\; pprmegazona_z,0; s1; 
+(megazona_z)=(prmegazona_z,#); 
+z0,idmegazona_mzn,l; f6; k1; P; n|;. pdescri_mzn,0;
+!(prmegazona_z)5(ulmegazona_z,#)>|;
+  \ A Megazona:\; pulmegazona_z,0; s1;
+  (megazona_z)=(ulmegazona_z,#); 
+  z0,idmegazona_mzn,l; f6; k1; P; n|;. pdescri_mzn,0;
+.
+GSALTO_LINEA;
+GINITABLA; 
+GSUBENC_MEGAZONA;
+R;                                                       	
+
+[Pie; Fe;
+[SUBENC_MEGAZONA;
+Ff4; 
+(megazona_z)=(antmegazona_z,#); f6; k1; P; n|; GNOZONA; .
+(ii_z)=(7); GINIREN; GINICOLSPAN; GFINTXTCONDENSADO; 
+GININEGRILLA; \Megazona:\; pantmegazona_z,0; s1; pdescri_mzn,0; GFINNEGRILLA; 
+GFINCOLHTML; GFINREN;
+l;
+GSUBENC;
+R;
+
+[SUBENC;
+Ff4; f1; k1; P; n|; GNOZONA; .
+(ii_z)=(7); GINIREN; GINICOLSPAN; GFINTXTCONDENSADO; 
+GININEGRILLA; pzona_z,0; s1; pnombre_zon,0; GFINNEGRILLA; 
+GFINCOLHTML; GFINREN;
+l;
+GINIREN; s3; GINITXTSUBRAYADO;
+GINICOL; s3; GFINCOL;
+GINICOL; \Punto  Venta \; GFINCOL;
+GINICOL; \ Total Factura\; GFINCOL;
+GINICOL; \Eng.Corto.Plaz\; GFINCOL;
+GINICOL; \Eng.Largo.Plaz\; GFINCOL;
+GINICOL; \Ventas_Contado\; GFINCOL;
+GINICOL; \Total Ingresos\;  GFINCOL;
+GFINREN; GFINTXTSUBRAYADO;
+l;
+R;
+*    123 123456789012345 12345678901234 12345678901234 12345678901234 12345678901234 12345678901234*
+
+[IMPRI;
+(subzona_z)=(subzona_ind2,#); z0,creditot_z,#;
+z0,enganc_ind3,l; f3; k1; P; n|;. (import_z)=(totfac_ind3);
+(engctopl_z)=(enganc_ind3);
+(creditot_z)=(creditot_z)(import_z)+;
+z0,enganc_ind3,l; f3; k2; P; n|;. (import_z)=(totfac_ind3);
+(englarpl_z)=(enganc_ind3);
+(creditot_z)=(creditot_z)(import_z)+;
+z0,enganc_ind3,l; f3; k3; P; n|;. (import_z)=(enganc_ind3);
+(vtacon_z)=(import_z);
+(creditot_z)=(creditot_z)(import_z)+;
+(tothor_z)=(engctopl_z)(englarpl_z)+(vtacon_z)+;
+f4; k1; P; n|; GNOSUBZ; .
+Ff4; 
+s3; 
+GINIREN; 
+GINICOL; psubzona_ind2,3; GFINCOL;
+GINICOL; pnombre_ubi,13; GFINCOL;
+GINICOLDER; pcreditot_z,MDS14; GFINCOL;
+GINICOLDER; pengctopl_z,MDS14; GFINCOL;
+GINICOLDER; penglarpl_z,MDS14; GFINCOL;
+GINICOLDER; pvtacon_z,MDS14; GFINCOL;
+GINICOLDER; ptothor_z,MDS14; GFINCOL;
+GFINREN;
+l;
+(vtaprcrdzon_z)=(vtaprcrdzon_z)(creditot_z)+;
+(engctoplzon_z)=(engctoplzon_z)(engctopl_z)+;
+(englarplzon_z)=(englarplzon_z)(englarpl_z)+;
+(contadoszon_z)=(contadoszon_z)(vtacon_z)+;
+R;
+
+[SUBTZON;
+(creditot_z)=(engctoplzon_z)(englarplzon_z)+(contadoszon_z)+;
+Ff4; 
+!(html_z)5($S,1)>|;
+  s3; c_17; s1; c_14; s1; c_14; s1; c_14; s1; c_14; s1; c_14; l;
+.
+GINIREN; s3; 
+GINICOL; s3; GESPACIOS; GFINCOL;
+GINICOL; \Total de Zona\; GFINCOL;
+GINICOLDER; pvtaprcrdzon_z,MDS14; GFINCOL;
+GINICOLDER; pengctoplzon_z,MDS14; GFINCOL;
+GINICOLDER; penglarplzon_z,MDS14; GFINCOL;
+GINICOLDER; pcontadoszon_z,MDS14; GFINCOL;
+GINICOLDER; pcreditot_z,MDS14; GFINCOL;
+GFINREN; GINIREN; GINICOL; GSALTO_LINEA; GSALTO_LINEA; GFINCOLHTML; GFINREN;
+(vtaprcrdmzn_z)=(vtaprcrdmzn_z)(vtaprcrdzon_z)+; z0,vtaprcrdzon_z,#;
+(engctoplmzn_z)=(engctoplmzn_z)(engctoplzon_z)+; z0,engctoplzon_z,#;
+(englarplmzn_z)=(englarplmzn_z)(englarplzon_z)+; z0,englarplzon_z,#;
+(contadosmzn_z)=(contadosmzn_z)(contadoszon_z)+; z0,contadoszon_z,#;
+R;
+
+[SUBT_MEGAZONA;
+(creditot_z)=(engctoplmzn_z)(englarplmzn_z)+(contadosmzn_z)+;
+Ff4; 
+!(html_z)5($S,1)>|;
+  s3; c_17; s1; c_14; s1; c_14; s1; c_14; s1; c_14; s1; c_14; l;
+.
+GINIREN; s3; 
+GINICOL; s3; GESPACIOS; GFINCOL;
+GINICOL; \Total MegZona\; GFINCOL;
+GINICOLDER; pvtaprcrdmzn_z,MDS14; GFINCOL;
+GINICOLDER; pengctoplmzn_z,MDS14; GFINCOL;
+GINICOLDER; penglarplmzn_z,MDS14; GFINCOL;
+GINICOLDER; pcontadosmzn_z,MDS14; GFINCOL;
+GINICOLDER; pcreditot_z,MDS14; GFINCOL;
+GFINREN; GINIREN; GINICOL; GSALTO_LINEA; GSALTO_LINEA; GFINCOLHTML; GFINREN;
+(vtaprcrdtot_z)=(vtaprcrdtot_z)(vtaprcrdmzn_z)+; z0,vtaprcrdmzn_z,#;
+(engctopltot_z)=(engctopltot_z)(engctoplmzn_z)+; z0,engctoplmzn_z,#;
+(englarpltot_z)=(englarpltot_z)(englarplmzn_z)+; z0,englarplmzn_z,#;
+(contadostot_z)=(contadostot_z)(contadosmzn_z)+; z0,contadosmzn_z,#;
+R;
+
+[ULIN;
+!(html_z)5($S,1)>|;
+  Ff4; s3; c_17; s1; c_14; s1; c_14; s1; c_14; s1; c_14; s1; c_14; l;
+.
+
+(ult_z)=(1); GSACA_TOTALES;
+qD,2,fecacuini_z,fechmai_z,; qD,2,fecacufin_z,fechmaf_z,;
+GACUMULA_TOTALES; (ult_z)=(2); GSACA_TOTALES;
+qD,2,fecacuini_z,fechaai_z,; qD,2,fecacufin_z,fechaaf_z,;
+GACUMULA_TOTALES; (ult_z)=(3); GSACA_TOTALES;
+(creditot_z)=(engctopltot_z)(englarpltot_z)+(contadostot_z)+;
+z0,vtaprcrdtot_z,#; z0,engctopltot_z,#; z0,englarpltot_z,#; z0,contadostot_z,#;
+R;
+
+[SACA_TOTALES;
+Ff4; 
+GINIREN; GININEGRILLA;  
+GINICOL; s3; GFINCOL;
+GINICOL;
+!(ult_z)0($1)>|;
+  \GRAN TOTAL     \; 
+.
+!(ult_z)5($1)>|; 
+  pfecacuinimm_z,MIS2; \/\; pfecacuiniaa_z,MIS2; \-\;
+  pfecacufinmm_z,MIS2; \/\; pfecacufinaa_z,MIS2;
+.
+s1; GFINCOL;
+(creditot_z)=(engctopltot_z)(englarpltot_z)+(contadostot_z)+;
+GINICOLDER; pvtaprcrdtot_z,MDS14; GFINCOL;
+GINICOLDER; pengctopltot_z,MDS14; GFINCOL;
+GINICOLDER; penglarpltot_z,MDS14; GFINCOL;
+GINICOLDER; pcontadostot_z,MDS14; GFINCOL;
+GINICOLDER; pcreditot_z,MDS14; GFINCOL;
+GFINNEGRILLA; GFINREN;
+l;
+z0,vtaprcrdtot_z,#; z0,engctopltot_z,#; z0,englarpltot_z,#; z0,contadostot_z,#;
+R;
+
+[ACUMULA_TOTALES;
+z0,enganc_ind3,l; z0,vtaprcrdtot_z,#;
+f3; k4; P; n|;.
+(engctopltot_z)=(enganc_ind3);
+(vtaprcrdtot_z)=(totfac_ind3);
+z0,enganc_ind3,l; f3; k5; P; n|;.
+(englarpltot_z)=(enganc_ind3);
+(vtaprcrdtot_z)=(vtaprcrdtot_z)(totfac_ind3)+;
+z0,enganc_ind3,l; f3; k6; P; n|;.
+(contadostot_z)=(enganc_ind3);
+(vtaprcrdtot_z)=(vtaprcrdtot_z)(enganc_ind3)+;
+R;
+
+[MANDAELFNT; f13; k1; P; nR; GSACAF; R;
+#isacaf.i;
+#iimpri.i;
+
+[ABRE_TABLA; 
+Ff5; FObasedato.ini~,r~; FGNOBD; Fkmibd_z,l; FC; Ff1; 
+fd1; O@,mibd_z,"sa","lux",1,ERRCNB,;  * con conexion autocommit    *
+f1; #izonas.i;
+k0; ot,"zonas",;
+k1; kp,"zona = ?",zona_z,#,1,;
+
+f2; M
+	megazona_ind2		s3,
+	zona_ind2		s3,
+        subzona_ind2		s4,
+        totfac_ind2		d,
+        totplista_ind2		d,;
+k0; ot,"acuvtas",;
+k1; kq,"select e.clave, c.zona, subzona, sum(totfact), sum(precon)
+	from acuvtas c
+	join car_megazonasdet d on c.zona = d.zona
+	join car_megazonas e on d.idmegazona = e.idmegazona
+	where fecini between ? and ? and voc='V'
+        and fecini = convert_date(
+          convert_char(Year(fecfin))+ '-' + 
+          convert_char(Month(fecfin)) + '-01'
+        ) 
+        and fecfin =  timestampadd(4, -1, timestampadd(6, 1, fecini))
+        and piva between ? and ? and (status = ? or status = ?)
+        and e.clave between ? and ?
+        group by e.clave, c.zona, subzona",
+        fecini_z,#,3,fecult_z,#,3,piva1_z,piva2_z,
+        status1_z,#,1,status2_z,#,1,
+        prmegazona_z,#,1,ulmegazona_z,#,1,;
+
+f3; M
+	enganc_ind3		d,
+        totfac_ind3		d,
+        totlis_ind3		d,;
+k0; ot,"acuvtas",;
+k1; kq,"select sum(enganc), sum(totfact), sum(precon) from car_tipocar a 
+	join car_tipocardet b on a.idtipocar = b.idtipocar
+	join acuvtas c on b.ticte = c.ticte 
+	join car_corlarpzodet d on c.qom = d.qom and c.letras = d.nulets
+	join car_corlarpzo e on d.idcorlarpzo = e.idcorlarpzo
+	join car_anuscartera f on d.idanucartera = f.idanucartera
+	and ( year(c.fecfin) >= f.anuini and year(c.fecfin) <= f.anufin )
+	where
+        a.tipocar = ? and fecini between ? and ? and zona=? and subzona=? 
+        and piva between ? and ? and (status = ? or status = ?)
+        and c.qom <> 'C' and voc='V' and e.tiplazo = 'C'
+        and fecini = convert_date(
+          convert_char(Year(fecfin))+ '-' + 
+          convert_char(Month(fecfin)) + '-01'
+        ) 
+        and fecfin =  timestampadd(4, -1, timestampadd(6, 1, fecini))",
+	tipocar_z,#,1,fecini_z,#,3,fecult_z,#,3,zona_z,#,1,subzona_z,#,1,
+        piva1_z,piva2_z,status1_z,#,1,status2_z,#,1,;
+k2; kq,"select sum(enganc), sum(totfact), sum(precon) from car_tipocar a 
+	join car_tipocardet b on a.idtipocar = b.idtipocar
+	join acuvtas c on b.ticte = c.ticte 
+	join car_corlarpzodet d on c.qom = d.qom and c.letras = d.nulets
+	join car_corlarpzo e on d.idcorlarpzo = e.idcorlarpzo
+	join car_anuscartera f on d.idanucartera = f.idanucartera
+	and ( year(c.fecfin) >= f.anuini and year(c.fecfin) <= f.anufin )
+	where
+        a.tipocar = ? and fecini between ? and ? and zona=? and subzona=? 
+        and piva between ? and ? and (status = ? or status = ?)
+        and c.qom <> 'C' and e.tiplazo = 'L' and voc='V'
+        and fecini = convert_date(
+          convert_char(Year(fecfin))+ '-' + 
+          convert_char(Month(fecfin)) + '-01'
+        ) 
+        and fecfin =  timestampadd(4, -1, timestampadd(6, 1, fecini))",
+	tipocar_z,#,1,fecini_z,#,3,fecult_z,#,3,zona_z,#,1,subzona_z,#,1,
+        piva1_z,piva2_z,status1_z,#,1,status2_z,#,1,;
+k3; kq,"select sum(enganc), sum(totfact), sum(precon) from car_tipocar a 
+	join car_tipocardet b on a.idtipocar = b.idtipocar
+	join acuvtas c on b.ticte = c.ticte where
+        a.tipocar = ? and fecini between ? and ? and zona=? and subzona=? 
+        and piva between ? and ? and (status = ? or status = ?)
+        and c.qom='C' and voc='V'
+        and fecini = convert_date(
+          convert_char(Year(fecfin))+ '-' + 
+          convert_char(Month(fecfin)) + '-01'
+        ) 
+        and fecfin =  timestampadd(4, -1, timestampadd(6, 1, fecini))",
+	tipocar_z,#,1,fecini_z,#,3,fecult_z,#,3,zona_z,#,1,subzona_z,#,1,
+        piva1_z,piva2_z,status1_z,#,1,status2_z,#,1,;
+        
+k4; kq,"select sum(enganc), sum(totfact), sum(precon) from car_tipocar a 
+	join car_tipocardet b on a.idtipocar = b.idtipocar
+	join acuvtas c on b.ticte = c.ticte 
+	join car_corlarpzodet d on c.qom = d.qom and c.letras = d.nulets
+	join car_corlarpzo e on d.idcorlarpzo = e.idcorlarpzo
+	join car_anuscartera f on d.idanucartera = f.idanucartera
+	and ( year(c.fecfin) >= f.anuini and year(c.fecfin) <= f.anufin )
+	join car_megazonasdet g on c.zona = g.zona
+	join car_megazonas h on g.idmegazona = h.idmegazona
+	where
+        a.tipocar = ? and fecini between ? and ?
+        and piva between ? and ? and (status = ? or status = ?)
+        and c.qom <> 'C' and e.tiplazo = 'C' and voc='V'
+        and fecini = convert_date(
+          convert_char(Year(fecfin))+ '-' + 
+          convert_char(Month(fecfin)) + '-01'
+        ) 
+        and fecfin =  timestampadd(4, -1, timestampadd(6, 1, fecini))
+        and h.clave between ? and ?",
+	tipocar_z,#,1,fecacuini_z,#,3,fecacufin_z,#,3,
+        piva1_z,piva2_z,status1_z,#,1,status2_z,#,1,
+        prmegazona_z,#,1,ulmegazona_z,#,1,;
+        
+k5; kq,"select sum(enganc), sum(totfact), sum(precon) from car_tipocar a 
+	join car_tipocardet b on a.idtipocar = b.idtipocar
+	join acuvtas c on b.ticte = c.ticte 
+	join car_corlarpzodet d on c.qom = d.qom and c.letras = d.nulets
+	join car_corlarpzo e on d.idcorlarpzo = e.idcorlarpzo
+	join car_anuscartera f on d.idanucartera = f.idanucartera
+	and ( year(c.fecfin) >= f.anuini and year(c.fecfin) <= f.anufin )
+	where
+        a.tipocar = ? and fecini between ? and ?
+        and piva between ? and ? and (status = ? or status = ?)
+        and c.qom <> 'C' and tiplazo = 'L' and voc='V'
+        and fecini = convert_date(
+          convert_char(Year(fecfin))+ '-' + 
+          convert_char(Month(fecfin)) + '-01'
+        ) 
+        and fecfin =  timestampadd(4, -1, timestampadd(6, 1, fecini))",
+	tipocar_z,#,1,fecacuini_z,#,3,fecacufin_z,#,3,
+        piva1_z,piva2_z,status1_z,#,1,status2_z,#,1,;
+        
+k6; kq,"select sum(enganc), sum(totfact), sum(precon) from car_tipocar a 
+	join car_tipocardet b on a.idtipocar = b.idtipocar
+	join acuvtas c on b.ticte = c.ticte where
+        a.tipocar = ? and fecini between ? and ? and piva between ? and ? and (status = ? or status = ?)
+        and c.qom='C' and voc='V'
+        and fecini = convert_date(
+          convert_char(Year(fecfin))+ '-' + 
+          convert_char(Month(fecfin)) + '-01'
+        ) 
+        and fecfin =  timestampadd(4, -1, timestampadd(6, 1, fecini))",
+	tipocar_z,#,1,fecacuini_z,#,3,fecacufin_z,#,3,
+        piva1_z,piva2_z,status1_z,#,1,status2_z,#,1,;
+
+f4; #iubivta.i;
+k0; ot,"ubivta",;
+k1; kp,"zona=? and subzon=?",zona_z,#,1,subzona_z,#,1,;
+
+
+f5; M
+	ultfec_ind5	{
+          ultfecaa_ind5		i,
+          ultfecmm_ind5		i,
+          ultfecdd_ind5		i,
+        		}
+        tam_ind5		s0,;
+k0; ot,"acuvtas",;
+k1; kq,"select max(fecfin) from acuvtas",;
+
+f6; #icar_megazonas.i;
+k0; ot,"car_megazonas",;
+k1; kp,"clave=?",megazona_z,#,1,;
+
+f13; #itablefnt.i;
+k0; ot,"fonts",;
+k1; kp,"impre=? and numero=?",impre_z,font_z,;
+
+R;
+
+#i/programas/lib/colores.i;
+#i/programas/lib/tomamaxrc.i;
+#i/programas/lib/status.i;
+#i/programas/lib/fechas.i;
+#i/programas/lib/htmlotxt.i;
+
+[PAN; 
+Ff1; tf; tn; Gdefine_colores; Gamarillo_negro; Gtomamaxrc;
+ta0; #iprog1.i; 
+^=direc_z,#); 
+q+,modul_z,"Concentrado de Enganches",; (modul2_z)=($CAR-MDS,7);
+GBANNER; Gblanco_azul;
+R;
+
+[R; R; [E; ];
+[NOZONA; z0,nombre_zon,#; (nombre_zon)=($INEXISTENTE,11); R;
+[NOSUBZ; z0,nombre_ubi,#; (nombre_ubi)=($INEXISTENTE,11); R;
+[NOBD; Ff1; GST; `7; \No existe el archivo basedato.ini ...\; gFin1;
+[ERRCNB; GST; `6; \No pude conectarme a la base de datos...\; gFin1;
+[Nodatos; Ff1; GST; `7; \archivo datos incompleto o inexistente...\; gFin1;
+
+[Fin1; y|;.
+[Fin; t@23,0; te; };

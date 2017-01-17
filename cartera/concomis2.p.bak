@@ -1,0 +1,325 @@
+* Programa que genera el concentrado de comisiones
+  DRBR 17-Mar-1998
+*
+
+#dMDS10 %,10.2f~; #dMDSF %6.2f~; #dMDS12 %,12.2f~; #dMIE2 %-2d~; #dMIS2 %2d~;
+
+f0; M
+	nemp_z          s80,
+	direc_z         s80,
+	modul_z         s30,
+	modul2_z        s10,
+	impre_z			i,
+	font_z			i,
+        maxcol_z		i,
+        maxrow_z		i,
+        renst_z			i,
+        sff_z			s3,
+	micar_z			s3,
+	carac_z			i,
+	bandimp_z		s3,
+	cmds_z		{
+	  cmd1_z		s7,
+	  cmd2_z		s13,
+	  cmd3_z		s30,
+			}
+	arch_z			s13,
+	mibd_z			s80,
+	
+	ter_z            s2,
+	antzon_z         s3,
+	fech8_z           D,
+	fech9_z     {
+	  dias_z        s16,
+	  hora_z         s6,
+	  resto_z        s5,
+	            }
+	fecha_z           	D,
+	fechb_z           	D,
+        feche_z			D,
+        fechd_z			D,
+	fecini_z	{
+	  feciniaa_z		i,
+	  fecinimm_z		i,
+	  fecinidd_z		i,
+	  		}
+	fecult_z	{
+	  fecultaa_z		i,
+	  fecultmm_z		i,
+	  fecultdd_z		i,
+	  		}
+	ploc_z			s2,
+	tsn_z			s2,
+	subzona_z		s3,
+	prom_z			s4,
+	band_z			s3,
+        prmegazona_z		s3,
+        ulmegazona_z		s3,
+        antmegazona_z		s3,
+        megazona_z		s3,
+        saltop_z		s2,
+	tothor_z		d,
+	comsubzon_z		d,
+	dosporzon_z		d,
+	cmcsubzon_z		d,
+	dospcazon_z		d,
+	comtot_z		d,
+	dsptot_z		d,
+	cmctot_z		d,
+	dpctot_z		d,
+	porc1_z           	d,
+	porc2_z           	d,
+	porc3_z           	d,
+	prtda_z			i,
+	ultda_z			i,
+	ind1_z            	i,
+	ind2_z            	i,
+	termi_z           	i,
+	esp_z             	i,
+	exten_z           	i,
+	tam0             	s0,;
+mtam0&; 
+* -----> Control de Versiones <-----------------
+| V 2.01 EB: Se modifica para agregar la division de las megazonas
+| 16-Feb-2015 
+|____________________________________________________________________ *
+
+q+,version_z,"V:2.01 EB",;
+
+tr; Ff3; FOdatos.ini~,r~; FGNodatos; Fknemp_z,l; &f0; tu1;
+(impre_z)=(1); 
+Ff5; FO.impri2.ini~,r~;
+FG|; |
+  Fknemp_z,l;
+  !(nemp_z)0($html,4)>|;
+    (html_z)=($S,1);
+  |
+    >sinemp_z,#,impre_z;
+  .
+.
+
+GPAN; GABRE_TABLA; (arch_z)=($concomis.tex,12);
+
+&a; &cfeche_z; qD,2,fecult_z,feche_z,;
+(fecultdd_z)=(1); qD,1,fecult_z,feche_z,; (feche_z)=(feche_z)(86400)-;
+qD,2,fecult_z,feche_z,; (fecultdd_z)=(1); qD,1,fecult_z,fechd_z,;
+
+[fei; t@5,3; \Teclee la Fecha Inicial : \; t0Fin; (fecha_z)=(fechd_z);
+ifecha_z,+10; !(fecha_z)0($-1)>fei; qD,2,fecini_z,fecha_z,;
+[feu; t@5,40; \Fecha Final   : \; t0fei; (fechb_z)=(feche_z);
+ifechb_z,+10; !(fechb_z)0($-1)>feu; qD,2,fecult_z,fechb_z,;
+[prm; t@12,3; \Mega Zona Inicial:\; t0feu; iprmegazona_z,2;
+[ulm; t@12,40; \Mega Zona Final:\; t0prm; iulmegazona_z,2;
+[spa; t@13,3; \Deseas Salto de Pagina x c/Megazona ? <S/N>:\; t0ulm;
+isaltop_z,1; !(saltop_z)5($S,1)(saltop_z)5($N,1)&>spa;
+
+GST; \Estan correctos los datos ? <S/N> :\; y|; | gfeu; .
+!(html_z)0($S,1)>|; (arch_z)=($concomi.html,12); .
+tS1,0,0,23,80; tv0; tc;
+f2; k1; P;
+{ n+;
+  !(band_z)5($S,1)>|;
+    (antzon_z)=(zona_ztd,#); (antmegazona_z)=(megazona_ztd,#); 
+    Ff4; FO(arch_z),w~; 
+    !(html_z)0($S,1)>; GENCHTML; | FP66,60,Enc,Pie; .
+  .
+  !(antmegazona_z)5(megazona_ztd,#)>|;
+    GSUBTZON; GSUBT_MEGAZONA; (antmegazona_z)=(megazona_ztd,#); 
+    !(saltop_z)0($S,1)>|; GSALTO_PAGINA; | GSUBENC_MEGAZONA; .
+  .
+  !(antzon_z)5(zona_ztd,#)>|;
+      GSUBTZON; (antzon_z)=(zona_ztd,#); GSUBENC;
+  .
+  Ff1; \Leyendo:\; pzona_ztd,0; s1; psubzona_ztd,0; l;
+  GIMPRI;
+  f2; a;
+)
+GSUBTZON; GSUBT_MEGAZONA; 
+!(saltop_z)0($S,1)>|; GSALTO_PAGINA; | GSUBENC_MEGAZONA; .
+GULIN;
+Ff4; FC; Ff1; tf; tr; tS0; GSalir;
+gFin;
+
+[Enc;
+Ff3; FT; FGNodatos; Ff4; GFONT11; Fc80,3; l; Ff3; FGNodatos; Ff4;
+GFONT13; \concomis \; GFONT14; &a; &cfech8_z; &p3fech9_z; pfech8_z,+8;
+s1; phora_z,#; s1; FW3; l;
+GFONT15; Fc40,\INFORME DIRECCION~; GFONT16; l;
+GFONT15; s4; \VENTAS DEL \; pfecha_z,+8; \ AL \; pfechb_z,+8; GFONT16; l;
+GFONT15; Fc40,\INFORME DE VENTAS~; GFONT16; l;
+GFONT15; Fc30,\ACUMULADOS EN PRECIO ~;
+!(ploc_z)0($L,1)>|; \ LISTA \; | \CREDITO\; . GFONT16; l;
+GFONT17; \ACUMULADOS DE COMISIONES \; GFONT18; l; l;
+GSUBENC; (band_z)=($S,1);
+Ft;
+
+[ENCHTML;
+Ff3; FT; FGNodatos; Ff4; \<html><title> Concentrado de Comisiones </title>\; l;
+\<body>\;
+\<h1><center>\;
+Fc80,3; \</center></h1>\; l; Ff3; FGNodatos; Ff4;
+\<font size = -2><center>concomis</font> \; &a; &cfech8_z; &p3fech9_z; pfech8_z,+10;
+s1; phora_z,#; s1; FW3; \</center>\; l;
+\<center>INFORME DIRECCION</center>\;l;
+\<center>VENTAS DEL \; pfecha_z,+8; \ AL \; pfechb_z,+8; \</center>\; l;
+\<center>GFONT15; Fc40,\INFORME DE VENTAS</center>\; l;
+\<center>GFONT15; Fc30,\ACUMULADOS EN PRECIO </center>\;
+!(ploc_z)0($L,1)>|; \ LISTA \; | \CREDITO\; . \</center>\; 
+\<center>GFONT17; \ACUMULADOS DE COMISIONES \; \</center>\; 
+GSUBENC; (band_z)=($S,1);
+R;
+
+[Pie; Fe;
+
+[SUBENC;
+f1; k1; P; n|; GNOZONA; .
+Ff4; 
+!(html_z)0($S,1)>|; \<B>\; | s4; GFONT17;  . pantzon_z,0; s1; pnombre_zon,0; 
+!(html_z)0($S,1)>|; \</B><table border="1"><tr>\; | GFONT18; l;
+!(html_z)0($5,1)>|; 
+  s4; \                    \; s1; 
+  \ Comisiones |\;
+  \ Comisiones |\;
+  \ Comisiones |\;
+  \ Comisiones |\; l;
+.
+!(html_z)0($S,1)>|; \<th>\; | s4; . \-- Punto de Venta -\; !(html_z)0($S,1)>|; \</th>\; | \|\; .
+!(html_z)0($S,1)>|; \<th>Comisiones<br>\ . \ Sabanas\;  !(html_z)0($S,1)>|; \</th>\; | \|\; .
+!(html_z)0($S,1)>|; \<th>Comisiones<br>\ . \ A Pagar\;  !(html_z)0($S,1)>|; \</th>\; | \|\; .
+!(html_z)0($S,1)>|; \<th>Comisiones<br>\ . \ Pagadas\;  !(html_z)0($S,1)>|; \</th>\; | \|\; .
+!(html_z)0($S,1)>|; \<th>Comisiones<br>\ . \ A Pagar\;  !(html_z)0($S,1)>|; \</th>\; | \|\; .
+!(html_z)0($S,1)>|; \</tr>\; . l;
+R;
+*    123 123456789012345 123456789012  123456789012 123456789012 123456789012 *
+
+[IMPRI;
+(subzona_z)=(subzona_ztd,#); f5; k1; P; n|; GNOUBI; .
+z0,comision_ind3,l; f4; k1; P; n|;.
+Ff4; 
+!(html_z)0($S,1)>|; \<tr><th>\; | s4; . psubzona_ztd,0; 
+s2; pnombre_ubi,15; !(html_z)0($S,1)>|; \</th>\; | \|\; .
+!(html_z)0($S,1)>|; \<th>\; . c_12;  !(html_z)0($S,1)>|; \</th>\; | \|\; .
+pcomision_ind3,MDS12; s1; c_12; s1; c_12; l;
+(comsubzon_z)=(comsubzon_z)(comision_ind3)+;
+(dosporzon_z)=(dosporzon_z)(dosporc_ind3)+;
+z0,comision_ind3,l; f4; k3; P; n|;.
+(cmcsubzon_z)=(cmcsubzon_z)(comision_ind3)+;
+(dospcazon_z)=(dospcazon_z)(dosporc_ind3)+;
+R;
+
+[SUBTZON;
+Ff4;
+(tothor_z)=(comsubzon_z)(dosporzon_z)+;
+s25; \------------ ------------ ------------ ------------\; l;
+\  Total Comisiones Pagar \; c_12; s1; pcomsubzon_z,MDS12; s1; c_12; s1; c_12; l;
+\  Total 2 %              \; c_12; s1; pdosporzon_z,MDS12; s1; c_12; s1; c_12; l;
+s25; \------------ ------------ ------------ ------------\; l;
+\  Total 2% y Comisiones \; c_12; s1; ptothor_z,MDS12; s1; c_12; s1; c_12; l;
+(tothor_z)=(tothor_z)(cmcsubzon_z)-(dospcazon_z)-;
+\  Comisiones Canceladas  \; c_12; s1; pcmcsubzon_z,MDS12; s1; c_12; s1; c_12; l;
+\  2% Cancelada           \; c_12; s1; pdospcazon_z,MDS12; s1; c_12; s1; c_12; l;
+s25; \------------ ------------ ------------ ------------\; l;
+\  Gran Total Comisiones \; c_12; s1; ptothor_z,MDS12; s1; c_12; s1; c_12; l; l;
+(comtot_z)=(comtot_z)(comsubzon_z)+; z0,comsubzon_z,#;
+(dsptot_z)=(dsptot_z)(dosporzon_z)+; z0,dosporzon_z,#;
+(cmctot_z)=(cmctot_z)(cmcsubzon_z)+; z0,cmcsubzon_z,#;
+(dpctot_z)=(dpctot_z)(dospcazon_z)+; z0,dospcazon_z,#;
+R;
+
+[ULIN;
+Ff4;
+(tothor_z)=(comtot_z)(dsptot_z)+;
+s25; \____________ ------------ ____________ ____________\; l;
+\  Total Comisiones Pagar \; c_12; s1; pcomtot_z,MDS12; s1; c_12; s1; c_12; l;
+\  Total 2 %              \; c_12; s1; pdsptot_z,MDS12; s1; c_12; s1; c_12; l;
+s25; \____________ ------------ ____________ ____________\; l;
+\  Total 2% y Comisiones  \; c_12; s1; ptothor_z,MDS12; s1; c_12; s1; c_12; l;
+(tothor_z)=(tothor_z)(cmctot_z)-(dpctot_z)-;
+\  Comisiones Canceladas  \; c_12; s1; pcmctot_z,MDS12; s1; c_12; s1; c_12; l;
+\  2% Cancelada           \; c_12; s1; pdpctot_z,MDS12; s1; c_12; s1; c_12; l;
+s25; \____________ ------------ ____________ ____________\; l;
+\  Gran Total Comisiones  \; c_12; s1; ptothor_z,MDS12; s1; c_12; s1; c_12; l;
+R;
+
+[MANDAELFNT; f13; k1; P; nR; GSACAF; R;
+#isacaf.i;
+#iimpri.i;
+
+[ABRE_TABLA; 
+Ff5; FObasedato.ini~,r~; FGNOBD; Fkmibd_z,l; FC; Ff1; 
+fd1; O@,mibd_z,"sa","lux",1,ERRCNB,;  * con conexion autocommit    *
+f1; #izonas.i;
+k0; ot,"zonas",;
+k1; kp,"zona = ?",antzon_z,#,1,;
+
+f2; M
+	megazona_ztd			s3,
+	zona_ztd			s3,
+	subzona_ztd			s4,
+        prelis_ztd			d,
+        totfac_ztd			d,
+	tam_ztd				s0,;
+k0; ot,"clientes",;
+k1; kq,"select e.clave, c.zona, subzona, sum(precon), sum(totfact)
+	from acuvtas c
+	join car_megazonasdet d on c.zona = d.zona
+	join car_megazonas e on d.idmegazona = e.idmegazona
+	where fecini=? and fecfin=? and e.clave between ? and ?
+	group by e.clave, c.zona,subzona",
+        fecini_z,#,3,fecult_z,#,3,prmegazona_z,#,1,ulmegazona_z,#,1,;
+
+f3; M
+	prom_ind2			s4,
+	nomprom_ind2			s31,
+	tam_ind2			s0,;
+
+k0; ot,"promotor",;
+k1; kq,"select unique clientes.jefgpo,promotor.nombre from clientes,promotor
+    	where clientes.fechavta between ? and ? and clientes.jefgpo=promotor.clave
+        and clientes.ubiage=? and clientes.tienda between ? and ?
+        order by clientes.jefgpo",
+        fecini_z,#,3,fecult_z,#,3,subzona_z,#,1,prtda_z,ultda_z,;
+    
+f4; M
+	comision_ind3			d,
+	dosporc_ind3			d,
+	tam_ind3			s0,;
+k0; ot,"clientes",;
+k1; kq,"select sum(comisi), sum(cojepa)
+	from acuvtas where zona=? and subzona=?
+	and fecini=? and fecfin = ? and voc='V'",
+        antzon_z,#,1,subzona_z,#,1,fecini_z,#,3,fecult_z,#,3,;
+k3; kq,"select sum(comisi * -1), sum(cojepa * -1)
+	from acuvtas where zona=? and subzona=?
+	and fecini=? and fecfin = ? and voc='c'",
+        antzon_z,#,1,subzona_z,#,1,fecini_z,#,3,fecult_z,#,3,;
+
+f5; #iubivta.i;
+k0; ot,"ubivta",;
+k1; kp,"zona=? and ubica=?",antzon_z,#,1,subzona_z,#,1,;
+
+f13; #itablefnt.i;
+k0; ot,"fonts",;
+k1; kp,"impre=? and numero=?",impre_z,font_z,;
+R;
+
+#i/programas/lib/colores.i;
+#i/programas/lib/tomamaxrc.i;
+#i/programas/lib/status.i;
+
+[PAN; 
+Ff1; Gdefine_colores; Gamarillo_negro; Gtomamaxrc; GST; tf; tn;
+(modul_z)=($Concentrado Comisiones,22); (modul2_z)=($CAR-MDS,7);
+ta0; #iprog1.i; ^=direc_z,#); 
+GBANNER; Gblanco_azul;
+R;
+
+[R; R; [E; ];
+[NOUBI; z0,nombre_ubi,#; (nombre_ubi)=($INEXISTENTE     ,15); R;
+[NOZONA; z0,nombre_zon,#; (nombre_zon)=($INEXISTENTE,11); R;
+[NOBD; Ff1; GST; `7; \No existe el archivo basedato.ini ...\; gFin1;
+[ERRCNB; GST; `6; \No pude conectarme a la base de datos...\; gFin1;
+[Nodatos; Ff1; GST; `7; \archivo datos incompleto o inexistente...\; gFin1;
+
+[Fin1; y|;.
+[Fin; t@23,0; te; };

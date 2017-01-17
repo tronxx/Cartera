@@ -1,0 +1,530 @@
+* Programa que sirve para Generar el Indice de Productividad de Cobratarios
+  DRBR 4 de Febrero de 1998
+*
+
+#dMIS02 %02d~; #dMLE6 %-6ld~; #dMLE4 %-4ld~; #dMFE %-5.2f~; #dMDS12 %,12.2f~;
+#dMIS2 %2d~;   #dMFS6 %6.2f~; #dMLS4 %4ld~; #dMFS5 %5.2f~; #dMDS9 %-9.2f~;
+#i/programas/lib/funkey.i;
+
+f0; M
+	impre_z			i,
+        maxcol_z		i,
+        maxrow_z		i,
+        renst_z			i,
+        sff_z			s2,
+	font_z			i,
+	micar_z			s3,
+	carac_z			i,
+
+	cmds_z		{
+	  cmd1_z		s7,
+	  cmd2_z		s13,
+	  cmd3_z		s30,
+			}
+	arch_z			s13,
+	fech9_z     {
+	  diasem_z		s4,
+	  fecstr_z		s12,
+	  hora_z		s6,
+	  resto_z		s5,
+	            }
+	bandman_z        s3,
+	band_z           s3,
+	bandh_z          s3,
+	enc_z			i,
+	nemp_z		s80,
+	direc_z		s50,
+	modul_z		s30,
+	modul2_z	s10,
+	usuarios_z      s80,
+	teruser_z       s80,
+	mibd_z          s80,
+	nombuse_z       s15,
+	clause_z        s10,
+	bandf1_z	 s3,
+	saldo_z		d,
+	
+	bandimp_z		s3,
+	fecha_z			D,
+	fechb_z			D,
+	fechc_z			D,
+	fechd_z			D,
+        feche_z			D,
+        fechf_z			D,
+	fech1_z			s11,
+	fech2_z			s11,
+	fech3_z			s11,
+	pol_z			s3,
+	prpol_z			s3,
+	ulpol_z			s3,
+	cobr_z			s4,
+	ya_z			s2,
+	salpa_z			s2,
+        html_z			s2,
+	comision_z		d,
+	cobrado_z		d,
+	porcen_z		d,
+	diaini_z		i,
+	diafin_z		i,
+        fecsig_z       {
+          fecsigaa_z		i,
+          fecsigmm_z		i,
+          fecsigdd_z		i,
+        		}
+	fecini_z	{
+	  feciniaa_z		i,
+	  fecinimm_z		i,
+	  fecinidd_z		i,
+	  		}
+	fecult_z	{
+	  fecultaa_z		i,
+	  fecultmm_z		i,
+	  fecultdd_z		i,
+	  		}
+	fecinix_z	{
+	  feciniaax_z		i,
+	  fecinimmx_z		i,
+	  feciniddx_z		i,
+	  		}
+	fecultx_z	{
+	  fecultaax_z		i,
+	  fecultmmx_z		i,
+	  fecultddx_z		i,
+	  		}
+
+	fech8_z           	D,
+	nelem_z			i,
+	ancho_z			i,
+	espa2_z			i,
+        ii_z			i,
+        iii_z			i,
+	ind1_z            i,
+	ind2_z            i,
+	termi_z           i,
+	esp_z             i,
+	exten_z           i,
+	tam0             s0,;
+
+mtam0&;
+Ff5; FO.impri2.ini~,r~;
+FG|; |
+  Fknemp_z,l;
+  !(nemp_z)0($html,4)>|;
+    (html_z)=($S,1);
+  |
+    >sinemp_z,#,impre_z;
+  .
+.
+FC; z0,nemp_z,#;
+Ff3; FOdatos.ini~,r~; FGNodatos; Fknemp_z,l; &f0; tu1; tr; ts0;
+GPAN; GABRE_TABLA; (arch_z)=($comismor.tex,12);
+
+&a; &cfecha_z; qD,2,fecsig_z,fecha_z,; GPRIMERO_DE_MES_ANTER;
+qD,1,fecsig_z,feche_z,;
+
+[fei; t@5,3; \Fecha Inicial:\; t0Fin; (fecha_z)=(feche_z); ifecha_z,+10;
+!(fecha_z)0($-1)>fei; qD,2,fecini_z,fecha_z,; &bfecha_z; &p3fech9_z; 
+&p4fech1_z; (fecsig_z)=(fecini_z,#); GULTIMO_DE_MES; qD,1,fecsig_z,feche_z,;
+[feu; t@5,40; \Fecha Final:\; t0fei; (fechb_z)=(feche_z); ifechb_z,+10;
+!(fechb_z)0($-1)>feu; qD,2,fecult_z,fechb_z,;
+&bfechb_z; &p4fech2_z;
+[tda; t@6,3; \De la Poliza:\; t0feu; iprpol_z,2;
+[ulp; t@6,40; \A la Poliza:\; t0tda; iulpol_z,2;
+[spa; t@7,3; \Desea Salto de Pagina por Tabla ? <S/N> :\; t0ulp; isalpa_z,1;
+!(salpa_z)5($S,1)(salpa_z)5($N,1)&>spa;
+GST; \Estan correctos los datos ? <S/N> :\; y|; | gtda; .
+
+tS1,7,0,12,80; tc; tv0;
+(enc_z)=(1); f8; k1; P;
+{ n+;
+  (pol_z)=(poliza_pol,#);
+  !(html_z)0($S,1)>|; GIMPRISOLO_HTML; | GIMPRISOLO; .
+  f8; a;
+)
+(enc_z)=(2); !(html_z)0($S,1)>|; GIMPRISOLO_HTML; | GIMPRISOLO; .
+Ff4; FC; Ff1; tr; tf; tS0; GSalir;
+gFin;
+R;
+
+[IMPRISOLO;
+!(band_z)5($S,1)>|;
+  Ff4; FO(arch_z),w~; FP66,60,Enc,Pie; (band_z)=($S,1);
+|
+  Ff4; !(salpa_z)0($S,1)>|; GFONT30; | l; GSUBENC; .
+.
+!(enc_z)0($1)>|; f7; k1; P; .
+!(enc_z)0($2)>|; f7; k2; P; .
+{ n+;
+  (cobr_z)=(promo_3acu,#);
+  GIMPRI;
+  f7; a;
+)
+GULIN;
+R;
+
+[Enc;
+Ff3; FT; FGNodatos; Ff4; GFONT14; Fc80,3; l; Ff3; FGNodatos; Ff4;
+GFONT13; \comismor \; GFONT14; &a; &cfech8_z; &p3fech9_z; pfech8_z,+8; s1;
+phora_z,#; s1; FW3; l;
+Fc45,\Analisis de Comisiones Semanales del ~; pfecha_z,+10; \ Al \;
+pfechb_z,+10; \ Pag:\; Fp%d~; l; GSUBENC;
+Ft;
+
+[SUBENC;
+Ff4; GFONT15;
+!(enc_z)0($1)>|;
+  \Informe de :\; ppol_z,0; f6; k1; P; n|; GNOTDA; .
+  s1; pnombre_tda,0;
+|
+  \Inform de Acumulado de \; pprpol_z,0; \ A:\; pulpol_z,0; 
+.
+GFONT16; GFONT13; l;
+z0,nelem_z,#;
+(fechc_z)=(fecha_z); &bfechc_z; &p3fech9_z;
+!(diasem_z)0($Lun,3)>|; (diafin_z)=(5); .
+!(diasem_z)0($Mar,3)>|; (diafin_z)=(4); .
+!(diasem_z)0($Mie,3)>|; (diafin_z)=(3); .
+!(diasem_z)0($Jue,3)>|; (diafin_z)=(2); .
+!(diasem_z)0($Vie,3)>|; (diafin_z)=(1); .
+!(diasem_z)0($Sab,3)>|; (diafin_z)=(7); .
+!(diasem_z)0($Dom,3)>|; (diafin_z)=(6); .
+qD,2,fecinix_z,fechc_z,; (fechd_z)=(fechc_z)(diafin_z)(86400)*+;
+qD,2,fecultx_z,fechd_z,; &bfechd_z; &p4fech3_z; z0,ya_z,#;
+{ 
+  !(fech3_z)1(fech2_z,#)>|; (fechd_z)=(fechb_z); qD,2,fecultx_z,fechd_z,; .
+  (nelem_z)=(nelem_z)(1)+;
+  !(ya_z)0($S,1)>+;
+  (fechc_z)=(fechd_z)(86400)(1)*+;
+  (fechd_z)=(fechd_z)(86400)(7)*+; &bfechd_z; &p4fech3_z;
+  !(fech3_z)3(fech2_z,#)>|; (ya_z)=($S,1); .
+  qD,2,fecultx_z,fechd_z,; qD,2,fecinix_z,fechc_z,;
+)
+
+(ancho_z)=(nelem_z)(1)+(13)*(21)+;
+(espa2_z)=(132)(ancho_z)-(2)/; !(espa2_z)2($0)>|; z0,espa2_z,#; .
+sespa2_z; c_ancho_z; l;
+sespa2_z; GFONT19; \|Promotor           |\; 
+(fechc_z)=(fecha_z); &bfechc_z; &p3fech9_z;
+!(diasem_z)0($Lun,3)>|; (diafin_z)=(5); .
+!(diasem_z)0($Mar,3)>|; (diafin_z)=(4); .
+!(diasem_z)0($Mie,3)>|; (diafin_z)=(3); .
+!(diasem_z)0($Jue,3)>|; (diafin_z)=(2); .
+!(diasem_z)0($Vie,3)>|; (diafin_z)=(1); .
+!(diasem_z)0($Sab,3)>|; (diafin_z)=(7); .
+!(diasem_z)0($Dom,3)>|; (diafin_z)=(6); .
+qD,2,fecinix_z,fechc_z,; (fechd_z)=(fechc_z)(diafin_z)(86400)*+;
+qD,2,fecultx_z,fechd_z,; &bfechd_z; &p4fech3_z; z0,ya_z,#;
+{ 
+  !(fech3_z)1(fech2_z,#)>|; (fechd_z)=(fechb_z); qD,2,fecultx_z,fechd_z,; .
+  s2; pfechd_z,+10; \|\;
+  !(ya_z)0($S,1)>+;
+  (fechc_z)=(fechd_z)(86400)(1)*+;
+  (fechd_z)=(fechd_z)(86400)(7)*+; &bfechd_z; &p4fech3_z;
+  !(fech3_z)3(fech2_z,#)>|; (ya_z)=($S,1); .
+  qD,2,fecultx_z,fechd_z,; qD,2,fecinix_z,fechc_z,;
+)
+\      Total |\; GFONT20; l;
+R;
+
+[Pie; GCORTA; Fe;
+
+[CORTA;
+Ff4;
+sespa2_z; \|___________________|\; (ind1_z)=(nelem_z)(1)+;
+{ !(ind1_z)4($0)>+; \____________|\; (ind1_z)=(ind1_z)(1)-; ) l;
+R;
+
+[IMPRI;
+z0,comision_z,#; z0,cobrado_z,#;
+Ff4; sespa2_z; \|\; pcobr_z,0; s1; f2; k1; P; n|; GNOPROM; .
+pnombre_prm,15; \|\;
+(fechc_z)=(fecha_z); &bfechc_z; &p3fech9_z;
+!(diasem_z)0($Lun,3)>|; (diafin_z)=(5); .
+!(diasem_z)0($Mar,3)>|; (diafin_z)=(4); .
+!(diasem_z)0($Mie,3)>|; (diafin_z)=(3); .
+!(diasem_z)0($Jue,3)>|; (diafin_z)=(2); .
+!(diasem_z)0($Vie,3)>|; (diafin_z)=(1); .
+!(diasem_z)0($Sab,3)>|; (diafin_z)=(7); .
+!(diasem_z)0($Dom,3)>|; (diafin_z)=(6); .
+qD,2,fecinix_z,fechc_z,; (fechd_z)=(fechc_z)(diafin_z)(86400)*+;
+qD,2,fecultx_z,fechd_z,; &bfechd_z; &p4fech3_z; z0,ya_z,#;
+{ 
+  !(fech3_z)1(fech2_z,#)>|; (fechd_z)=(fechb_z); qD,2,fecultx_z,fechd_z,; .
+  z0,comis_2acu,l;
+  !(enc_z)0($1)>|; f4; k1; P; .
+  !(enc_z)0($2)>|; f4; k2; P; .
+  n|;.
+  Ff4; pcomis_2acu,MDS12; \|\;
+  (comision_z)=(comision_z)(comis_2acu)+;
+  !(ya_z)0($S,1)>+;
+  (fechc_z)=(fechd_z)(86400)(1)*+;
+  (fechd_z)=(fechd_z)(86400)(7)*+; &bfechd_z; &p4fech3_z;
+  Ff1; pfech3_z,0; s1; pcobr_z,0; l;
+  !(fech3_z)3(fech2_z,#)>|; (ya_z)=($S,1); .
+  qD,2,fecultx_z,fechd_z,; qD,2,fecinix_z,fechc_z,;
+)
+pcomision_z,MDS12; \|\; l; GCORTA;
+R;
+
+[ULIN;
+z0,comision_z,#; z0,cobrado_z,#;
+Ff4; sespa2_z; \|\; s6; \ Total \; s6; \|\;
+(fechc_z)=(fecha_z); &bfechc_z; &p3fech9_z;
+!(diasem_z)0($Lun,3)>|; (diafin_z)=(5); .
+!(diasem_z)0($Mar,3)>|; (diafin_z)=(4); .
+!(diasem_z)0($Mie,3)>|; (diafin_z)=(3); .
+!(diasem_z)0($Jue,3)>|; (diafin_z)=(2); .
+!(diasem_z)0($Vie,3)>|; (diafin_z)=(1); .
+!(diasem_z)0($Sab,3)>|; (diafin_z)=(7); .
+!(diasem_z)0($Dom,3)>|; (diafin_z)=(6); .
+qD,2,fecinix_z,fechc_z,; (fechd_z)=(fechc_z)(diafin_z)(86400)*+;
+qD,2,fecultx_z,fechd_z,; &bfechd_z; &p4fech3_z; z0,ya_z,#;
+{ 
+  !(fech3_z)1(fech2_z,#)>|; (fechd_z)=(fechb_z); qD,2,fecultx_z,fechd_z,; .
+  z0,comis_2acu,l;
+  !(enc_z)0($1)>|; f4; k3; P; .
+  !(enc_z)0($2)>|; f4; k4; P; .
+  n|;.
+  Ff4; pcomis_2acu,MDS12; \|\;
+  (comision_z)=(comision_z)(comis_2acu)+;
+  !(ya_z)0($S,1)>+;
+  (fechc_z)=(fechd_z)(86400)(1)*+;
+  (fechd_z)=(fechd_z)(86400)(7)*+; &bfechd_z; &p4fech3_z;
+  Ff1; pfech3_z,0; s1; pcobr_z,0; l;
+  !(fech3_z)3(fech2_z,#)>|; (ya_z)=($S,1); .
+  qD,2,fecultx_z,fechd_z,; qD,2,fecinix_z,fechc_z,;
+)
+pcomision_z,MDS12; \|\; l; GCORTA;
+R;
+
+[IMPRISOLO_HTML;
+!(band_z)5($S,1)>|;
+  (arch_z)=($comismo.html,12);
+  Ff4; FO(arch_z),w~; GENC_HTML;
+|
+  Ff4; GSUBENC_HTML;
+.
+!(enc_z)0($1)>|; f7; k1; P; .
+!(enc_z)0($2)>|; f7; k2; P; .
+{ n+;
+  (cobr_z)=(promo_3acu,#);
+  GIMPRI_HTML;
+  f7; a;
+)
+GULIN_HTML;
+R;
+
+[ENC_HTML;
+Ff4;
+\<!doctype html public "-//w3c//dtd html 4.0 transitional//en">\; l;
+\<html>\; l;
+\<head>\; l;
+\   <meta http-equiv="Content-Type" content="text/html. charset=iso-8859-1">\; l;
+\   <meta name="GENERATOR" content="Mozilla/4.51 [en] (X11. I. Linux 2.2.5-15 i586) [Netscape]"> </head>\; l;
+\<body>\; l;
+\<center><font size=+2><B><I>\; pnemp_z,0; \</I></font></B><br>\; l;
+Ff3; FT; FGNodatos; FGNodatos; Ff4;
+\<font size=-2>comismor </font>\; &a; &cfech8_z; &p3fech9_z; pfech8_z,+8;
+s1; phora_z,#; s1; FW3; \<br>\; l;
+\Analisis de Comisiones Semanales del \; pfecha_z,+10; \ Al \; pfechb_z,+10;
+\<hr WIDTH="100%"></center>\; l; GSUBENC_HTML;
+R;
+
+[SUBENC_HTML;
+Ff4;
+!(enc_z)0($1)>|;
+  \<B>Informe de :\; ppol_z,0; f6; k1; P; n|; GNOTDA; .
+  s1; pnombre_tda,0; \</B>\; l;
+|
+  \<B>Informe de Acumulado de \; pprpol_z,0; \ A:\; pulpol_z,0; \</B>\; l;
+.
+z0,nelem_z,#;
+(fechc_z)=(fecha_z); &bfechc_z; &p3fech9_z;
+!(diasem_z)0($Lun,3)>|; (diafin_z)=(5); .
+!(diasem_z)0($Mar,3)>|; (diafin_z)=(4); .
+!(diasem_z)0($Mie,3)>|; (diafin_z)=(3); .
+!(diasem_z)0($Jue,3)>|; (diafin_z)=(2); .
+!(diasem_z)0($Vie,3)>|; (diafin_z)=(1); .
+!(diasem_z)0($Sab,3)>|; (diafin_z)=(7); .
+!(diasem_z)0($Dom,3)>|; (diafin_z)=(6); .
+qD,2,fecinix_z,fechc_z,; (fechd_z)=(fechc_z)(diafin_z)(86400)*+;
+qD,2,fecultx_z,fechd_z,; &bfechd_z; &p4fech3_z; z0,ya_z,#;
+{ 
+  !(fech3_z)1(fech2_z,#)>|; (fechd_z)=(fechb_z); qD,2,fecultx_z,fechd_z,; .
+  (nelem_z)=(nelem_z)(1)+;
+  !(ya_z)0($S,1)>+;
+  (fechc_z)=(fechd_z)(86400)(1)*+;
+  (fechd_z)=(fechd_z)(86400)(7)*+; &bfechd_z; &p4fech3_z;
+  !(fech3_z)3(fech2_z,#)>|; (ya_z)=($S,1); .
+  qD,2,fecultx_z,fechd_z,; qD,2,fecinix_z,fechc_z,;
+)
+\<font size=-2><table BORDER WIDTH="100%">\; l; 
+\<tr ALIGN=CENTER NOSAVE>\; l;
+\<td>Promotor</td>\; l;
+(fechc_z)=(fecha_z); &bfechc_z; &p3fech9_z;
+!(diasem_z)0($Lun,3)>|; (diafin_z)=(5); .
+!(diasem_z)0($Mar,3)>|; (diafin_z)=(4); .
+!(diasem_z)0($Mie,3)>|; (diafin_z)=(3); .
+!(diasem_z)0($Jue,3)>|; (diafin_z)=(2); .
+!(diasem_z)0($Vie,3)>|; (diafin_z)=(1); .
+!(diasem_z)0($Sab,3)>|; (diafin_z)=(7); .
+!(diasem_z)0($Dom,3)>|; (diafin_z)=(6); .
+qD,2,fecinix_z,fechc_z,; (fechd_z)=(fechc_z)(diafin_z)(86400)*+;
+qD,2,fecultx_z,fechd_z,; &bfechd_z; &p4fech3_z; z0,ya_z,#;
+{ 
+  !(fech3_z)1(fech2_z,#)>|; (fechd_z)=(fechb_z); qD,2,fecultx_z,fechd_z,; .
+  \<td>\; pfechd_z,+10; \</td>\;
+  !(ya_z)0($S,1)>+;
+  (fechc_z)=(fechd_z)(86400)(1)*+;
+  (fechd_z)=(fechd_z)(86400)(7)*+; &bfechd_z; &p4fech3_z;
+  !(fech3_z)3(fech2_z,#)>|; (ya_z)=($S,1); .
+  qD,2,fecultx_z,fechd_z,; qD,2,fecinix_z,fechc_z,;
+)
+\<td>Total</td><tr>\; l;
+R;
+
+[IMPRI_HTML;
+z0,comision_z,#; z0,cobrado_z,#;
+\<tr><td>\; pcobr_z,0; s1; f2; k1; P; n|; GNOPROM; .
+pnombre_prm,0; \</td>\;
+(fechc_z)=(fecha_z); &bfechc_z; &p3fech9_z;
+!(diasem_z)0($Lun,3)>|; (diafin_z)=(5); .
+!(diasem_z)0($Mar,3)>|; (diafin_z)=(4); .
+!(diasem_z)0($Mie,3)>|; (diafin_z)=(3); .
+!(diasem_z)0($Jue,3)>|; (diafin_z)=(2); .
+!(diasem_z)0($Vie,3)>|; (diafin_z)=(1); .
+!(diasem_z)0($Sab,3)>|; (diafin_z)=(7); .
+!(diasem_z)0($Dom,3)>|; (diafin_z)=(6); .
+qD,2,fecinix_z,fechc_z,; (fechd_z)=(fechc_z)(diafin_z)(86400)*+;
+qD,2,fecultx_z,fechd_z,; &bfechd_z; &p4fech3_z; z0,ya_z,#;
+{ 
+  !(fech3_z)1(fech2_z,#)>|; (fechd_z)=(fechb_z); qD,2,fecultx_z,fechd_z,; .
+  z0,comis_2acu,l;
+  !(enc_z)0($1)>|; f4; k1; P; .
+  !(enc_z)0($2)>|; f4; k2; P; .
+  n|;.
+  Ff4; \<td ALIGN=RIGHT>\; pcomis_2acu,MDS12; \</td>\;
+  (comision_z)=(comision_z)(comis_2acu)+;
+  !(ya_z)0($S,1)>+;
+  (fechc_z)=(fechd_z)(86400)(1)*+;
+  (fechd_z)=(fechd_z)(86400)(7)*+; &bfechd_z; &p4fech3_z;
+  Ff1; pfech3_z,0; s1; pcobr_z,0; l;
+  !(fech3_z)3(fech2_z,#)>|; (ya_z)=($S,1); .
+  qD,2,fecultx_z,fechd_z,; qD,2,fecinix_z,fechc_z,;
+)
+\<td ALIGN=RIGHT>\; pcomision_z,MDS12; \</td></tr>\; l;
+R;
+
+[ULIN_HTML;
+z0,comision_z,#; z0,cobrado_z,#;
+Ff4; \<tr><td>Total</td>\;
+(fechc_z)=(fecha_z); &bfechc_z; &p3fech9_z;
+!(diasem_z)0($Lun,3)>|; (diafin_z)=(5); .
+!(diasem_z)0($Mar,3)>|; (diafin_z)=(4); .
+!(diasem_z)0($Mie,3)>|; (diafin_z)=(3); .
+!(diasem_z)0($Jue,3)>|; (diafin_z)=(2); .
+!(diasem_z)0($Vie,3)>|; (diafin_z)=(1); .
+!(diasem_z)0($Sab,3)>|; (diafin_z)=(7); .
+!(diasem_z)0($Dom,3)>|; (diafin_z)=(6); .
+qD,2,fecinix_z,fechc_z,; (fechd_z)=(fechc_z)(diafin_z)(86400)*+;
+qD,2,fecultx_z,fechd_z,; &bfechd_z; &p4fech3_z; z0,ya_z,#;
+{ 
+  !(fech3_z)1(fech2_z,#)>|; (fechd_z)=(fechb_z); qD,2,fecultx_z,fechd_z,; .
+  z0,comis_2acu,l;
+  !(enc_z)0($1)>|; f4; k3; P; .
+  !(enc_z)0($2)>|; f4; k4; P; .
+  n|;.
+  Ff4; \<td ALIGN=RIGHT>\; pcomis_2acu,MDS12; \</td>\;
+  (comision_z)=(comision_z)(comis_2acu)+;
+  !(ya_z)0($S,1)>+;
+  (fechc_z)=(fechd_z)(86400)(1)*+;
+  (fechd_z)=(fechd_z)(86400)(7)*+; &bfechd_z; &p4fech3_z;
+  Ff1; pfech3_z,0; s1; pcobr_z,0; l;
+  !(fech3_z)3(fech2_z,#)>|; (ya_z)=($S,1); .
+  qD,2,fecultx_z,fechd_z,; qD,2,fecinix_z,fechc_z,;
+)
+Ff4; \<td ALIGN=RIGHT>\; pcomision_z,MDS12; \</td></tr></table>\; l;
+R;
+
+
+[MANDAELFNT; f5; k1; P; nR; GSACAF; R;
+#isacaf.i;
+#iimpri.i;
+
+[ABRE_TABLA; 
+Ff5; FObasedato.ini~,r~; FGNOBD; Fkmibd_z,l; FC; Ff1;
+fd1; O@,mibd_z,"sa","lux",1,ERRCNB,;  * con conexion autocommit    *
+
+f2; #ipromotor.i;
+k0; ot,"promotor",;
+k1; kp,"clave=?",cobr_z,#,1,;
+
+f4; M
+	comis_2acu		d,
+	tam_2acu		s0,;
+k0; ot,"comiscob",;
+k1; kq,"select sum(com) from comiscob where fecha between ? and ?
+    and promo=? and poliza=?",
+    fecinix_z,#,3,fecultx_z,#,3,cobr_z,#,1,pol_z,#,1,;
+k2; kq,"select sum(com) from comiscob where fecha between ? and ?
+    and promo=? and poliza between ? and ?",
+    fecinix_z,#,3,fecultx_z,#,3,cobr_z,#,1,prpol_z,#,1,ulpol_z,#,1,;
+k3; kq,"select sum(com) from comiscob where fecha between ? and ?
+    and poliza=?",
+    fecinix_z,#,3,fecultx_z,#,3,pol_z,#,1,;
+k4; kq,"select sum(com) from comiscob where fecha between ? and ?
+    and poliza between ? and ?",
+    fecinix_z,#,3,fecultx_z,#,3,prpol_z,#,1,ulpol_z,#,1,;
+
+    
+f5; #itablefnt.i;
+k0; ot,"fonts",;
+k1; kp,"impre=? and numero=?",impre_z,font_z,;
+
+f6; #itiendas.i;
+k0; ot,"tiendas",;
+k1; kp,"codigo=?",pol_z,#,1,;
+
+f7; M
+	promo_3acu		s4,;
+	
+k0; ot,"comiscob",;
+k1; kq,"select unique promo from comiscob where fecha between ? and ?
+    and poliza=? and (rel <> 0 or imp <> 0 or com <> 0) order by promo",
+    fecini_z,#,3,fecult_z,#,3,pol_z,#,1,;
+k2; kq,"select unique promo from comiscob where fecha between ? and ?
+    and poliza between ? and ? and (rel <> 0 or imp <> 0 or com <> 0) 
+    order by promo",
+    fecini_z,#,3,fecult_z,#,3,prpol_z,#,1,ulpol_z,#,1,;
+    
+f8; M
+	poliza_pol		s3,
+	tam_pol			s0,;
+k0; ot,"renpol2",;
+k1; kq,"select unique poliza from comiscob where fecha between ? and ?
+    and poliza between ? and ? and (rel <> 0 or imp <> 0 or com <> 0)",
+    fecini_z,#,3,fecult_z,#,3,prpol_z,#,1,ulpol_z,#,1,;
+R;
+
+#i/programas/lib/colores.i;
+#i/programas/lib/tomamaxrc.i;
+#i/programas/lib/status.i;
+#i/programas/lib/fechas.i;
+
+
+[PAN; 
+Ff1; Gdefine_colores; Gtomamaxrc; Gamarillo_negro; GST;
+GST; tf; tn; #iprog1.i; ^=direc_z,#); z0,modul_z,#;
+(modul_z)=($Impresion Indice Produc,23); (modul2_z)=($FBIcppc,7);
+GBANNER; Gblanco_azul;
+R;
+
+[R; R; [E; ];
+[NOBD; Ff1; GST; `7; \No existe el archivo basedato.ini ...\; gFin1;
+[ERRCNB; GST; `6; \No pude conectarme a la base de datos...\; gFin1;
+[NOTDA; z0,nombre_tda,#; (nombre_tda)=($INEXISTENTE,11); R;
+[NOPROM; z0,nombre_prm,#; (nombre_prm)=($INEXISTENTE,11); R;
+[Nodatos; Ff1; GST; `7; \archivo datos incompleto o inexistente...\; gFin1;
+
+[Fin1; y|;.
+[Fin; t@23,0; te; };

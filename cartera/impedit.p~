@@ -1,0 +1,114 @@
+* Programa que sirve para imprimir un archivo en terminal
+  DRBR 24 de Septiembre de 1997
+*
+
+#dMIS02 %02d~; #dMLE6 %-6ld~; #dMLE4 %-4ld~; #dMFE %-5.2f~; #dMDS12 %,12.2f~;
+#dMIS2 %2d~;   #dMLS6 %6ld~; #dMLS4 %4ld~; #dMFS5 %5.2f~; #dMDS9 %-9.2f~;
+#i/programas/lib/funkey.i;
+
+f0; M
+	llavf_z    {
+	  impre_z        s2,
+	  font_z         s5,
+	           }
+	ter_z            s2,
+	fech9_z     {
+	  dias2_z       s16,
+	  hora_z         s6,
+	  resto_z        s5,
+	            }
+	bandman_z        s1,
+	band_z           s1,
+	bandh_z          s1,
+	nemp_z		s80,
+	direc_z		s50,
+	modul_z		s30,
+	modul2_z	s10,
+	usuarios_z      s80,
+	teruser_z       s80,
+	mibd_z          s80,
+	nombuse_z       s15,
+	clause_z        s10,
+	bandf1_z	 s1,
+	bandimp_z	s2,
+
+	cmds_z		{
+	  cmd1_z		s7,
+	  cmd2_z		s80,
+	  cmd3_z		s30,
+			}
+	arch_z			s80,
+	
+	tda_z			s3,
+	nomtda_z		s21,
+	numrom_z		s6,
+	orden_z			s3,
+	acum_z			s2,
+
+	fech8_z           D,
+        maxcol_z		i,
+        maxrow_z		i,
+        renst_z			i,
+        nargs_z			i,
+        sff_z			s2,
+	ind1_z            i,
+	ind2_z            i,
+	termi_z           i,
+	esp_z             i,
+	exten_z           i,
+	tam0             s0,;
+
+mtam0&; Ff3; FOdatos.ini~,r~; FGNodatos; Fknemp_z,l; &f0; tu0; tr; ts0;
+* &a; &cfech8_z; &p3fech9_z; pfech8_z,+8; s1; phora_z,#; s1; FW3; l; *
+$inargs_z;
+!(nargs_z)1($1)>|;
+  $s1,arch_z,#; 
+.
+GKprog1;
+
+GPAN;
+
+{
+  t@5,3; \Teclee el Nombre del Archivo o <F9> Lista Archivos:\;
+  t0Fin; t@6,3; iarch_z,70;
+  GST; \Correcto ? <S/N> :\;
+  GSalir;
+)
+gFin;
+
+
+#iimpri.i;
+#i/programas/lib/colores.i;
+#i/programas/lib/tomamaxrc.i;
+#i/programas/lib/status.i;
+
+[lista_archivos; GSel_archivo; ];
+
+[Sel_archivo;
+tc; xfselect ~;
+x echo >>.archivo.txt~;
+Ff5; FO.archivo.txt~,r~;
+z0,arch_z,#; FGNoarch; Fkarch_z,l;
+[Noarch;
+FC; Ff1; tr;
+R;
+
+[Kprog1;
+KF9,lista_archivos;
+R;
+
+[PAN; 
+Ff1; Gdefine_colores; Gtomamaxrc; Gamarillo_negro; GST; tf; tn;
+#iprog1.i;  ^=direc_z,#); z0,modul_z,#;
+(modul_z)=($Impresion de Archivos,21); (modul2_z)=($CAR-MDS,7);
+GBANNER; Gblanco_azul;
+R;
+
+[R; R; [E; ];
+[NOBD; Ff1; GST; `7; \No existe el archivo basedato.ini ...\; gFin1;
+[ERRCNB; GST; `6; \No pude conectarme a la base de datos...\; gFin1;
+[Nodatos; Ff1; GST; `7; \archivo datos incompleto o inexistente...\; gFin1;
+
+[Fin1; y|;.
+[Fin; t@23,0; te; };
+

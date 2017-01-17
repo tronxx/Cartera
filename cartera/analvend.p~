@@ -1,0 +1,472 @@
+* 
+  Este programa sirve para verificar las ventas realizadas por vendedor  
+  JRPH 28-Abril-2001
+*
+
+#dMIS02 %02d~; #dMLE6 %-6ld~; #dMLE4 %-4ld~; #dMFE %-5.2f~; #dMDS12 %,12.2f~;
+#dMIS2 %2d~;   #dMLS6 %6ld~; #dMLS4 %4ld~; #dMFS5 %5.2f~; #dMDS9 %-9.2f~;
+#dMIE2 %-2d~;   #dMIS3X %03dx~; #dMIS3 %3d~; #dMFS6 %6.2f~; 
+#i/programas/lib/funkey.i;
+
+f0; M
+	impre_z			i,
+	font_z			i,
+	micar_z			s3,
+	sff_z			s3,
+	carac_z			i,
+	maxcol_z		i,
+	maxrow_z		i,
+	renst_z			i,
+	
+	ter_z            s2,
+	fech9_z     {
+	  dias2_z       s16,
+	  hora_z         s6,
+	  resto_z        s5,
+	            }
+	bandman_z        s1,
+	band_z           s1,
+	bandh_z          s1,
+
+	cmds_z		{
+	  cmd1_z		s7,
+	  cmd2_z		s13,
+	  cmd3_z		s30,
+			}
+	arch_z			s13,
+
+	nemp_z		s80,
+	direc_z		s50,
+	modul_z		s30,
+	modul2_z	s10,
+	usuarios_z      s80,
+	teruser_z       s80,
+	mibd_z          s80,
+	nombuse_z       s15,
+	clause_z        s10,
+	voc_z			s2,
+	sqlcmd_z		s100,
+	milinea_z		s100,
+	clientes_z		s20,
+	mvcli_z			s20,
+	tbdircl_z		s20,
+	solicit_z		s20,
+	
+	bandf1_z	 s1,
+	bandimp_z	 s2,
+
+	fech8_z                 D,
+	fecha_z			D,
+	fechb_z			D,
+	cop_z			s2,
+	codcli_z		s11,
+	vendini_z               s4,
+	vendfin_z               s4, 
+
+	fecini_z	{
+	  feciniaa_z		i,
+	  fecinimm_z		i,
+	  fecinidd_z		i,
+	  		}
+	fecult_z	{
+	  fecultaa_z		i,
+	  fecultmm_z		i,
+	  fecultdd_z		i,
+	  		}
+	tdaini_z		i,
+	tdault_z		i,
+	anttda_z		i,
+        ntimes_z		i,
+        enc_z			i,
+        estesi_z		s2,
+        antnom_z		s31,
+        antvnd_z		s4,
+        ubica_z			s4,
+	tda_z			s3,
+
+	vend_z			s4,
+        nomvnd                  s31,
+        
+        concen_z		s2,
+        analit_z		s2,
+        primero_z		s2,
+        comiscli_z		d,
+        comis_z			d,
+        prelis_z		d,
+        totfac_z		d,
+        vndcom_z		d,
+        vndlis_z		d,
+        vndtfa_z		d,
+        totcom_z		d,
+        totlis_z		d,
+        tottfa_z		d,
+* Definicion de mis Variables *
+
+	nombreaux            s35,
+        numcliaux            s11,
+        descriaux            s71,  
+        plistaux       	     d,
+        poblacaux            s26,
+        subtotvend           d,
+        totxvend             d,
+        
+* Fin de las definiciones *        
+
+	ind1_z            i,
+	ind2_z            i,
+	termi_z           i,
+	esp_z             i,
+	exten_z           i,
+	tam0             s0,;
+
+
+mtam0&; Ff3; FOdatos.ini~,r~; FGNodatos; Fknemp_z,l; &f0; tu1; tr; ts0;
+GPAN; (arch_z)=($analvend.tex,12); ttttermi_z; (impre_z)=(1);
+[fei; t@5,3; \Fecha Inicial: \; t0Fin; &a; &cfecha_z; ifecha_z,+10;
+!(fecha_z)0($-1)>fei; qD,2,fecini_z,fecha_z,;
+[feu; t@5,40; \Fecha Final :\; t0fei; (fechb_z)=(fecha_z); ifechb_z,+10;
+!(fechb_z)0($-1)>feu; qD,2,fecult_z,fechb_z,;
+[prt; t@6,3; \Del Vendedor:\; t0feu; t@6,20; ivendini_z,3;
+[ult; t@6,40; \Al Vendedor:\; t0prt; t@6,60; ivendfin_z,3;
+[cov; t@7,3; \Deseas Reporte de `V`entas o `C`artera ? <V/C> :\;
+ivoc_z,1; !(voc_z)5($C,1)(voc_z)5($V,1)&>cov;
+[tdi; t@8,3; \Del Codigo:\; t0cov; t@8,23; itdaini_z,MIE2,MIS2;
+[tdu; t@8,40; \Al Codigo:\; t0tdi; t@8,63; itdault_z,MIE2,MIS2;
+GST; \Estan correctos los datos ? <S/N> : \; y|; | gtdu; .
+GABRE_TABLA;
+
+z0,antnom_z,#;
+z0,antvnd_z,#;
+z0,band_z,#;
+tS1,0,0,23,80; tc; tv0;
+GARMAREP;
+tv1; Ff1; tf; tr; tS0; t0Fin; GSalir;
+gFin;
+
+[ARMAREP;
+!(voc_z)0($C,1)>|;
+  f5; k2; P;
+|
+  f5; k3; P;
+.
+{ n+;
+  (vend_z)=(vendedor_ind5,#);
+  (nomvnd)=(nomvend_ind5,#);
+  Ff1; \Leyendo: \;  pvend_z,0; s1; pnomvnd,0;  l;
+  z0,numcli_ind8,#; z0,nombre_ind8,#; z0,descri_ind8,#; z0,plista_ind8,#; 
+  z0,poblac_ind8,#;
+  GIMPRIENC; 
+  !(voc_z)0($C,1)>|;
+    f8; k1; P;
+  |
+    f8; k2; P;
+  .
+  { n+;
+    (nombreaux)=(nombre_ind8,#); (numcliaux)=(numcli_ind8,#); 
+    (descriaux)=(descri_ind8,#);
+    (plistaux)=(plista_ind8); (poblacaux)=(poblac_ind8,#); 
+    (vndcom_z)=(vndcom_z)(comisi_ind8)+;
+    (subtotvend)=(subtotvend)(plistaux)+;
+    !(plistaux)1($10)>|;
+       Ff4; pnumcliaux,10; \|\; pnombreaux,30; \|\;  pdescriaux,40; \|\; pplistaux,MDS12; 
+       \|\; pcomisi_ind8,MDS12; l;
+    .
+    f8; a;
+  ) 
+  s50; GFONT17; \ Total de \; pantnom_z,20; \ $ \;  psubtotvend,MDS12; s1; pvndcom_z,MDS12; GFONT18; l; l;
+  (totxvend)=(totxvend)(subtotvend)+;  z0,subtotvend,#;
+  (totcom_z)=(totcom_z)(vndcom_z)+;     z0,vndcom_z,#;
+  f5; a;
+)
+l; s50; GFONT17; \Gran Total de Ventas: $ \;  ptotxvend,MDS12;
+s1; ptotcom_z,MDS12; GFONT18; l; l;
+z0,totxvend,#; z0,totcom_z,#;
+R;
+
+[Enc;
+Ff3; FT; FGNodatos; Ff4; GFONT11; Fc80,3; l; Ff3; FGNodatos; Ff4;
+GFONT13; \analvend \; GFONT14; &a; &cfech8_z; &p3fech9_z; pfech8_z,+8; s1;
+phora_z,#; s1; FW3; l;
+Fc50,\Analitico de Ventas X Vendedor del ~; pfecha_z,+10; \ Al \; pfechb_z,+10;
+\ Pag:\; Fp%d~; GFONT12; l;
+!(voc_z)0($V,1)>|;
+  \REPORTE DE CLIENTES EN VENTAS\;
+|
+  \REPORTE DE CLIENTES EN CARTERA\;
+.
+l;
+GSUBENC;
+(band_z)=($S,1);
+Ft;
+
+[Pie; Fe;
+
+[SUBENC;
+Ff4; \Vendedor:\; GFONT15; pvend_z,#; s1; pnomvnd,0; GFONT16; l; GFONT19; 
+\Codigo_Cli|Nombre                        |Articulo que Compra                     |P. Lista   |    Comision|\; GFONT20; l;
+*12345678901123456789012345678901234567890112345678901234567890123456789012345     123456789012 123456789012*
+R;
+
+[IMPRIENC;
+!(band_z)5($S,1)>|;
+  (antvnd_z)=(vend_z,#); (antnom_z)=(nomvend_ind5,#);
+  Ff4; FO(arch_z),w~; FP66,60,Enc,Pie;
+.
+!(vend_z)5(antvnd_z,#)>|;
+ (antvnd_z)=(vend_z,#); (antnom_z)=(nomvnd,#); GSUBENC;
+.
+R;
+
+[SUBTVND;
+Ff4;
+!(ntimes_z)1($1)>|;
+  s12; \Total de este Vendedor  |\; pvndlis_z,MDS12; \|\;
+  pvndtfa_z,MDS12; \|\; pvndcom_z,MDS12; l;
+.
+l;
+(totcom_z)=(totcom_z)(vndcom_z)+; z0,vndcom_z,#;
+(totlis_z)=(totlis_z)(vndlis_z)+; z0,vndlis_z,#;
+(tottfa_z)=(tottfa_z)(vndtfa_z)+; z0,vndtfa_z,#;
+R;
+
+[ULIN;
+Ff4; s12; \Total General           |\; ptotlis_z,MDS12; \|\;
+ptottfa_z,MDS12; \|\; ptotcom_z,MDS12; l;
+z0,totlis_z,#; z0,tottfa_z,#; z0,totcom_z,#;
+R;
+
+
+[IMPRI2;
+!(band_z)5($S,1)>|;
+  (antvnd_z)=(vend_z,#); (antnom_z)=(nomvend_ind5,#);
+  Ff4; FO(arch_z),w~; FP66,60,Enc,Pie;
+.
+!(primero_z)5($S,1)>|; 
+  (antvnd_z)=(vend_z,#); (antnom_z)=(nomvend_ind5,#); Ff4; GFONT30;
+|
+  !(vend_z)5(antvnd_z,#)>|;
+    (antvnd_z)=(vend_z,#); (antnom_z)=(nomvend_ind5,#); GSUBENC2;
+  .
+.
+f1;
+!(voc_z)0($C,1)>|; k1; .
+!(voc_z)0($V,1)>|; k2; .
+P;
+{ n+;
+  Ff4; pnumcli_cli,10; \|\; pstat_cli,1; pnombre_cli,22; \|\;
+  !(agente_cli)0(vend_z,#)>|;
+    \1\; (comiscli_z)=(comisi_cli);
+  |
+    \2\; (comiscli_z)=(comis2_cli);
+  .
+  \|\; pprecon_cli,MDS12; \|\; pcargos_cli,MDS12; \|\; pcomiscli_z,MDS12; l; 
+  f1; a;
+)
+Ff4; s12; \Total Este Punto Venta  |\;
+pprelis_z,MDS12; \|\; ptotfac_z,MDS12; \|\; pcomis_z,MDS12; l; l;
+(ntimes_z)=(ntimes_z)(1)+;
+ 
+(vndcom_z)=(vndcom_z)(comis_z)+;
+(vndlis_z)=(vndlis_z)(prelis_z)+;
+(vndtfa_z)=(vndtfa_z)(totfac_z)+;
+R;
+
+[SUBENC2;
+Ff4; \Vendedor:\; GFONT15; pantvnd_z,#; s1; pantnom_z,0; GFONT16; l; GFONT19;
+(primero_z)=($S,1);
+\Codigo_Cli |Nombre                             |Articulo que Compra           |P. Lista  |Poblacion \; GFONT20; l;
+*1234567890  12345678901234567890123456789012345 123456789012345678901234567890 1234567890 1234567890*
+R;
+
+
+[MANDAELFNT; f13; k1; P; nR; GSACAF; R;
+
+#isacaf.i;
+#iimpri.i;
+#i/programas/lib/colores.i;
+#i/programas/lib/tomamaxrc.i;
+#i/programas/lib/status.i;
+
+
+[TOMAALTAS;
+!(voc_z)0($V,1)>|;
+  Ff6; FOaltas.ini~,r~;
+|
+  Ff6; FOcartera.ini~,r~;
+.
+{ Ff6; FG+; z0,milinea_z,#; Fkmilinea_z,l;
+  !(milinea_z)0($clientes:,9)>|; Ff6; FG+; Fkclientes_z,l; g-; .
+  !(milinea_z)0($mvcli:,6)>|;    Ff6; FG+; Fkmvcli_z,l;    g-; .
+  !(milinea_z)0($dircli:,7)>|;   Ff6; FG+; Fktbdircl_z,l;   g-; .
+  !(milinea_z)0($solicit:,8)>|;  Ff6; FG+; Fksolicit_z,l;  g-; .
+)
+R;
+
+[ABRE_TABLA;
+GTOMAALTAS;
+Ff5; FObasedato.ini~,r~; FGNOBD; Fkmibd_z,l; FC; Ff1;
+fd1; O@,mibd_z,"sa","lux",1,ERRCNB,;  * con conexion autocommit    *
+f1; M
+	numcli_cli		s11,
+	stat_cli		s2,
+	nombre_cli		s35,
+	precon_cli		d,
+	cargos_cli		d,
+	comisi_cli		d,
+	comis2_cli		d,
+	agente_cli		s4,
+	agent2_cli		s4,
+	tam_cli			s0,;
+k0; ot,"clientes",;
+k1; kq,"select numcli,status,nombre,precon*(piva/100+1),cargos,comisi,comis2,
+	agente,agent2 from clientes
+	where ubiage =? and (agente=? or agent2=?)
+	and tienda between ? and ?
+	and fechavta between ? and ? order by ubiage,numcli",
+	ubica_z,#,1,vend_z,#,1,vend_z,#,1,tdaini_z,tdault_z,
+	fecini_z,#,3,fecult_z,#,3,;
+k2; kq,"select numcli,status,nombre,precon*(piva/100+1),cargos,comisi,comis2,
+	agente,agent2 from clialta
+	where ubiage =? and (agente=? or agent2=?)
+	and tienda between ? and ?
+	and fechavta between ? and ? order by ubiage,numcli",
+	ubica_z,#,1,vend_z,#,1,vend_z,#,1,tdaini_z,tdault_z,
+	fecini_z,#,3,fecult_z,#,3,;
+
+f2; #itiendas.i;
+k0; ot,"tiendas",;
+k1; kp,"codigo=?",tda_z,#,1,;
+
+f3; #iubivta.i;
+k0; ot,"ubivta",;
+k1; kp,"codcar='00' and ubica=?",ubica_z,#,1,;
+
+f5; M
+	vendedor_ind5		s4,
+        nomvend_ind5		s31,
+        comisi_ind5		d,
+        tam5			s0,;
+k0; ot,"vendedor",;
+k2; kq, "select c.codvnd,b.nombre,sum(comis)
+        from clientes a join car_vndcli c on a.idcli = c.idcli
+        join vendedor b on c.codvnd = b.codigo 
+        where  fechavta between ? and ? and a.agente between ? and ? 
+        and a.tienda between ? and ?
+        group by codvnd,b.nombre",
+        fecini_z,#,3,fecult_z,#,3,vendini_z,#,1,vendfin_z,#,1,
+        tdaini_z,tdault_z,;
+k3; kq, "select c.codvnd,b.nombre,sum(comis)
+        from clialta a join car_vndclialta c on a.idcli = c.idcli
+        join vendedor b on c.codvnd = b.codigo 
+        where  fechavta between ? and ? and a.agente between ? and ? 
+        and a.tienda between ? and ?
+        group by codvnd,b.nombre",
+        fecini_z,#,3,fecult_z,#,3,vendini_z,#,1,vendfin_z,#,1,
+        tdaini_z,tdault_z,;
+
+f6; M
+	ubica_ind6		s3,;
+k0; ot,"clientes",;
+k1; kq,"select unique ubiage from clientes where fechavta between ? and ?
+	and ubiage <> 'CA' and tienda between ? and ?
+        and (agente=? or agent2=?) order by ubiage",
+	fecini_z,#,3,fecult_z,#,3,tdaini_z,tdault_z,vend_z,#,1,vend_z,#,1,;
+k2; kq,"select unique ubiage from clientes where fechavta between ? and ?
+	and ubiage='CA' and tienda between ? and ?
+        and (agente=? or agent2=?) order by ubiage",
+	fecini_z,#,3,fecult_z,#,3,tdaini_z,tdault_z,vend_z,#,1,vend_z,#,1,;
+k3; kq,"select unique ubiage from clientes where fechavta between ? and ?
+	and tienda between ? and ?
+        and (agente=? or agent2=?) order by ubiage",
+	fecini_z,#,3,fecult_z,#,3,tdaini_z,tdault_z,vend_z,#,1,vend_z,#,1,;
+k4; kq,"select unique ubiage from clialta where fechavta between ? and ?
+	and ubiage <> 'CA' and tienda between ? and ?
+        and (agente=? or agent2=?) order by ubiage",
+	fecini_z,#,3,fecult_z,#,3,tdaini_z,tdault_z,vend_z,#,1,vend_z,#,1,;
+k5; kq,"select unique ubiage from clialta where fechavta between ? and ?
+	and ubiage='CA' and tienda between ? and ?
+        and (agente=? or agent2=?) order by ubiage",
+	fecini_z,#,3,fecult_z,#,3,tdaini_z,tdault_z,vend_z,#,1,vend_z,#,1,;
+k6; kq,"select unique ubiage from clialta where fechavta between ? and ?
+	and tienda between ? and ?
+        and (agente=? or agent2=?) order by ubiage",
+	fecini_z,#,3,fecult_z,#,3,tdaini_z,tdault_z,vend_z,#,1,vend_z,#,1,;
+
+f7; M
+	comis_ind7		d,
+        prelis_ind7		d,
+        totfac_ind7		d,;
+k0; ot,"clientes",;
+k1; kq,"select sum(comisi),sum(precon*(piva/100+1)),sum(cargos)
+	from clientes where fechavta between ? and ?
+	and ubiage=? and tienda between ? and ?
+        and agente=?",
+	fecini_z,#,3,fecult_z,#,3,ubica_z,#,1,tdaini_z,tdault_z,vend_z,#,1,;
+k2; kq,"select sum(comis2),sum(comis2),sum(cargos)
+	from clientes where fechavta between ? and ?
+	and ubiage=? and tienda between ? and ?
+        and agent2=?",
+	fecini_z,#,3,fecult_z,#,3,ubica_z,#,1,tdaini_z,tdault_z,vend_z,#,1,;
+k3; kq,"select sum(comisi),sum(precon*(piva/100+1)),sum(cargos)
+	from clialta where fechavta between ? and ?
+	and ubiage=? and tienda between ? and ?
+        and agente=?",
+	fecini_z,#,3,fecult_z,#,3,ubica_z,#,1,tdaini_z,tdault_z,vend_z,#,1,;
+k4; kq,"select sum(comis2),sum(comis2),sum(cargos)
+	from clialta where fechavta between ? and ?
+	and ubiage=? and tienda between ? and ?
+        and agent2=?",
+	fecini_z,#,3,fecult_z,#,3,ubica_z,#,1,tdaini_z,tdault_z,vend_z,#,1,;
+
+f8; M
+	numcli_ind8		s11,
+        nombre_ind8		s35,
+        descri_ind8		s71,
+        plista_ind8		d,
+        poblac_ind8             s26,
+        comisi_ind8		d,
+        varaux_ind8             s0,;
+        
+k0; ot,"clientes",;
+k1; kq,"select numcli,nombre,compra,precon,poblac,c.comis
+        from clientes a join dircli2 b on a.idcli = b.idcli
+        join car_vndcli c on a.idcli = c.idcli
+        where fechavta between ? and ? 
+        and a.tienda between ? and ? and c.codvnd=?",
+	fecini_z,#,3,fecult_z,#,3,tdaini_z,tdault_z,vend_z,#,1,;
+k2; kq,"select numcli,nombre,compra,precon,poblac,c.comis
+        from cliealta a join dirclialta b on a.idcli = b.idcli
+        join car_vndclialta c on a.idcli = c.idcli
+        where fechavta between ? and ? 
+        and a.tienda between ? and ? and c.codvnd=?",
+	fecini_z,#,3,fecult_z,#,3,tdaini_z,tdault_z,vend_z,#,1,;
+
+k3; kq,"select numcli,nombre,compra,precon,poblac,tienda 
+        from clialta a join dirclialta b on a.idcli = b.idcli
+        where agente=? and fechavta between ? and ? 
+        and a.tienda between ? and ?",
+	vend_z,#,1,fecini_z,#,3,fecult_z,#,3,tdaini_z,tdault_z,;
+
+
+f13; #itablefnt.i;
+k0; ot,"fonts",;
+k1; kp,"impre=? and numero=?",impre_z,font_z,;
+R;
+
+[PAN; 
+Ff1; Gtomamaxrc; Gdefine_colores; Gamarillo_negro;
+GST; tf; tn; #iprog1.i; ^=direc_z,#); z0,modul_z,#;
+(modul_z)=($Analitico de Ventas,19); (modul2_z)=($CAR-MDS,7);
+GBANNER; Gblanco_azul;
+R;
+
+[R; R; [E; ];
+[NOBD; Ff1; GST; `7; \No existe el archivo basedato.ini ...\; gFin1;
+[ERRCNB; GST; `6; \No pude conectarme a la base de datos...\; gFin1;
+[ERROR1; GST; `7; \No pude agregar registro en mantos.v ...\; gFin1;
+[ERROR4; GST; `7; \No pude agregar registro \; pteruser_z,0; gFin1;
+[NOUBI; z0,nombre_ubi,#; (nombre_ubi)=($INEXISTENTE,11); R;
+[Nodatos; Ff1; GST; `7; \archivo datos incompleto o inexistente...\; gFin1;
+
+[Fin1; y|;.
+[Fin; t@23,0; te; };
